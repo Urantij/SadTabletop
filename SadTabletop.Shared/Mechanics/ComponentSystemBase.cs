@@ -26,7 +26,6 @@ public abstract class ComponentSystemBase : SystemBase
     
     private int GenerateId()
     {
-        // сейм что и в ентити системе
-        return NextId++;
+        return Game.GetNextComponentId();
     }
 }

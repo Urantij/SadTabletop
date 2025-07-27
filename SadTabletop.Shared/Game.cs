@@ -9,8 +9,18 @@ public class Game
 {
     public List<SystemBase> Systems { get; } = [];
 
+    // TODO сериализовать
+    // В теории айди не должны повторяться только для ентити, так как ентити айди я всё равно юзаю для линка.
+    // Но это сложнее сделать, а смысла не сильно больше.
+    private int _nextComponentId = 1;
+
     public T GetSystem<T>() where T : SystemBase
     {
         return Systems.OfType<T>().First();
+    }
+
+    internal int GetNextComponentId()
+    {
+        return _nextComponentId++;
     }
 }
