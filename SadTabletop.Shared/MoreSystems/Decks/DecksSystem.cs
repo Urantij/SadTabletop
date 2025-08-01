@@ -82,6 +82,10 @@ public class DecksSystem : SystemBase
             throw new Exception($"Неизвестный путь деквей {way}");
         }
 
+        (int back, int front)? sides = deck.CalculateSides();
+        deck.FrontSide = sides?.front;
+        deck.BackSide = sides?.back;
+
         foreach (Seat? seat in _seats.EnumerateSeats())
         {
             DeckUpdatedMessage message = FormUpdateMessage(deck, seat);
@@ -116,6 +120,10 @@ public class DecksSystem : SystemBase
             cardInfo = deck.Cards.Last();
             deck.Cards.RemoveAt(deck.Cards.Count - 1);
         }
+
+        (int back, int front)? sides = deck.CalculateSides();
+        deck.FrontSide = sides?.front;
+        deck.BackSide = sides?.back;
 
         foreach (Seat? seat in _seats.EnumerateSeats())
         {
