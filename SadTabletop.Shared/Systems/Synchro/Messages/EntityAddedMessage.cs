@@ -6,8 +6,7 @@ namespace SadTabletop.Shared.Systems.Synchro.Messages;
 /// <summary>
 /// Сообщение о появлении новой сущности.
 /// </summary>
-public class EntityAddedMessage(EntityBase entity) : ServerMessageBase
+public class EntityAddedMessage(IEntity entity) : ServerMessageBase
 {
-    [FullSerialize]
-    public EntityBase Entity { get; } = entity;
+    public IEntity Entity { get; } = entity;
 }
