@@ -4,14 +4,53 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <SpaRoot>ClientApp\SadTabletop.Client\</SpaRoot>
+        <SpaProxyServerUrl>https://localhost:44402</SpaProxyServerUrl>
+        <SpaProxyLaunchCommand>npm start</SpaProxyLaunchCommand>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\SadTabletop.Shared\SadTabletop.Shared.csproj" />
+        <!-- Don't publish the SPA source files, but do show them in the project files list -->
+        <Content Remove="$(SpaRoot)**"/>
+        <None Remove="$(SpaRoot)**"/>
+        <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**"/>
     </ItemGroup>
+
+    <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
+        <!-- Ensure Node.js is installed -->
+        <Exec Command="node --version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
+        </Exec>
+        <Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE."/>
+        <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..."/>
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install"/>
+    </Target>
+
+    <!--    незнаю, нужно ли это, но я украв, так что предположим будет. -->
+    <!--    <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">-->
+    <!--        &lt;!&ndash; As part of publishing, ensure the JS resources are freshly built in production mode &ndash;&gt;-->
+    <!--        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />-->
+    <!--        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build &#45;&#45; &#45;&#45;configuration production" />-->
+
+    <!--        &lt;!&ndash; Include the newly-built files in the publish output &ndash;&gt;-->
+    <!--        <ItemGroup>-->
+    <!--            <DistFiles Include="$(SpaRoot)dist\**; $(SpaRoot)dist-server\**" />-->
+    <!--            <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">-->
+    <!--                <RelativePath>wwwroot\%(RecursiveDir)%(FileName)%(Extension)</RelativePath>-->
+    <!--                <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>-->
+    <!--                <ExcludeFromSingleFile>true</ExcludeFromSingleFile>-->
+    <!--            </ResolvedFileToPublish>-->
+    <!--        </ItemGroup>-->
+    <!--    </Target>-->
 
     <ItemGroup>
-      <Folder Include="Seri\Storage\" />
+        <ProjectReference Include="..\SadTabletop.Shared\SadTabletop.Shared.csproj"/>
     </ItemGroup>
-
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="9.0.7"/>
+    </ItemGroup>
 </Project>

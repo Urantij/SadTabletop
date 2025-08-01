@@ -1,4 +1,3 @@
-using System.Net;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -65,8 +64,17 @@ container.Setup();
 
 maanger.GameContainer = container;
 
+// app.UseHttpsRedirection();
+
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
+// app.UseRouting()
+
 app.Map("/ws", connector.AcceptWsConnection);
 
 app.MapGet("/", () => "Hello World!");
+
+app.MapFallbackToFile("index.html");
 
 app.Run();
