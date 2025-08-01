@@ -36,11 +36,10 @@ public class Connector
     {
         lock (client.SendQueue)
         {
+            client.SendQueue.Enqueue(message);
+
             if (client.Sending)
-            {
-                client.SendQueue.Enqueue(message);
                 return;
-            }
 
             client.Sending = true;
         }
@@ -62,7 +61,7 @@ public class Connector
                     return;
                 }
             }
-        
+
             byte[] content = JsonSerializer.SerializeToUtf8Bytes(message, _serializerOptions);
 
             try
@@ -79,7 +78,7 @@ public class Connector
     public void QueueGameMessage(ServerMessageBase gameMessage, IReadOnlyList<Seat?> receivers)
     {
         // TODO лок
-        
+
         // сериализация игрового сообщения должна быть в локе тоже
 
         JsonNode result = SerializeMessage(gameMessage);
@@ -112,6 +111,9 @@ public class Connector
                 while (webSocket.State == WebSocketState.Open)
                 {
                     Memory<byte> subBuffer = await ReadMessageAsync(webSocket, buffer, cancellation);
+
+                    if (subBuffer.Length == 0)
+                        return;
 
                     JsonNode? node = JsonNode.Parse(subBuffer.Span);
 
@@ -194,7 +196,7 @@ public class Connector
         {
             QueueMessage(otherPlayer.Client, joinedSerialized);
         }
-        
+
         QueueMessage(appClient, SerializeMessage(response));
     }
 
@@ -240,7 +242,7 @@ public class Connector
     {
         return JsonSerializer.SerializeToNode(message, _serializerOptions);
     }
-    
+
     private JsonNode SerializeMessage(AppServerMessageBase message)
     {
         return JsonSerializer.SerializeToNode(message, _serializerOptions);
