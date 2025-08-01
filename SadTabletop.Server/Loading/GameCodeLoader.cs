@@ -9,6 +9,12 @@ public class GameCodeLoader
 
     public static Assembly[] Do()
     {
+        if (!Directory.Exists(DllsPath))
+        {
+            Console.WriteLine("длл не читаем");
+            return [];
+        }
+
         return Directory.GetFiles(DllsPath, "*.dll")
             .Select(path =>
             {
