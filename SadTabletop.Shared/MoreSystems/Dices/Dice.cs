@@ -15,3 +15,10 @@ public class Dice(IReadOnlyList<int> sides) : TableItem, ILimitable
     /// </summary>
     public IReadOnlyList<int> Sides { get; } = sides;
 }
+
+public class DiceDto(Dice dice, int? currentSideIndex) : TableItemDto(dice)
+{
+    public int? CurrentSideIndex { get; } = currentSideIndex;
+
+    public IReadOnlyList<int> Sides { get; } = dice.Sides;
+}

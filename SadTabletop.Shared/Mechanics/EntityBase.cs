@@ -3,7 +3,7 @@ namespace SadTabletop.Shared.Mechanics;
 /// <summary>
 /// Базовый класс для создания сущностей.
 /// </summary>
-public abstract class EntityBase
+public abstract class EntityBase : IEntity
 {
     /// <summary>
     /// Уникальный айди среди ентити одной ентити системы.
@@ -57,6 +57,11 @@ public abstract class EntityBase
     public IEnumerable<ComponentBase> EnumerateComponents()
     {
         return _components;
+    }
+
+    public IEnumerable<ClientComponentBase> ReadClientComponents()
+    {
+        return _components.OfType<ClientComponentBase>();
     }
 
     /// <summary>

@@ -152,22 +152,13 @@ public class DecksSystem : SystemBase
         }
     }
 
-    private object TransformDeck(Deck deck, Seat? target)
+    private DeckDto TransformDeck(Deck deck, Seat? target)
     {
         int? frontside = _limit.IsLimitedFor(deck, target) ? null : deck.FrontSide;
 
         IReadOnlyCollection<DeckCardInfo>? cards = GetCardsInfo(deck, target);
 
-        return new
-        {
-            deck.Id,
-            deck.X,
-            deck.Y,
-            deck.Flipness,
-            deck.BackSide,
-            FrontSide = frontside,
-            Cards = cards,
-        };
+        return new DeckDto(deck, frontside, cards);
     }
 
     /// <summary>

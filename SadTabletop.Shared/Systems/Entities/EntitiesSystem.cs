@@ -7,13 +7,23 @@ namespace SadTabletop.Shared.Systems.Entities;
 
 public abstract class EntitiesSystem : SystemBase
 {
+    /// <summary>
+    /// Отправляются ли ентити этой системы клиентам.
+    /// </summary>
+    public virtual bool ClientSided => true;
+
     protected EntitiesSystem(Game game) : base(game)
     {
     }
+
+    public abstract IEnumerable<EntityBase> EnumerateRawEntities();
+
+    public abstract EntityBase GetRawEntity(int id);
 }
 
 /// <summary>
 /// Базовый класс для создания ентити-систем, которые хранят в себе ентити определённого толка.
+/// У каждой ентити системы должны быть свой уникальный ентити в женерик типе.
 /// <see cref="TableSystem"/>
 /// </summary>
 public abstract class EntitiesSystem<T> : EntitiesSystem
@@ -47,6 +57,21 @@ public abstract class EntitiesSystem<T> : EntitiesSystem
         List.Remove(entity);
 
         Events.Invoke(new EntityRemovedEvent(entity, this));
+    }
+
+    public T GetEntity(int id)
+    {
+        return List.First(e => e.Id == id);
+    }
+
+    public override IEnumerable<EntityBase> EnumerateRawEntities()
+    {
+        return List;
+    }
+
+    public override EntityBase GetRawEntity(int id)
+    {
+        return GetEntity(id);
     }
 
     /// <summary>

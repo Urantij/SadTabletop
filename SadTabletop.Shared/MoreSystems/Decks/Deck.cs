@@ -49,3 +49,13 @@ public class Deck(
         return (Cards.Last().BackSide, Cards.First().FrontSide);
     }
 }
+
+public class DeckDto(Deck deck, int? frontSide, IReadOnlyCollection<DeckCardInfo>? cards) : TableItemDto(deck)
+{
+    public int? BackSide { get; } = deck.BackSide;
+    public int? FrontSide { get; } = frontSide;
+
+    public Flipness Flipness { get; } = deck.Flipness;
+
+    public IReadOnlyCollection<DeckCardInfo>? Cards { get; } = cards;
+}

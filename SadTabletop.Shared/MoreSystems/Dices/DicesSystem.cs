@@ -69,7 +69,7 @@ public class DicesSystem : SystemBase
         }
     }
 
-    private object TransformDice(Dice dice, Seat? target)
+    private DiceDto TransformDice(Dice dice, Seat? target)
     {
         int? index;
 
@@ -82,13 +82,6 @@ public class DicesSystem : SystemBase
             index = dice.CurrentSideIndex;
         }
 
-        return new
-        {
-            dice.Id,
-            dice.X,
-            dice.Y,
-            dice.Sides,
-            CurrentSideIndex = index,
-        };
+        return new DiceDto(dice, index);
     }
 }

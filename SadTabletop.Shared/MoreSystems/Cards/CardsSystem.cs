@@ -31,7 +31,7 @@ public class CardsSystem : SystemBase
     protected internal override void GameCreated()
     {
         base.GameCreated();
-        
+
         _events.Subscribe<LimitedEvent>(EventPriority.Normal, this, OnLimited);
     }
 
@@ -69,7 +69,7 @@ public class CardsSystem : SystemBase
             foreach (Seat? seat in _seats.EnumerateSeats())
             {
                 int? front = _limit.IsLimitedFor(card, seat) ? null : card.FrontSide;
-                
+
                 _communication.SendEntityRelated(new CardFlippedMessage(card, front), card);
             }
         }
@@ -83,7 +83,7 @@ public class CardsSystem : SystemBase
     {
         if (obj.Entity is not Card card)
             return;
-        
+
         if (card.Flipness == Flipness.Hidden)
             return;
 
@@ -98,7 +98,7 @@ public class CardsSystem : SystemBase
         }
     }
 
-    private object TransformCard(Card card, Seat? seat)
+    private CardDto TransformCard(Card card, Seat? seat)
     {
         int? front;
 
@@ -111,14 +111,6 @@ public class CardsSystem : SystemBase
             front = card.FrontSide;
         }
 
-        return new
-        {
-            card.Id,
-            card.X,
-            card.Y,
-            card.BackSide,
-            FrontSide = front,
-            card.Flipness,
-        };
+        return new CardDto(card, front);
     }
 }

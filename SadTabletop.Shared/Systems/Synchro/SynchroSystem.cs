@@ -31,7 +31,7 @@ public class SynchroSystem : SystemBase
     protected internal override void GameCreated()
     {
         base.GameCreated();
-        
+
         _events.Subscribe<EntityAddedEvent>(EventPriority.Late, this, EntityAdded);
         _events.Subscribe<EntityRemovedEvent>(EventPriority.Late, this, EntityRemoved);
     }
