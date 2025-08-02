@@ -39,6 +39,7 @@ var cm = new CommunicationModifer(gr);
 
 JsonSerializerOptions options = new()
 {
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     TypeInfoResolver = new DefaultJsonTypeInfoResolver()
     {
         Modifiers =
