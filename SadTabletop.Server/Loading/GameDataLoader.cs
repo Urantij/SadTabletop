@@ -1,7 +1,7 @@
 using System.Reflection;
+using SadTabletop.Server.Test;
 using SadTabletop.Shared;
 using SadTabletop.Shared.Mechanics;
-using SadTabletop.Shared.Systems.Entities;
 
 namespace SadTabletop.Server.Loading;
 
@@ -23,6 +23,7 @@ public class GameDataLoader
             .Where(t => !t.IsAbstract)
             .Where(t => t.IsAssignableTo(typeof(SystemBase)))
             .Select<Type, Func<Game, SystemBase>>(t => (Game game) => (SystemBase)Activator.CreateInstance(t, game))
+            .Prepend(game => new TestSystem(game))
             .ToArray();
 
         return GameCreator.CreateBaseGame(systemsFactories);

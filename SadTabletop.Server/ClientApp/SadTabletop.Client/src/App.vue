@@ -1,31 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
-import { onMounted } from "vue";
-
-onMounted(() => {
-
-  const socket = new WebSocket(`wss://${window.location.host}/ws`)
-
-  socket.onmessage = (ev) => {
-
-    console.log(ev);
-  };
-
-  socket.onopen = () => {
-
-    const data = {
-      MessageName: "JoinMessage",
-      Content: {
-        Key: "12",
-        Name: "urod"
-      }
-    };
-
-    socket.send(JSON.stringify(data));
-  };
-
-});
 </script>
 
 <template>
@@ -38,6 +13,7 @@ onMounted(() => {
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
+        <RouterLink to="/game">ИГРАТЬ ОНЛАЙН</RouterLink>
       </nav>
     </div>
   </header>
