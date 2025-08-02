@@ -20,4 +20,6 @@ public class CardDto(Card card, int? frontSide) : TableItemDto(card)
     public int? FrontSide { get; } = frontSide;
 
     public Flipness Flipness { get; } = card.Flipness;
+
+    public override Type WhatIsMyType() => typeof(Card);
 }

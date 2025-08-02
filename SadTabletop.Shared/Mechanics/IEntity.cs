@@ -10,4 +10,6 @@ public interface IEntity
     public int Id { get; }
 
     public IEnumerable<ClientComponentBase> ReadClientComponents();
+
+    public Type WhatIsMyType();
 }

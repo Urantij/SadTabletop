@@ -22,6 +22,7 @@ public abstract class ComponentBase
 /// Эти компоненты отправляются клиентам при синхронизации.
 /// Чтобы переопределить модель для клиента, используется <see cref="ViewerSystem"/>
 /// </summary>
-public abstract class ClientComponentBase : ComponentBase
+public abstract class ClientComponentBase : ComponentBase, IComponent
 {
+    public abstract Type WhatIsMyType();
 }

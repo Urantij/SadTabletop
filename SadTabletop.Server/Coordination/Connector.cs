@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.WebSockets;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using SadTabletop.Server.Coordination.Data;
@@ -10,6 +9,7 @@ using SadTabletop.Server.Coordination.Messages.Server;
 using SadTabletop.Server.Main;
 using SadTabletop.Shared.Systems.Communication;
 using SadTabletop.Shared.Systems.Seats;
+using SadTabletop.Shared.Systems.Synchro;
 
 namespace SadTabletop.Server.Coordination;
 
@@ -138,13 +138,13 @@ public class Connector
 
     private void ReadContainer(AppClient appClient, MessageContainer container)
     {
-        if (container.MessageName == nameof(JoinMessage))
+        if (container.Name == nameof(JoinMessage))
         {
             JoinMessage message = JsonSerializer.Deserialize<JoinMessage>(container.Content, _serializerOptions);
 
             JoinMessageReceived(appClient, message);
         }
-        else if (container.MessageName == nameof(RegisterMessage))
+        else if (container.Name == nameof(RegisterMessage))
         {
         }
     }
@@ -178,7 +178,7 @@ public class Connector
             seat = gameContainer.Game.GetSystem<SeatsSystem>().GetEntity(targetSeatId.Value);
         }
 
-        EntitiesInfo[] content = gameContainer.MakeSynchroContent(seat);
+        ViewedEntity[] content = gameContainer.MakeSynchroContent(seat);
         PlayerInfo[] pInfos = gameContainer.MakePlayerInfo();
 
         Player player = new(gameContainer.GetNextPlayerId(), name, appClient, seat);

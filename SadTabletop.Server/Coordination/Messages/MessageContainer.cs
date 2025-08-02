@@ -2,8 +2,8 @@ using System.Text.Json.Nodes;
 
 namespace SadTabletop.Server.Coordination.Messages;
 
-public class MessageContainer(string messageName, JsonNode content)
+public class MessageContainer(string name, JsonNode content)
 {
-    public string MessageName { get; } = messageName;
+    public string Name { get; } = name;
     public JsonNode Content { get; } = content;
 }

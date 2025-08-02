@@ -7,7 +7,6 @@ using SadTabletop.Server.Main;
 using SadTabletop.Server.Seri;
 using SadTabletop.Server.Seri.Communication;
 using SadTabletop.Shared;
-using SadTabletop.Shared.Systems.Viewer;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -52,7 +51,7 @@ JsonSerializerOptions options = new()
         new AppServerMessageConverter(),
         new GameServerMessageConverter(),
         new SystemConverter(gr),
-        new EntityConverter(gr, game.GetSystem<ViewerSystem>())
+        new EntityConverter(gr)
     }
 };
 

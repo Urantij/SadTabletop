@@ -15,7 +15,7 @@ public abstract class EntityBase : IEntity
     /// <summary>
     /// Содержит все компоненты этого ентити.
     /// </summary>
-    private List<ComponentBase> _components { get; }
+    private List<ComponentBase> _components { get; } = [];
 
     /// <summary>
     /// Юзается компонент системой, самому не нада трогать
@@ -62,6 +62,11 @@ public abstract class EntityBase : IEntity
     public IEnumerable<ClientComponentBase> ReadClientComponents()
     {
         return _components.OfType<ClientComponentBase>();
+    }
+
+    public Type WhatIsMyType()
+    {
+        return this.GetType();
     }
 
     /// <summary>

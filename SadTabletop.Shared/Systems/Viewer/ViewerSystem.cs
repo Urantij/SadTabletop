@@ -25,7 +25,7 @@ public class ViewerSystem : SystemBase
     {
     }
 
-    public IEntity View(IEntity entity)
+    public IEntity View(IEntity entity, Seat? seat)
     {
         // Если есть трансформ, применить вернуть. Иначе просто вернуть
 
@@ -34,10 +34,10 @@ public class ViewerSystem : SystemBase
         if (transform == null)
             return entity;
 
-        return (IEntity)transform.Delegate.DynamicInvoke(entity);
+        return (IEntity)transform.Delegate.DynamicInvoke(entity, seat);
     }
-    
-    public object View(ClientComponentBase component)
+
+    public IComponent View(IComponent component, Seat? seat)
     {
         // Если есть трансформ, применить вернуть. Иначе просто вернуть
 
@@ -46,7 +46,7 @@ public class ViewerSystem : SystemBase
         if (transform == null)
             return component;
 
-        return transform.Delegate.DynamicInvoke(component);
+        return (IComponent)transform.Delegate.DynamicInvoke(component, seat);
     }
 
     public void RegisterEntity<T>(ViewerTransform<T> transform) where T : EntityBase
@@ -54,7 +54,7 @@ public class ViewerSystem : SystemBase
         Add(transform, _entities);
     }
 
-    public void RegisterComponent<T>(ViewerTransform<T> transform) where T : ClientComponentBase
+    public void RegisterComponent<T>(ViewerTransform<T> transform) where T : ClientComponentBase, IComponent
     {
         Add(transform, _components);
     }

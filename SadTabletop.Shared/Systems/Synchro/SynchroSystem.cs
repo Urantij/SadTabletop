@@ -5,6 +5,7 @@ using SadTabletop.Shared.Systems.Entities.Events;
 using SadTabletop.Shared.Systems.Events;
 using SadTabletop.Shared.Systems.Seats;
 using SadTabletop.Shared.Systems.Synchro.Messages;
+using SadTabletop.Shared.Systems.Viewer;
 using SadTabletop.Shared.Systems.Visability;
 
 namespace SadTabletop.Shared.Systems.Synchro;
@@ -23,9 +24,23 @@ public class SynchroSystem : SystemBase
 {
     private readonly EventsSystem _events;
     private readonly CommunicationSystem _communication;
+    private readonly VisabilitySystem _visability;
+    private readonly ViewerSystem _viewer;
+    private readonly SeatsSystem _seats;
 
     public SynchroSystem(Game game) : base(game)
     {
+        // TODO вообще зачем мне отправлять имя системы, если на клиенте по типу ентити можно определить систему?
+    }
+
+    public IEnumerable<ViewedEntity> ViewEntities(EntitiesSystem entitiesSystem, Seat? target)
+    {
+        if (!entitiesSystem.ClientSided)
+            throw new Exception($"эта система не клиент сидед {entitiesSystem.GetType().Name}");
+
+        return entitiesSystem.EnumerateRawEntities()
+            .Where(e => _visability.IsVisibleFor(e, target))
+            .Select(e => ViewEntity(e, target));
     }
 
     protected internal override void GameCreated()
@@ -38,11 +53,27 @@ public class SynchroSystem : SystemBase
 
     private void EntityAdded(EntityAddedEvent obj)
     {
-        _communication.SendEntityRelated(new EntityAddedMessage(obj.Entity), obj.Entity);
+        // TODO можно отправлять одно сообщение всем у кого вьювнутный ентити совпадает
+
+        foreach (Seat? seat in _seats.EnumerateSeats())
+        {
+            ViewedEntity viewed = ViewEntity(obj.Entity, seat);
+            _communication.Send(new EntityAddedMessage(viewed), seat);
+        }
     }
 
     private void EntityRemoved(EntityRemovedEvent obj)
     {
         _communication.SendEntityRelated(new EntityRemovedMessage(obj.Entity), obj.Entity);
+    }
+
+    public ViewedEntity ViewEntity(EntityBase entity, Seat? target)
+    {
+        return new ViewedEntity(
+            _viewer.View(entity, target),
+            entity.ReadClientComponents()
+                .Select(c => _viewer.View(c, target))
+                .ToArray()
+        );
     }
 }

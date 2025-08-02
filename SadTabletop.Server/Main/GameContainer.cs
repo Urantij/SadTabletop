@@ -1,12 +1,10 @@
 using SadTabletop.Server.Coordination;
 using SadTabletop.Server.Coordination.Data;
 using SadTabletop.Shared;
-using SadTabletop.Shared.Mechanics;
 using SadTabletop.Shared.Systems.Communication;
 using SadTabletop.Shared.Systems.Entities;
 using SadTabletop.Shared.Systems.Seats;
-using SadTabletop.Shared.Systems.Viewer;
-using SadTabletop.Shared.Systems.Visability;
+using SadTabletop.Shared.Systems.Synchro;
 
 namespace SadTabletop.Server.Main;
 
@@ -52,21 +50,13 @@ public class GameContainer
     /// </summary>
     /// <param name="target"></param>
     /// <returns></returns>
-    public EntitiesInfo[] MakeSynchroContent(Seat? target)
+    public ViewedEntity[] MakeSynchroContent(Seat? target)
     {
-        VisabilitySystem visability = Game.GetSystem<VisabilitySystem>();
-    
+        SynchroSystem synchro = Game.GetSystem<SynchroSystem>();
+
         return Game.Systems.OfType<EntitiesSystem>()
-            .Where(s => s.ClientSided)
-            .Select(s =>
-            {
-                IEntity[] ens = s.EnumerateRawEntities()
-                    .Where(e => visability.IsVisibleFor(e, target))
-                    .ToArray<IEntity>();
-    
-                return new EntitiesInfo(s, ens);
-            })
-            .Where(c => c.Entities.Count > 0)
+            .Where(es => es.ClientSided)
+            .SelectMany(es => synchro.ViewEntities(es, target))
             .ToArray();
     }
 

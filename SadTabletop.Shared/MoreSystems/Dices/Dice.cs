@@ -21,4 +21,6 @@ public class DiceDto(Dice dice, int? currentSideIndex) : TableItemDto(dice)
     public int? CurrentSideIndex { get; } = currentSideIndex;
 
     public IReadOnlyList<int> Sides { get; } = dice.Sides;
+
+    public override Type WhatIsMyType() => typeof(Dice);
 }

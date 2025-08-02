@@ -1,6 +1,7 @@
 using SadTabletop.Shared.Mechanics;
 using SadTabletop.Shared.Systems.Communication;
 using SadTabletop.Shared.Systems.Seats;
+using SadTabletop.Shared.Systems.Synchro;
 using SadTabletop.Shared.Systems.Synchro.Messages;
 
 namespace SadTabletop.Shared.Systems.Visability;
@@ -14,6 +15,7 @@ public class VisabilitySystem : ComponentSystemBase
 {
     private readonly SeatsSystem _seats;
     private readonly CommunicationSystem _communication;
+    private readonly SynchroSystem _synchro;
 
     public VisabilitySystem(Game game) : base(game)
     {
@@ -22,16 +24,18 @@ public class VisabilitySystem : ComponentSystemBase
     public void Show(EntityBase entity, Seat? target)
     {
         VisabilityComponent? visability = entity.TryGetComponent<VisabilityComponent>();
-        
+
         if (visability == null)
             return;
-        
+
         if (visability.Viewers.Included(target))
             return;
-        
+
         visability.Viewers.AddToInclude(target);
-        
-        _communication.Send(new EntityAddedMessage(entity), target);
+
+        ViewedEntity view = _synchro.ViewEntity(entity, target);
+
+        _communication.Send(new EntityAddedMessage(view), target);
     }
 
     /// <summary>
@@ -48,7 +52,7 @@ public class VisabilitySystem : ComponentSystemBase
         if (visability == null)
         {
             Spisok<Seat?> spisok = Spisok<Seat?>.CreateAllWithExcluded(target);
-            
+
             visability = new VisabilityComponent(spisok);
             AddComponentToEntity(entity, visability);
         }
@@ -56,10 +60,10 @@ public class VisabilitySystem : ComponentSystemBase
         {
             if (!visability.Viewers.Included(target))
                 return;
-            
+
             visability.Viewers.RemoveFromInclude(target);
         }
-        
+
         _communication.Send(new EntityRemovedMessage(entity), target);
     }
 

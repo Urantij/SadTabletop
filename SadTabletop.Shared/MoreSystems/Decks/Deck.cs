@@ -58,4 +58,6 @@ public class DeckDto(Deck deck, int? frontSide, IReadOnlyCollection<DeckCardInfo
     public Flipness Flipness { get; } = deck.Flipness;
 
     public IReadOnlyCollection<DeckCardInfo>? Cards { get; } = cards;
+
+    public override Type WhatIsMyType() => typeof(Deck);
 }

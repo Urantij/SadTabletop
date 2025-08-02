@@ -8,7 +8,8 @@ namespace SadTabletop.Server.Seri.Communication;
 
 public class GameServerMessageConverter : JsonConverter<ServerMessageBase>
 {
-    public override ServerMessageBase? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override ServerMessageBase? Read(ref Utf8JsonReader reader, Type typeToConvert,
+        JsonSerializerOptions options)
     {
         throw new NotImplementedException();
     }
@@ -17,17 +18,18 @@ public class GameServerMessageConverter : JsonConverter<ServerMessageBase>
     {
         JsonNode content = JsonSerializer.SerializeToNode(value, value.GetType(), options);
 
-        MessageWrapper wrapper = new(value.GetType().Name, content);
+        MessageContainer container = new(value.GetType().Name, content);
 
-        string result = JsonSerializer.Serialize(wrapper, options);
-        
+        string result = JsonSerializer.Serialize(container, options);
+
         writer.WriteRawValue(result, true);
     }
 }
 
 public class AppServerMessageConverter : JsonConverter<AppServerMessageBase>
 {
-    public override AppServerMessageBase? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override AppServerMessageBase? Read(ref Utf8JsonReader reader, Type typeToConvert,
+        JsonSerializerOptions options)
     {
         throw new NotImplementedException();
     }
@@ -36,10 +38,10 @@ public class AppServerMessageConverter : JsonConverter<AppServerMessageBase>
     {
         JsonNode content = JsonSerializer.SerializeToNode(value, value.GetType(), options);
 
-        MessageWrapper wrapper = new(value.GetType().Name, content);
+        MessageContainer container = new(value.GetType().Name, content);
 
-        string result = JsonSerializer.Serialize(wrapper, options);
-        
+        string result = JsonSerializer.Serialize(container, options);
+
         writer.WriteRawValue(result, true);
     }
 }
