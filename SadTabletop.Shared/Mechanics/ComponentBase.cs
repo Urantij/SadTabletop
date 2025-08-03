@@ -24,5 +24,8 @@ public abstract class ComponentBase
 /// </summary>
 public abstract class ClientComponentBase : ComponentBase, IComponent
 {
-    public abstract Type WhatIsMyType();
+    public Type WhatIsMyType()
+    {
+        return this.GetType();
+    }
 }

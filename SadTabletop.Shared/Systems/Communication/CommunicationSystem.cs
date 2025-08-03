@@ -1,4 +1,6 @@
 using SadTabletop.Shared.Mechanics;
+using SadTabletop.Shared.Systems.Communication.Events;
+using SadTabletop.Shared.Systems.Events;
 using SadTabletop.Shared.Systems.Seats;
 using SadTabletop.Shared.Systems.Visability;
 
@@ -12,6 +14,7 @@ public class CommunicationSystem : SystemBase
 {
     private readonly SeatsSystem _seats;
     private readonly VisabilitySystem _visability;
+    private readonly EventsSystem _events;
 
     public CommunicationSystem(Game game) : base(game)
     {
@@ -21,6 +24,13 @@ public class CommunicationSystem : SystemBase
     /// Требует отправить сообщение по местам. Коллекция целей принадлежит самой системе, за неё можно держаться
     /// </summary>
     public event Action<ServerMessageBase, IReadOnlyList<Seat?>>? CommunicationRequired;
+
+    // наверное, стоит вынести отсюда?
+    public void Receive(Seat? seat, ClientMessageBase message)
+    {
+        ClientMessageReceivedEvent ev = new(seat, message);
+        _events.Invoke(ev);
+    }
 
     public void Send(ServerMessageBase message, Spisok<Seat?> spisok)
     {
