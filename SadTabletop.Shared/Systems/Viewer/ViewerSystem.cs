@@ -3,7 +3,9 @@ using SadTabletop.Shared.Systems.Seats;
 
 namespace SadTabletop.Shared.Systems.Viewer;
 
-public delegate IEntity ViewerTransform<in T>(T thing, Seat? target);
+public delegate IEntity EntityViewerTransform<in T>(T thing, Seat? target);
+
+public delegate IComponent ComponentViewerTransform<in T>(T thing, Seat? target);
 
 public class PointOfView(Type type, Delegate @delegate)
 {
@@ -49,24 +51,25 @@ public class ViewerSystem : SystemBase
         return (IComponent)transform.Delegate.DynamicInvoke(component, seat);
     }
 
-    public void RegisterEntity<T>(ViewerTransform<T> transform) where T : EntityBase
+    public void RegisterEntity<T>(EntityViewerTransform<T> transform) where T : EntityBase
     {
-        Add(transform, _entities);
-    }
-
-    public void RegisterComponent<T>(ViewerTransform<T> transform) where T : ClientComponentBase, IComponent
-    {
-        Add(transform, _components);
-    }
-
-    private void Add<T>(ViewerTransform<T> transform, List<PointOfView> list)
-    {
-        if (list.Any(o => o.Type == typeof(T)))
+        if (_entities.Any(o => o.Type == typeof(T)))
         {
             throw new Exception(
                 $"Попытка добавить преобразователь для типа, который уже присутствует в коллекции типочков. {typeof(T).Name}");
         }
 
-        list.Add(new PointOfView(typeof(T), transform));
+        _entities.Add(new PointOfView(typeof(T), transform));
+    }
+
+    public void RegisterComponent<T>(ComponentViewerTransform<T> transform) where T : ClientComponentBase, IComponent
+    {
+        if (_components.Any(o => o.Type == typeof(T)))
+        {
+            throw new Exception(
+                $"Попытка добавить преобразователь для типа, который уже присутствует в коллекции типочков. {typeof(T).Name}");
+        }
+
+        _components.Add(new PointOfView(typeof(T), transform));
     }
 }
