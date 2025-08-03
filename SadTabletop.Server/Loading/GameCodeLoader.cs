@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Runtime.Loader;
+using SadTabletop.Shared.Systems.Communication;
 
 namespace SadTabletop.Server.Loading;
 
@@ -21,5 +22,12 @@ public class GameCodeLoader
                 Console.WriteLine($"грузим {path}");
                 return AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
             }).ToArray();
+    }
+
+    public static Type[] GetClientMessages(IReadOnlyCollection<Assembly> assemblies)
+    {
+        return assemblies.SelectMany(ass => ass.GetTypes())
+            .Where(t => !t.IsAbstract && t.IsAssignableTo(typeof(ClientMessageBase)))
+            .ToArray();
     }
 }

@@ -57,7 +57,8 @@ JsonSerializerOptions options = new()
 
 ILoggerFactory loggerFactory = app.Services.GetRequiredService<ILoggerFactory>();
 
-Connector connector = new(maanger, options, loggerFactory.CreateLogger<Connector>());
+Connector connector = new(maanger, options, GameCodeLoader.GetClientMessages(gameAssemblies),
+    loggerFactory.CreateLogger<Connector>());
 
 GameContainer container = new(game, connector);
 container.Setup();

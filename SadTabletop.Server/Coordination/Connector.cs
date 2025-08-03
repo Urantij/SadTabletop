@@ -7,7 +7,6 @@ using SadTabletop.Server.Coordination.Messages;
 using SadTabletop.Server.Coordination.Messages.Client;
 using SadTabletop.Server.Coordination.Messages.Server;
 using SadTabletop.Server.Main;
-using SadTabletop.Shared.Systems.Clicks.Messages.Client;
 using SadTabletop.Shared.Systems.Communication;
 using SadTabletop.Shared.Systems.Seats;
 using SadTabletop.Shared.Systems.Synchro;
@@ -26,11 +25,16 @@ public class Connector
     private readonly JsonSerializerOptions _serializerOptions;
     private readonly ILogger _logger;
 
-    public Connector(GamesManager gamesManager, JsonSerializerOptions serializerOptions, ILogger<Connector> logger)
+    private readonly IReadOnlyDictionary<string, Type> _clientMessageTypes;
+
+    public Connector(GamesManager gamesManager, JsonSerializerOptions serializerOptions,
+        IReadOnlyCollection<Type> gameClientMessagesTypes, ILogger<Connector> logger)
     {
         _gamesManager = gamesManager;
         _serializerOptions = serializerOptions;
         _logger = logger;
+
+        _clientMessageTypes = gameClientMessagesTypes.ToDictionary(t => t.Name, t => t);
     }
 
     public void QueueMessage(AppClient client, JsonNode message)
@@ -148,18 +152,28 @@ public class Connector
         else if (container.Name == nameof(RegisterMessage))
         {
         }
-        else if (container.Name == nameof(ClickMessage))
+        else if (_clientMessageTypes.TryGetValue(container.Name, out Type? messageType))
         {
-            // TODO а почему я это так делаю? :)
-            ClickMessage message = JsonSerializer.Deserialize<ClickMessage>(container.Content, _serializerOptions);
-
             if (appClient.GameContainer == null)
             {
-                // TODO ммм
+                // TODO хммм
+                return;
+            }
+
+            ClientMessageBase? message =
+                JsonSerializer.Deserialize(container.Content, messageType, _serializerOptions) as ClientMessageBase;
+
+            if (message == null)
+            {
+                // TODO хммм
                 return;
             }
 
             appClient.GameContainer.Game.GetSystem<CommunicationSystem>().Receive(appClient.Player.Seat, message);
+        }
+        else
+        {
+            // TODO хммм
         }
     }
 
