@@ -7,6 +7,7 @@ using SadTabletop.Server.Coordination.Messages;
 using SadTabletop.Server.Coordination.Messages.Client;
 using SadTabletop.Server.Coordination.Messages.Server;
 using SadTabletop.Server.Main;
+using SadTabletop.Shared.Systems.Clicks.Messages.Client;
 using SadTabletop.Shared.Systems.Communication;
 using SadTabletop.Shared.Systems.Seats;
 using SadTabletop.Shared.Systems.Synchro;
@@ -146,6 +147,19 @@ public class Connector
         }
         else if (container.Name == nameof(RegisterMessage))
         {
+        }
+        else if (container.Name == nameof(ClickMessage))
+        {
+            // TODO а почему я это так делаю? :)
+            ClickMessage message = JsonSerializer.Deserialize<ClickMessage>(container.Content, _serializerOptions);
+
+            if (appClient.GameContainer == null)
+            {
+                // TODO ммм
+                return;
+            }
+
+            appClient.GameContainer.Game.GetSystem<CommunicationSystem>().Receive(appClient.Player.Seat, message);
         }
     }
 
