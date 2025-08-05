@@ -62,6 +62,9 @@ export default class Renderer {
                     this.leGame.table.events.on("EntityAdded", (entity) => {
                         this.createEntity(entity);
                     });
+                  this.leGame.table.events.on("EntityRemoved", (entity) => {
+                    this.scene?.destroyEntity(entity);
+                  });
 
                     for (const entity of this.leGame.table.items) {
                         this.createEntity(entity);

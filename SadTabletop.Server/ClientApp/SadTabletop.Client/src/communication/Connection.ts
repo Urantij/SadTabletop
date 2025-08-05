@@ -5,11 +5,15 @@ import type JoinedMessage from "./messages/server/JoinedMessage";
 import type PlayerJoinedMessage from "./messages/server/PlayerJoinedMessage";
 import type PlayerLeftMessage from "./messages/server/PlayerLeftMessage";
 import { useUserStore } from "@/stores/UserStore";
+import type EntityAddedMessage from "./messages/server/EntityAddedMessage";
+import type EntityRemovedMessage from "./messages/server/EntityRemovedMessage";
 
 type MessageEvents = {
     MeJoined: (data: JoinedMessage) => void;
     PlayerJoined: (data: PlayerJoinedMessage) => void;
     PlayerLeft: (data: PlayerLeftMessage) => void;
+    EntityAdded: (data: EntityAddedMessage) => void;
+    EntityRemoved: (data: EntityRemovedMessage) => void;
 }
 
 export default class Connection {
@@ -63,6 +67,13 @@ export default class Connection {
         else if (messageContainer.name === "PlayerLeftMessage") {
             const data = messageContainer.content as PlayerLeftMessage;
             this.onPlayerLeftMessage(data);
+        }
+        else if (messageContainer.name === "EntityAddedMessage") {
+            // мне стало впадлу это делать, ы
+            this.events.emit("EntityAdded", messageContainer.content as EntityAddedMessage);
+        }
+        else if (messageContainer.name === "EntityRemovedMessage") {
+            this.events.emit("EntityRemoved", messageContainer.content as EntityRemovedMessage);
         }
     }
 

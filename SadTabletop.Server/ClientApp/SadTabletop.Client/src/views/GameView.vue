@@ -13,6 +13,7 @@ const divId = "taskete";
 const connection = new Connection(`${window.location.host}/ws`);
 
 const leGame = new LeGame();
+leGame.subscribeToConnection(connection);
 
 const renderer = new Renderer(leGame, window.innerWidth, window.innerHeight, divId);
 
@@ -25,17 +26,7 @@ onMounted(async () => {
         }
     }
 
-    connection.events.once("MeJoined", (data) => {
-
-        for (const entity of data.entities) {
-            if (["Card", "Dice", "Deck"].includes(entity.type)) {
-                leGame.table.addEntity(entity);
-            }
-            else {
-                console.log(`непонятный ентити ${entity.type}`);
-            }
-        }
-
+    connection.events.once("MeJoined", () => {
         renderer.initAsync();
     });
 
