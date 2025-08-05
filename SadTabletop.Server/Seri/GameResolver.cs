@@ -38,6 +38,12 @@ public class GameResolver
         return _entityTypeToSystem[entityType];
     }
 
+    public EntitiesSystem FindEntitySystemByEntityName(string typeName)
+    {
+        // TODO нормально придумать термины и переделать этот ужас
+        return _entityTypeToSystem.First(k => GetEntityName(k.Key) == typeName).Value;
+    }
+
     public string FindEntitiesSystemNameByEntity(EntityBase entity)
     {
         return FindEntitySystemByEntityType(entity.GetType()).GetType().Name;
@@ -45,7 +51,12 @@ public class GameResolver
 
     public string GetEntityName(IEntity entity)
     {
-        return entity.WhatIsMyType().Name;
+        return GetEntityName(entity.WhatIsMyType());
+    }
+
+    public string GetEntityName(Type type)
+    {
+        return type.Name;
     }
 
     public string GetComponentName(IComponent entity)

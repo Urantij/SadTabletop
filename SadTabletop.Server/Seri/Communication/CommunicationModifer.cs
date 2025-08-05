@@ -24,34 +24,20 @@ public class CommunicationModifer
 
     public void Do(JsonTypeInfo info)
     {
-        // ы
-        if (info.Type == typeof(EntityAddedMessage))
+        foreach (JsonPropertyInfo propertyInfo in info.Properties)
         {
-            foreach (JsonPropertyInfo propertyInfo in info.Properties)
+            if (propertyInfo.PropertyType == typeof(EntityBase))
             {
-                if (propertyInfo.AttributeProvider?.IsDefined(typeof(FullSerialize), false) == true)
-                {
-                    propertyInfo.CustomConverter = null;
-                }
+                propertyInfo.CustomConverter = _baseEntityLinkConverter;
             }
-        }
-        else
-        {
-            foreach (JsonPropertyInfo propertyInfo in info.Properties)
+            // else if (_toLinkEntities.Any(e => propertyInfo.PropertyType.IsAssignableTo(e)))
+            else if (propertyInfo.PropertyType.IsAssignableTo(typeof(EntityBase)))
             {
-                if (propertyInfo.DeclaringType == typeof(EntityBase))
-                {
-                    propertyInfo.CustomConverter = _baseEntityLinkConverter;
-                }
-                // else if (_toLinkEntities.Any(e => propertyInfo.PropertyType.IsAssignableTo(e)))
-                else if (propertyInfo.PropertyType.IsAssignableTo(typeof(EntityBase)))
-                {
-                    propertyInfo.CustomConverter = _entityLinkConverter;
-                }
-                else if (propertyInfo.PropertyType.IsAssignableTo(typeof(ClientComponentBase)))
-                {
-                    propertyInfo.CustomConverter = _componentLinkConverter;
-                }
+                propertyInfo.CustomConverter = _entityLinkConverter;
+            }
+            else if (propertyInfo.PropertyType.IsAssignableTo(typeof(ClientComponentBase)))
+            {
+                propertyInfo.CustomConverter = _componentLinkConverter;
             }
         }
     }
