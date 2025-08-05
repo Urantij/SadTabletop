@@ -12,11 +12,6 @@ public class RunnerQueueSystem : SystemBase
     private readonly List<Runner> _queue = new();
 
     /// <summary>
-    /// Если тру, после завершение вызова текущего раннера, очередь не будет играть дальше.
-    /// </summary>
-    public bool Suspended { get; private set; } = false;
-
-    /// <summary>
     /// Работает ли цикл ненависти сейчас.
     /// </summary>
     public bool Running { get; private set; } = false;
@@ -25,9 +20,20 @@ public class RunnerQueueSystem : SystemBase
     {
     }
 
-    public void Insert(IEnumerable<Runner> runners)
+    internal void Insert(IEnumerable<Runner> runners)
     {
         _queue.InsertRange(0, runners);
+    }
+
+    /// <summary>
+    /// Возвращает ранеров в очередь и запускает её, если она ещё не.
+    /// </summary>
+    /// <param name="list"></param>
+    public void Resume(Runner[] list)
+    {
+        Insert(list);
+        if (!Running)
+            Play();
     }
 
     /// <summary>
@@ -35,7 +41,7 @@ public class RunnerQueueSystem : SystemBase
     /// Обычно вызывается после того, как текущий делегат приостановил работу, получил инпут и хочет продолжить.
     /// </summary>
     /// <exception cref="Exception"></exception>
-    public void Play()
+    internal void Play()
     {
         if (Running)
         {
@@ -45,29 +51,30 @@ public class RunnerQueueSystem : SystemBase
 
         Running = true;
 
+        if (_queue.Count == 0)
+        {
+            throw new Exception("queue empty");
+        }
+
         while (_queue.Count > 0)
         {
             Runner first = _queue.First();
             _queue.RemoveAt(0);
 
             first.Run();
-
-            if (Suspended)
-            {
-                Suspended = false;
-                Running = false;
-                return;
-            }
         }
 
-        throw new Exception("queue empty");
+        Running = false;
     }
 
     /// <summary>
-    /// Приостанавливает работу очереди.
+    /// Приостанавливает работу очереди и возвращает ранеров, которые остались впереди.
     /// </summary>
-    public void Suspend()
+    public Runner[] Suspend()
     {
-        Suspended = true;
+        Runner[] list = _queue.ToArray();
+        _queue.Clear();
+
+        return list;
     }
 }

@@ -17,14 +17,14 @@ public class EventsSystem : SystemBase
 
     // TODO Сериализация
     private readonly List<EventRecord> _records = new();
-    
+
     public EventsSystem(Game game) : base(game)
     {
     }
-    
+
     /// <summary>
     /// Вкидывает этот ивент и запускает создание цепочки делегатов.
-    /// НЕ запускает сами делегаты, см <see cref="RunnerQueueSystem"/>.
+    /// Запускает <see cref="RunnerQueueSystem"/>, если тот не раннинг.
     /// </summary>
     /// <param name="eventObject"></param>
     public void Invoke(EventBase eventObject)
@@ -38,8 +38,11 @@ public class EventsSystem : SystemBase
             .ToList();
 
         _queueSystem.Insert(runners);
+
+        if (!_queueSystem.Running)
+            _queueSystem.Play();
     }
-    
+
     public void Subscribe<TArg>(EventPriority priority, object subscriber, Action<TArg> @delegate)
         where TArg : EventBase
     {
