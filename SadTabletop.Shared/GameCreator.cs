@@ -11,6 +11,7 @@ using SadTabletop.Shared.Systems.Runs;
 using SadTabletop.Shared.Systems.Seats;
 using SadTabletop.Shared.Systems.Synchro;
 using SadTabletop.Shared.Systems.Table;
+using SadTabletop.Shared.Systems.Times;
 using SadTabletop.Shared.Systems.Viewer;
 using SadTabletop.Shared.Systems.Visability;
 
@@ -32,6 +33,7 @@ public static class GameCreator
         game.Systems.Add(new TableSystem(game));
         game.Systems.Add(new ViewerSystem(game));
         game.Systems.Add(new VisabilitySystem(game));
+        game.Systems.Add(new TimesSystem(game));
 
         game.Systems.Add(new CardsSystem(game));
         game.Systems.Add(new DecksSystem(game));
@@ -60,6 +62,11 @@ public static class GameCreator
     public static void TriggerLoadedGame(Game game)
     {
         game.Systems.ForEach(s => s.GameLoaded());
+    }
+
+    public static void TriggerSetupedGame(Game game)
+    {
+        game.Systems.ForEach(s => s.GameSetuped());
     }
 
     static void LinkSystem(Game game, SystemBase system)

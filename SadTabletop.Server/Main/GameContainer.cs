@@ -5,6 +5,7 @@ using SadTabletop.Shared.Systems.Communication;
 using SadTabletop.Shared.Systems.Entities;
 using SadTabletop.Shared.Systems.Seats;
 using SadTabletop.Shared.Systems.Synchro;
+using SadTabletop.Shared.Systems.Times;
 
 namespace SadTabletop.Server.Main;
 
@@ -29,6 +30,11 @@ public class GameContainer
     {
         CommunicationSystem communication = Game.GetSystem<CommunicationSystem>();
         communication.CommunicationRequired += CommunicationOnCommunicationRequired;
+
+        TimesSystem times = Game.GetSystem<TimesSystem>();
+        times.DelayRequested += TimesOnDelayRequested;
+
+        GameCreator.TriggerSetupedGame(Game);
     }
 
     private void CommunicationOnCommunicationRequired(ServerMessageBase gameMessage, IReadOnlyList<Seat?> receivers)
@@ -37,7 +43,21 @@ public class GameContainer
         // вообще если оно внутри чето делает, это уже проёб, так как снаружи оно всё ещё может зайти, пока внутри делается
         // так что тут локать не буду, всё равно смертельный вариант.
 
+        // и ща ещё есть таймс. если и тут и там лочить, то будет дедлок от валв
+
         _connector.QueueGameMessage(gameMessage, receivers);
+    }
+
+    private void TimesOnDelayRequested(Delayed obj)
+    {
+        Task.Run(async () =>
+        {
+            await Task.Delay(obj.Delay);
+
+            using Lock.Scope scope = Locker.EnterScope();
+
+            Game.GetSystem<TimesSystem>().Execute(obj);
+        });
     }
 
     public int GetNextPlayerId()

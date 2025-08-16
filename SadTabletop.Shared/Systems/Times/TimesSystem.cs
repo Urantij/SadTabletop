@@ -13,7 +13,7 @@ public class TimesSystem : SystemBase
 
     private readonly List<Delayed> _list = [];
 
-    public event Action<Delayed> DelayRequested;
+    public event Action<Delayed>? DelayRequested;
 
     public TimesSystem(Game game) : base(game)
     {
@@ -27,6 +27,7 @@ public class TimesSystem : SystemBase
         delayed.Delegate.Invoke();
     }
 
+    // TODO добавить отмену извне тасков тоже
     public void Cancel(Delayed delayed)
     {
         _list.Remove(delayed);

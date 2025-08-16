@@ -11,13 +11,12 @@ public abstract class SystemBase
     {
         Game = game;
     }
-    
+
     /// <summary>
     /// Срабатывает, когда игра создана впервые.
     /// </summary>
     protected internal virtual void GameCreated()
     {
-        
     }
 
     /// <summary>
@@ -25,6 +24,12 @@ public abstract class SystemBase
     /// </summary>
     protected internal virtual void GameLoaded()
     {
-        
+    }
+
+    /// <summary>
+    /// Срабатывает, когда коробка с игрой подхватывает все ивенты.
+    /// </summary>
+    protected internal virtual void GameSetuped()
+    {
     }
 }

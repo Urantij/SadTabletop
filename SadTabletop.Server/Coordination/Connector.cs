@@ -82,8 +82,6 @@ public class Connector
 
     public void QueueGameMessage(ServerMessageBase gameMessage, IReadOnlyList<Seat?> receivers)
     {
-        // TODO лок
-
         // сериализация игрового сообщения должна быть в локе тоже
 
         JsonNode result = SerializeMessage(gameMessage);
