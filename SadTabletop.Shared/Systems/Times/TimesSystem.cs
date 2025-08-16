@@ -27,15 +27,23 @@ public class TimesSystem : SystemBase
         delayed.Delegate.Invoke();
     }
 
-    // TODO добавить отмену извне тасков тоже
     public void Cancel(Delayed delayed)
     {
+        try
+        {
+            delayed.Cts.Cancel();
+            delayed.Cts.Dispose();
+        }
+        catch
+        {
+        }
+
         _list.Remove(delayed);
     }
 
     public Delayed RequestDelayedExecution(Action @delegate, TimeSpan delay)
     {
-        Delayed delayed = new(@delegate, delay);
+        Delayed delayed = new(@delegate, delay, new CancellationTokenSource());
 
         _list.Add(delayed);
 

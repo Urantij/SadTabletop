@@ -52,7 +52,14 @@ public class GameContainer
     {
         Task.Run(async () =>
         {
-            await Task.Delay(obj.Delay);
+            try
+            {
+                await Task.Delay(obj.Delay, obj.Cancellation);
+            }
+            catch
+            {
+                return;
+            }
 
             using Lock.Scope scope = Locker.EnterScope();
 
