@@ -25,12 +25,10 @@ export default class CardObject implements RenderObjectRepresentation {
 
   public static create(card: Card, scene: MainScene) {
 
-    const sideTextureId = card.flipness === Flipness.Shown ? scene.sides.getFrontSide(card.frontSide)
-      : scene.sides.getBackSide(card.backSide);
+    const sideTexture = card.flipness === Flipness.Shown ? CardObject.getCardSideTexture(card.frontSide, "defaultFrontSide", scene)
+      : CardObject.getCardSideTexture(card.backSide, "defaultBackSide", scene);
 
-    const texture = scene.textures.get(sideTextureId);
-
-    const cardSprite = new Phaser.GameObjects.Sprite(scene, card.x, card.y, texture);
+    const cardSprite = new Phaser.GameObjects.Sprite(scene, card.x, card.y, sideTexture);
     cardSprite.setDisplaySize(width, height);
     scene.add.existing(cardSprite);
 
@@ -41,5 +39,19 @@ export default class CardObject implements RenderObjectRepresentation {
 
   public destroy() {
     this.sprite.destroy();
+  }
+
+  static getCardSideTexture(num: number | null, fallback: string, scene: MainScene) {
+
+    if (num === null) {
+      return scene.textures.get(fallback);
+    }
+
+    const cardId = `card${num}`;
+
+    if (scene.textures.exists(cardId))
+      return scene.textures.get(cardId);
+
+    return scene.textures.get(fallback);
   }
 }

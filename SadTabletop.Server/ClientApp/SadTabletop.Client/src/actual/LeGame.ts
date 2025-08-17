@@ -3,6 +3,7 @@ import Table from "./Table";
 import type EntityAddedMessage from "@/communication/messages/server/EntityAddedMessage";
 import type EntityRemovedMessage from "@/communication/messages/server/EntityRemovedMessage";
 import type JoinedMessage from "@/communication/messages/server/JoinedMessage";
+import type AssetInfo from "./things/AssetInfo";
 
 /**
  * Хранит все данные игры.
@@ -12,6 +13,7 @@ export default class LeGame {
   public readonly table: Table = new Table();
 
   public readonly sidesData: { num: number; path: string }[] = [];
+  public readonly assetsData: { name: string; url: string }[] = [];
 
   constructor() {
   }
@@ -25,7 +27,16 @@ export default class LeGame {
   private meJoined(data: JoinedMessage): void {
     for (const entity of data.entities) {
       if (this.table.isTableEntityByType(entity.type)) {
+
         this.table.addEntity(entity);
+      }
+      else if (entity.type === "AssetInfo") {
+
+        const info = entity as AssetInfo;
+        this.assetsData.push({
+          name: info.name,
+          url: info.url
+        });
       }
     }
   }
