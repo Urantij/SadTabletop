@@ -1,7 +1,7 @@
 // мне нужно это, но без некоторые методов https://github.com/andywer/typed-emitter
 
 export type EventMap = {
-    [key: string]: (...args: any[]) => void
+  [key: string]: (...args: any[]) => void
 }
 
 /**
@@ -21,16 +21,22 @@ export type EventMap = {
  * ```
  */
 export default interface TypedEventEmitter<Events extends EventMap> {
-    addListener<E extends keyof Events>(event: E, listener: Events[E], context?: any): this
-    on<E extends keyof Events>(event: E, listener: Events[E], context?: any): this
-    once<E extends keyof Events>(event: E, listener: Events[E], context?: any): this
+  addListener<E extends keyof Events>(event: E, listener: Events[E], context?: any): this
 
-    off<E extends keyof Events>(event: E, listener: Events[E], context?: any, once?: boolean): this
-    removeAllListeners<E extends keyof Events>(event?: E): this
-    removeListener<E extends keyof Events>(event: E, listener: Events[E], context?: any, once?: boolean): this
+  on<E extends keyof Events>(event: E, listener: Events[E], context?: any): this
 
-    emit<E extends keyof Events>(event: E, ...args: Parameters<Events[E]>): boolean
-    // The sloppy `eventNames()` return type is to mitigate type incompatibilities - see #5
-    eventNames(): (keyof Events | string | symbol)[]
-    listenerCount<E extends keyof Events>(event: E): number
+  once<E extends keyof Events>(event: E, listener: Events[E], context?: any): this
+
+  off<E extends keyof Events>(event: E, listener: Events[E], context?: any, once?: boolean): this
+
+  removeAllListeners<E extends keyof Events>(event?: E): this
+
+  removeListener<E extends keyof Events>(event: E, listener: Events[E], context?: any, once?: boolean): this
+
+  emit<E extends keyof Events>(event: E, ...args: Parameters<Events[E]>): boolean
+
+  // The sloppy `eventNames()` return type is to mitigate type incompatibilities - see #5
+  eventNames(): (keyof Events | string | symbol)[]
+
+  listenerCount<E extends keyof Events>(event: E): number
 }

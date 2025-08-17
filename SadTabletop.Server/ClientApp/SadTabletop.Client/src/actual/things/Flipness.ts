@@ -1,6 +1,6 @@
 enum Flipness {
-    Shown,
-    Hidden
+  Shown,
+  Hidden
 };
 
 export default Flipness;

@@ -4,110 +4,106 @@ import type MessageContainer from "./messages/MessageContainer";
 import type JoinedMessage from "./messages/server/JoinedMessage";
 import type PlayerJoinedMessage from "./messages/server/PlayerJoinedMessage";
 import type PlayerLeftMessage from "./messages/server/PlayerLeftMessage";
-import { useUserStore } from "@/stores/UserStore";
+import {useUserStore} from "@/stores/UserStore";
 import type EntityAddedMessage from "./messages/server/EntityAddedMessage";
 import type EntityRemovedMessage from "./messages/server/EntityRemovedMessage";
 
 type MessageEvents = {
-    MeJoined: (data: JoinedMessage) => void;
-    PlayerJoined: (data: PlayerJoinedMessage) => void;
-    PlayerLeft: (data: PlayerLeftMessage) => void;
-    EntityAdded: (data: EntityAddedMessage) => void;
-    EntityRemoved: (data: EntityRemovedMessage) => void;
+  MeJoined: (data: JoinedMessage) => void;
+  PlayerJoined: (data: PlayerJoinedMessage) => void;
+  PlayerLeft: (data: PlayerLeftMessage) => void;
+  EntityAdded: (data: EntityAddedMessage) => void;
+  EntityRemoved: (data: EntityRemovedMessage) => void;
 }
 
 export default class Connection {
 
-    private readonly address: string;
+  private readonly address: string;
 
-    private socket: WebSocket | null = null;
+  private socket: WebSocket | null = null;
 
-    readonly events: TypedEmitter<MessageEvents> = new Phaser.Events.EventEmitter();
+  readonly events: TypedEmitter<MessageEvents> = new Phaser.Events.EventEmitter();
 
-    readonly userStore = useUserStore();
+  readonly userStore = useUserStore();
 
-    constructor(address: string) {
-        this.address = address;
+  constructor(address: string) {
+    this.address = address;
+  }
+
+  sendMessage(messageName: string, content: object) {
+
+    if (this.socket === null || this.socket.readyState !== this.socket.OPEN) {
+      console.log(`Попытка отправить сообщение в молоко ${messageName}`);
+      return;
     }
 
-    sendMessage(messageName: string, content: object) {
+    const message: MessageContainer = {
+      name: messageName,
+      content: content
+    };
 
-        if (this.socket === null || this.socket.readyState !== this.socket.OPEN) {
-            console.log(`Попытка отправить сообщение в молоко ${messageName}`);
-            return;
-        }
+    this.socket.send(JSON.stringify(message));
+  }
 
-        const message: MessageContainer = {
-            name: messageName,
-            content: content
-        };
+  private messageReceived(rawData: unknown) {
 
-        this.socket.send(JSON.stringify(message));
+    if (typeof rawData !== "string") {
+      return;
     }
 
-    private messageReceived(rawData: unknown) {
+    const messageContainer: MessageContainer = JSON.parse(rawData);
 
-        if (typeof rawData !== "string") {
-            return;
-        }
+    console.log(`+message`);
+    console.log(messageContainer);
 
-        const messageContainer: MessageContainer = JSON.parse(rawData);
-
-        console.log(`+message`);
-        console.log(messageContainer);
-
-        if (messageContainer.name === "JoinedMessage") {
-            const data = messageContainer.content as JoinedMessage;
-            this.onJoinedMessage(data);
-        }
-        else if (messageContainer.name === "PlayerJoinedMessage") {
-            const data = messageContainer.content as PlayerJoinedMessage;
-            this.onPlayerJoinedMessage(data);
-        }
-        else if (messageContainer.name === "PlayerLeftMessage") {
-            const data = messageContainer.content as PlayerLeftMessage;
-            this.onPlayerLeftMessage(data);
-        }
-        else if (messageContainer.name === "EntityAddedMessage") {
-            // мне стало впадлу это делать, ы
-            this.events.emit("EntityAdded", messageContainer.content as EntityAddedMessage);
-        }
-        else if (messageContainer.name === "EntityRemovedMessage") {
-            this.events.emit("EntityRemoved", messageContainer.content as EntityRemovedMessage);
-        }
+    if (messageContainer.name === "JoinedMessage") {
+      const data = messageContainer.content as JoinedMessage;
+      this.onJoinedMessage(data);
+    } else if (messageContainer.name === "PlayerJoinedMessage") {
+      const data = messageContainer.content as PlayerJoinedMessage;
+      this.onPlayerJoinedMessage(data);
+    } else if (messageContainer.name === "PlayerLeftMessage") {
+      const data = messageContainer.content as PlayerLeftMessage;
+      this.onPlayerLeftMessage(data);
+    } else if (messageContainer.name === "EntityAddedMessage") {
+      // мне стало впадлу это делать, ы
+      this.events.emit("EntityAdded", messageContainer.content as EntityAddedMessage);
+    } else if (messageContainer.name === "EntityRemovedMessage") {
+      this.events.emit("EntityRemoved", messageContainer.content as EntityRemovedMessage);
     }
+  }
 
-    private connected() {
-        const message: JoinMessage = {
-            key: this.userStore.key,
-            name: this.userStore.name,
-        };
+  private connected() {
+    const message: JoinMessage = {
+      key: this.userStore.key,
+      name: this.userStore.name,
+    };
 
-        this.sendMessage("JoinMessage", message);
-    }
+    this.sendMessage("JoinMessage", message);
+  }
 
-    private onJoinedMessage(data: JoinedMessage) {
-        this.events.emit("MeJoined", data);
-    }
+  private onJoinedMessage(data: JoinedMessage) {
+    this.events.emit("MeJoined", data);
+  }
 
-    private onPlayerJoinedMessage(data: PlayerJoinedMessage) {
-        this.events.emit("PlayerJoined", data);
-    }
+  private onPlayerJoinedMessage(data: PlayerJoinedMessage) {
+    this.events.emit("PlayerJoined", data);
+  }
 
-    private onPlayerLeftMessage(data: PlayerLeftMessage) {
-        this.events.emit("PlayerLeft", data);
-    }
+  private onPlayerLeftMessage(data: PlayerLeftMessage) {
+    this.events.emit("PlayerLeft", data);
+  }
 
-    start() {
+  start() {
 
-        this.socket = new WebSocket(`wss://${this.address}`);
+    this.socket = new WebSocket(`wss://${this.address}`);
 
-        this.socket.onmessage = (ev) => {
-            this.messageReceived(ev.data);
-        };
+    this.socket.onmessage = (ev) => {
+      this.messageReceived(ev.data);
+    };
 
-        this.socket.onopen = () => {
-            this.connected();
-        };
-    }
+    this.socket.onopen = () => {
+      this.connected();
+    };
+  }
 }

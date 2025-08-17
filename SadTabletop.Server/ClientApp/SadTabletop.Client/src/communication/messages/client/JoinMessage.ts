@@ -1,4 +1,4 @@
 export default interface JoinMessage {
-    key: string;
-    name: string;
+  key: string;
+  name: string;
 }

@@ -1,5 +1,5 @@
 export default interface Entity {
-    id: number;
-    type: string;
-    components: object[];
+  id: number;
+  type: string;
+  components: object[];
 }

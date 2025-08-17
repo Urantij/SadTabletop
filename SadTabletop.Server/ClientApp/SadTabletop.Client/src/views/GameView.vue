@@ -19,39 +19,39 @@ const renderer = new Renderer(leGame, window.innerWidth, window.innerHeight, div
 
 onMounted(async () => {
 
-    {
-        const name = localStorage.getItem("name");
-        if (name !== null) {
-            userStore.setName(name);
-        }
+  {
+    const name = localStorage.getItem("name");
+    if (name !== null) {
+      userStore.setName(name);
     }
+  }
 
-    connection.events.once("MeJoined", () => {
-        renderer.initAsync();
-    });
+  connection.events.once("MeJoined", () => {
+    renderer.initAsync();
+  });
 
-    console.log(`стартуем конекшен...`);
-    connection.start();
+  console.log(`стартуем конекшен...`);
+  connection.start();
 });
 
 </script>
 
 <template>
-    <main>
-        <div :style="[
-            {
-                'position': 'absolute',
-                'left': '0px',
-                'top': '0px'
-            }
-        ]" :id="divId">
-            <UiContainer></UiContainer>
-        </div>
-    </main>
+  <main>
+    <div :style="[
+      {
+        'position': 'absolute',
+        'left': '0px',
+        'top': '0px'
+      }
+    ]" :id="divId">
+      <UiContainer></UiContainer>
+    </div>
+  </main>
 </template>
 
 <style>
 body {
-    overflow: hidden;
+  overflow: hidden;
 }
 </style>

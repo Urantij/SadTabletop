@@ -11,7 +11,7 @@ export default class LeGame {
 
   public readonly table: Table = new Table();
 
-  public readonly sidesData: { num: number, path: string }[] = [];
+  public readonly sidesData: { num: number; path: string }[] = [];
 
   constructor() {
   }

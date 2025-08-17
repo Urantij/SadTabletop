@@ -1,3 +1,3 @@
 export default interface PlayerLeftMessage {
-    id: number;
+  id: number;
 }
