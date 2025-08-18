@@ -19,6 +19,16 @@ public class TimesSystem : SystemBase
     {
     }
 
+    protected internal override void GameSetuped()
+    {
+        base.GameSetuped();
+
+        foreach (Delayed delayed in _list)
+        {
+            Execute(delayed);
+        }
+    }
+
     public void Execute(Delayed delayed)
     {
         if (!_list.Remove(delayed))
