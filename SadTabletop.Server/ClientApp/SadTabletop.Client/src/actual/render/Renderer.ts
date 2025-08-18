@@ -59,11 +59,14 @@ export default class Renderer {
 
           this.scene?.cameras.main.centerOn(0, 0);
 
-          this.leGame.table.events.on("EntityAdded", (entity) => {
-            this.createEntity(entity);
+          this.leGame.table.events.on("ItemAdded", (item) => {
+            this.createEntity(item);
           });
-          this.leGame.table.events.on("EntityRemoved", (entity) => {
-            this.scene?.destroyEntity(entity);
+          this.leGame.table.events.on("ItemRemoved", (item) => {
+            this.scene?.destroyEntity(item);
+          });
+          this.leGame.table.events.on("ItemMoved", (item, oldX, oldY) => {
+            this.scene?.moveItem(item, oldX, oldY);
           });
 
           for (const entity of this.leGame.table.items) {

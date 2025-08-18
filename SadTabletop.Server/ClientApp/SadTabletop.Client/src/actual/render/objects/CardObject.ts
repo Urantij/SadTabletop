@@ -2,6 +2,7 @@ import type Card from "@/actual/things/concrete/Card";
 import type MainScene from "../MainScene";
 import Flipness from "@/actual/things/Flipness";
 import type RenderObjectRepresentation from "@/actual/render/RenderObjectRepresentation.ts";
+import type Entity from "@/actual/things/Entity";
 
 const width = 250;
 const height = 350;
@@ -14,13 +15,20 @@ export default class CardObject implements RenderObjectRepresentation {
 
   readonly sprite: Phaser.GameObjects.Sprite;
 
-  readonly gameObject: object;
+  readonly gameObject: Entity;
 
   constructor(card: Card, scene: MainScene, sprite: Phaser.GameObjects.Sprite) {
     this.gameObject = card;
     this.card = card;
     this.scene = scene;
     this.sprite = sprite;
+  }
+
+  getCurrentPosition(): Phaser.Math.Vector2 {
+    return this.sprite.getWorldPoint();
+  }
+  changePosition(x: number, y: number): void {
+    this.sprite.setPosition(x, y);
   }
 
   public static create(card: Card, scene: MainScene) {

@@ -4,6 +4,8 @@ import type EntityAddedMessage from "@/communication/messages/server/EntityAdded
 import type EntityRemovedMessage from "@/communication/messages/server/EntityRemovedMessage";
 import type JoinedMessage from "@/communication/messages/server/JoinedMessage";
 import type AssetInfo from "./things/AssetInfo";
+import type ItemMovedMessage from "@/communication/messages/server/ItemMovedMessage";
+import type TableItem from "./things/TableItem";
 
 /**
  * Хранит все данные игры.
@@ -22,13 +24,14 @@ export default class LeGame {
     connection.events.once("MeJoined", (data) => this.meJoined(data));
     connection.events.on("EntityAdded", (data) => this.entityAdded(data));
     connection.events.on("EntityRemoved", (data) => this.entityRemoved(data));
+    connection.events.on("ItemMoved", (data) => this.itemMoved(data));
   }
 
   private meJoined(data: JoinedMessage): void {
     for (const entity of data.entities) {
       if (this.table.isTableEntityByType(entity.type)) {
 
-        this.table.addEntity(entity);
+        this.table.addItem(entity as TableItem);
       }
       else if (entity.type === "AssetInfo") {
 
@@ -43,13 +46,17 @@ export default class LeGame {
 
   private entityAdded(data: EntityAddedMessage): void {
     if (this.table.isTableEntityByType(data.entity.type)) {
-      this.table.addEntity(data.entity);
+      this.table.addItem(data.entity as TableItem);
     }
   }
 
   private entityRemoved(data: EntityRemovedMessage): void {
     if (this.table.isTableEntityByType(data.entity.type)) {
-      this.table.removeEntity(data.entity.id);
+      this.table.removeItem(data.entity.id);
     }
+  }
+
+  private itemMoved(data: ItemMovedMessage): void {
+    this.table.moveItem(data.item, data.x, data.y);
   }
 }

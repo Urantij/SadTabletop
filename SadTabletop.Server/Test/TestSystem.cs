@@ -16,6 +16,8 @@ public class TestSystem : SystemBase
 
     private int _num = 4;
 
+    private Card movingCard;
+
     public TestSystem(Game game) : base(game)
     {
     }
@@ -30,12 +32,16 @@ public class TestSystem : SystemBase
 
         var cards = Game.GetSystem<CardsSystem>();
 
+        movingCard = cards.Create(-200, -70, 4, 77, Flipness.Shown);
+
         cards.Create(1, 2, 55, 77, Flipness.Shown);
     }
 
     protected override void GameSetuped()
     {
         _times.RequestDelayedExecution(Execution1, TimeSpan.FromSeconds(5));
+
+        _times.RequestDelayedExecution(MoveExecution, TimeSpan.FromSeconds(1));
     }
 
     public Card Create(float x, float y, int side)
@@ -43,6 +49,20 @@ public class TestSystem : SystemBase
         var cards = Game.GetSystem<CardsSystem>();
 
         return cards.Create(x, y, side, 77, Flipness.Shown);
+    }
+
+    private void MoveExecution()
+    {
+        if (movingCard.X == -200)
+        {
+            _table.MoveItem(movingCard, 200, -70);
+        }
+        else
+        {
+            _table.MoveItem(movingCard, -200, -70);
+        }
+        
+        _times.RequestDelayedExecution(MoveExecution, TimeSpan.FromSeconds(1));
     }
 
     private void Execution1()
