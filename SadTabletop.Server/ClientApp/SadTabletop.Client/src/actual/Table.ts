@@ -26,7 +26,7 @@ export default class Table {
   }
 
   isTableEntityByType(type: string) {
-    return ["Card", "Dice", "Deck"].includes(type);
+    return ["Card", "Dice", "Deck", "TextItem"].includes(type);
   }
 
   addItem(item: TableItem) {

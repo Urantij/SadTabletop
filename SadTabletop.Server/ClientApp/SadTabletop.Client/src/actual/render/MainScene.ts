@@ -6,6 +6,8 @@ import type RenderObjectRepresentation from "@/actual/render/RenderObjectReprese
 import { removeFromCollection } from "@/utilities/MyCollections.ts";
 import type TableItem from "../things/TableItem";
 import Animka from "./Animka";
+import type TextItem from "../things/concrete/TextItem";
+import TextItemObject from "./objects/TextItemObject";
 
 export default class MainScene extends Phaser.Scene {
 
@@ -19,7 +21,7 @@ export default class MainScene extends Phaser.Scene {
     this.leGame = game;
   }
 
-  preload() {
+  private preload() {
     console.log("preload");
 
     this.load.image(defaultBackSideKey, "back.png");
@@ -30,7 +32,7 @@ export default class MainScene extends Phaser.Scene {
     }
   }
 
-  create() {
+  private create() {
     // я понятия нахуй не имею что происходит
     // в старом проекте реди шло когда сцена была ГОТОВА
     // ща оно вылетает ДО ПРЕЛОАДА БЛЯТЬ
@@ -86,5 +88,11 @@ export default class MainScene extends Phaser.Scene {
     }
 
     this.animka.flipCard(obj);
+  }
+
+  createText(textItem: TextItem) {
+    const obj = TextItemObject.create(textItem, this);
+
+    this.objects.push(obj);
   }
 }

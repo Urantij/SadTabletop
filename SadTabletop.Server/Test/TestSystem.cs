@@ -1,6 +1,7 @@
 using SadTabletop.Shared;
 using SadTabletop.Shared.Mechanics;
 using SadTabletop.Shared.MoreSystems.Cards;
+using SadTabletop.Shared.MoreSystems.Texts;
 using SadTabletop.Shared.Systems.Assets;
 using SadTabletop.Shared.Systems.Table;
 using SadTabletop.Shared.Systems.Times;
@@ -36,6 +37,10 @@ public class TestSystem : SystemBase
 
         movingCard = cards.Create(-200, -70, 4, 77, Flipness.Shown);
 
+        var texts = Game.GetSystem<TextsSystem>();
+
+        texts.Create("двигаем", -200, -270, 300, 200);
+
         cards.Create(1, 2, 55, 77, Flipness.Shown);
     }
 
@@ -60,7 +65,7 @@ public class TestSystem : SystemBase
             Game.GetSystem<CardsSystem>().Flip(movingCard);
             movedTimes = 0;
         }
-        
+
         if (movingCard.X == -200)
         {
             _table.MoveItem(movingCard, 200, -70);
@@ -70,8 +75,8 @@ public class TestSystem : SystemBase
             _table.MoveItem(movingCard, -200, -70);
         }
 
-        movedTimes ++;
-        
+        movedTimes++;
+
         _times.RequestDelayedExecution(MoveExecution, TimeSpan.FromSeconds(1));
     }
 

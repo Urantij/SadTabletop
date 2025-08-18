@@ -4,6 +4,7 @@ import MainScene from "./MainScene";
 import Phaser from "phaser";
 import type Entity from "../things/Entity";
 import type Card from "../things/concrete/Card";
+import type TextItem from "../things/concrete/TextItem";
 
 type MessageEvents = {
   test: () => void;
@@ -93,11 +94,15 @@ export default class Renderer {
       const card = entity as Card;
 
       this.scene.createCard(card);
-    } else if (entity.type === "Deck") {
-
-    } else if (entity.type === "Dice") {
-
-    } else {
+    }
+    else if (entity.type === "Deck") {
+    }
+    else if (entity.type === "Dice") {
+    }
+    else if (entity.type === "TextItem") {
+      this.scene.createText(entity as TextItem)
+    }
+    else {
       console.log(`Непонятная ентити в мире ${entity.type}`);
     }
   }
