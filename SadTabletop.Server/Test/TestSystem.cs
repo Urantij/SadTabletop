@@ -18,6 +18,8 @@ public class TestSystem : SystemBase
 
     private Card movingCard;
 
+    private int movedTimes = 0;
+
     public TestSystem(Game game) : base(game)
     {
     }
@@ -53,6 +55,12 @@ public class TestSystem : SystemBase
 
     private void MoveExecution()
     {
+        if (movedTimes == 3)
+        {
+            Game.GetSystem<CardsSystem>().Flip(movingCard);
+            movedTimes = 0;
+        }
+        
         if (movingCard.X == -200)
         {
             _table.MoveItem(movingCard, 200, -70);
@@ -61,6 +69,8 @@ public class TestSystem : SystemBase
         {
             _table.MoveItem(movingCard, -200, -70);
         }
+
+        movedTimes ++;
         
         _times.RequestDelayedExecution(MoveExecution, TimeSpan.FromSeconds(1));
     }

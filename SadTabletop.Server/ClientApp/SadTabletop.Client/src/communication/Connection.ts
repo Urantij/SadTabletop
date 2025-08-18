@@ -8,6 +8,7 @@ import { useUserStore } from "@/stores/UserStore";
 import type EntityAddedMessage from "./messages/server/EntityAddedMessage";
 import type EntityRemovedMessage from "./messages/server/EntityRemovedMessage";
 import type ItemMovedMessage from "./messages/server/ItemMovedMessage";
+import type CardFlippedMessage from "./messages/server/CardFlippedMessage";
 
 type MessageEvents = {
   MeJoined: (data: JoinedMessage) => void;
@@ -16,6 +17,7 @@ type MessageEvents = {
   EntityAdded: (data: EntityAddedMessage) => void;
   EntityRemoved: (data: EntityRemovedMessage) => void;
   ItemMoved: (data: ItemMovedMessage) => void;
+  CardFlipped: (data: CardFlippedMessage) => void;
 }
 
 export default class Connection {
@@ -79,6 +81,9 @@ export default class Connection {
     }
     else if (messageContainer.name === "ItemMovedMessage") {
       this.events.emit("ItemMoved", messageContainer.content as ItemMovedMessage);
+    }
+    else if (messageContainer.name === "CardFlippedMessage") {
+      this.events.emit("CardFlipped", messageContainer.content as CardFlippedMessage);
     }
   }
 

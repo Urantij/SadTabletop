@@ -1,5 +1,6 @@
 import type MainScene from "@/actual/render/MainScene.ts";
 import type RenderObjectRepresentation from "./RenderObjectRepresentation";
+import CardObject from "./objects/CardObject";
 
 export default class Animka {
   private readonly scene: MainScene;
@@ -33,6 +34,40 @@ export default class Animka {
         xChange: x - holder.start.x,
         yChange: y - holder.start.y
       }
+    });
+  }
+
+  public flipCard(obj: CardObject) {
+    // const currentSideTexture = obj.sprite.texture;
+    const newSideTexture = obj.getCardSideTexture();
+
+    const time = 300;
+
+    const target = obj.sprite.displayWidth;
+
+    const tween1: Phaser.Types.Tweens.TweenBuilderConfig = {
+      targets: obj.sprite,
+      duration: time,
+      props: {
+        displayWidth: 0
+      }
+    };
+    const tween2: Phaser.Types.Tweens.TweenBuilderConfig = {
+      targets: obj.sprite,
+      duration: time,
+      onStart: () => {
+        obj.sprite.setTexture(newSideTexture.key);
+      },
+      props: {
+        displayWidth: target
+      }
+    };
+
+    this.scene.tweens.chain({
+      tweens: [
+        tween1,
+        tween2
+      ]
     });
   }
 }

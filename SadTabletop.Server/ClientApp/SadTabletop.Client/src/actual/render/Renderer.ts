@@ -68,6 +68,9 @@ export default class Renderer {
           this.leGame.table.events.on("ItemMoved", (item, oldX, oldY) => {
             this.scene?.moveItem(item, oldX, oldY);
           });
+          this.leGame.table.events.on("CardFlipped", (card) => {
+            this.scene?.flipCard(card);
+          });
 
           for (const entity of this.leGame.table.items) {
             this.createEntity(entity);

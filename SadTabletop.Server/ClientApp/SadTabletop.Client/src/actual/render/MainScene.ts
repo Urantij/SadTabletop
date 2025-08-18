@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import type LeGame from "../LeGame";
 import type Card from "../things/concrete/Card";
-import CardObject from "./objects/CardObject";
+import CardObject, { defaultBackSideKey, defaultFrontSidekey } from "./objects/CardObject";
 import type RenderObjectRepresentation from "@/actual/render/RenderObjectRepresentation.ts";
 import { removeFromCollection } from "@/utilities/MyCollections.ts";
 import type TableItem from "../things/TableItem";
@@ -22,8 +22,8 @@ export default class MainScene extends Phaser.Scene {
   preload() {
     console.log("preload");
 
-    this.load.image("defaultBackSide", "back.png");
-    this.load.image("defaultFrontSide", "front.png");
+    this.load.image(defaultBackSideKey, "back.png");
+    this.load.image(defaultFrontSidekey, "front.png");
 
     for (const data of this.leGame.assetsData) {
       this.load.image(data.name, data.url);
@@ -76,5 +76,15 @@ export default class MainScene extends Phaser.Scene {
     const obj = CardObject.create(card, this);
 
     this.objects.push(obj);
+  }
+
+  flipCard(card: Card) {
+    const obj = this.objects.find(o => o.gameObject.id === card.id) as CardObject;
+    if (obj === undefined) {
+      console.warn(`при flipCard такого нет ${card}`);
+      return;
+    }
+
+    this.animka.flipCard(obj);
   }
 }

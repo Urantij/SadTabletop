@@ -24,7 +24,8 @@ export default class LeGame {
     connection.events.once("MeJoined", (data) => this.meJoined(data));
     connection.events.on("EntityAdded", (data) => this.entityAdded(data));
     connection.events.on("EntityRemoved", (data) => this.entityRemoved(data));
-    connection.events.on("ItemMoved", (data) => this.itemMoved(data));
+
+    this.table.subscribeToConnection(connection);
   }
 
   private meJoined(data: JoinedMessage): void {
@@ -54,9 +55,5 @@ export default class LeGame {
     if (this.table.isTableEntityByType(data.entity.type)) {
       this.table.removeItem(data.entity.id);
     }
-  }
-
-  private itemMoved(data: ItemMovedMessage): void {
-    this.table.moveItem(data.item, data.x, data.y);
   }
 }
