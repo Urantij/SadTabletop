@@ -4,8 +4,8 @@ import Flipness from "@/actual/things/Flipness";
 import type RenderObjectRepresentation from "@/actual/render/RenderObjectRepresentation.ts";
 import type Entity from "@/actual/things/Entity";
 
-const width = 250;
-const height = 350;
+export const cardWidth = 250;
+export const cardHeight = 350;
 
 export const defaultBackSideKey = "defaultBackSide";
 export const defaultFrontSidekey = "defaultFrontSide";
@@ -41,7 +41,7 @@ export default class CardObject implements RenderObjectRepresentation {
       : CardObject.getCardSideTexture(card.backSide, fallback, scene);
 
     const cardSprite = new Phaser.GameObjects.Sprite(scene, card.x, card.y, sideTexture);
-    cardSprite.setDisplaySize(width, height);
+    cardSprite.setDisplaySize(cardWidth, cardHeight);
     scene.add.existing(cardSprite);
 
     const obj = new CardObject(card, scene, cardSprite);
@@ -58,6 +58,19 @@ export default class CardObject implements RenderObjectRepresentation {
     const fallback = this.card.flipness === Flipness.Shown ? defaultFrontSidekey : defaultBackSideKey;
 
     return CardObject.getCardSideTexture(side, fallback, this.scene);
+  }
+
+  // мне впадлу сделать нормально унифицировано похуй.
+  static getCardSideTextureKey(num: number | null, fallback: string, scene: MainScene) {
+    if (num === null) {
+      return fallback;
+    }
+
+    const cardId = `card${num}`;
+    if (scene.textures.exists(cardId))
+      return cardId;
+
+    return fallback;
   }
 
   static getCardSideTexture(num: number | null, fallback: string, scene: MainScene) {

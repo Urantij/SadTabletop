@@ -44,6 +44,23 @@ public class DecksSystem : SystemBase
         _viewer.RegisterEntity<Deck>(TransformDeck);
     }
 
+    public Deck Create(float x, float y,Flipness flipness, List<DeckCardInfo> cards)
+    {
+        Deck deck = new(cards)
+        {
+            Flipness = flipness,
+            X = x,
+            Y = y,
+        };
+        (int back, int front)? sides = deck.CalculateSides();
+        deck.FrontSide = sides?.front;
+        deck.BackSide = sides?.back;
+        
+        _table.AddEntity(deck);
+
+        return deck;
+    }
+
     /// <summary>
     /// "Кладёт" карту в колоду. Ентити карты при этом уничтожается.
     /// </summary>
@@ -166,7 +183,7 @@ public class DecksSystem : SystemBase
 
         IReadOnlyCollection<DeckCardInfo>? cards = GetCardsInfo(deck, target);
 
-        return new DeckDto(deck, frontside, cards);
+        return new DeckDto(deck, frontside, deck.Cards.Count, cards);
     }
 
     /// <summary>

@@ -5,6 +5,7 @@ import Phaser from "phaser";
 import type Entity from "../things/Entity";
 import type Card from "../things/concrete/Card";
 import type TextItem from "../things/concrete/TextItem";
+import type Deck from "@/actual/things/concrete/Deck.ts";
 
 type MessageEvents = {
   test: () => void;
@@ -96,6 +97,7 @@ export default class Renderer {
       this.scene.createCard(card);
     }
     else if (entity.type === "Deck") {
+      this.scene.createDeck(entity as Deck);
     }
     else if (entity.type === "Dice") {
     }

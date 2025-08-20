@@ -50,13 +50,14 @@ public class Deck(
     }
 }
 
-public class DeckDto(Deck deck, int? frontSide, IReadOnlyCollection<DeckCardInfo>? cards) : TableItemDto(deck)
+public class DeckDto(Deck deck, int? frontSide, int cardsCount, IReadOnlyCollection<DeckCardInfo>? cards) : TableItemDto(deck)
 {
     public int? BackSide { get; } = deck.BackSide;
     public int? FrontSide { get; } = frontSide;
 
     public Flipness Flipness { get; } = deck.Flipness;
 
+    public int CardsCount { get; } = cardsCount;
     public IReadOnlyCollection<DeckCardInfo>? Cards { get; } = cards;
 
     public override Type WhatIsMyType() => typeof(Deck);

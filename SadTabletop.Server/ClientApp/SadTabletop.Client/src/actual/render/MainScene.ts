@@ -8,6 +8,8 @@ import type TableItem from "../things/TableItem";
 import Animka from "./Animka";
 import type TextItem from "../things/concrete/TextItem";
 import TextItemObject from "./objects/TextItemObject";
+import type Deck from "@/actual/things/concrete/Deck.ts";
+import DeckObject, { deckSpotKey } from "./objects/DeckObject";
 
 export default class MainScene extends Phaser.Scene {
 
@@ -26,6 +28,8 @@ export default class MainScene extends Phaser.Scene {
 
     this.load.image(defaultBackSideKey, "back.png");
     this.load.image(defaultFrontSidekey, "front.png");
+
+    this.load.image(deckSpotKey, "deckspot.png");
 
     for (const data of this.leGame.assetsData) {
       this.load.image(data.name, data.url);
@@ -92,6 +96,12 @@ export default class MainScene extends Phaser.Scene {
 
   createText(textItem: TextItem) {
     const obj = TextItemObject.create(textItem, this);
+
+    this.objects.push(obj);
+  }
+
+  createDeck(deck: Deck) {
+    const obj = DeckObject.create(deck, this);
 
     this.objects.push(obj);
   }
