@@ -72,9 +72,9 @@ export default class MainScene extends Phaser.Scene {
 
       // Чем ближе, тем медленнее идёт зум. нужно как то умнее скейлить TODO
 
-      const change = deltaY > 0 ? -0.1 : 0.1;
+      const change = deltaY > 0 ? -0.2 : 0.2;
 
-      let newValue = this.cameras.main.zoom + change;
+      let newValue = this.cameras.main.zoom + (this.cameras.main.zoom * change);
       if (newValue <= 0.2) {
         newValue = 0.2;
       }
