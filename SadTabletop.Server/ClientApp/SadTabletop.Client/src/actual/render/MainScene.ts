@@ -41,6 +41,49 @@ export default class MainScene extends Phaser.Scene {
     // в старом проекте реди шло когда сцена была ГОТОВА
     // ща оно вылетает ДО ПРЕЛОАДА БЛЯТЬ
     this.events.emit("READY)))");
+
+    let holding = false;
+    let position: Phaser.Math.Vector2 = Phaser.Math.Vector2.ZERO;
+
+    this.input.on("pointerdown", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
+      holding = true;
+      position = pointer.position;
+    });
+    this.input.on("pointermove", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
+      if (!holding)
+        return;
+
+      const distance = position.clone().subtract(pointer.position);
+
+      const newX = this.cameras.main.scrollX + (distance.x / this.cameras.main.zoom);
+      const newY = this.cameras.main.scrollY + (distance.y / this.cameras.main.zoom);
+
+      this.cameras.main.setScroll(newX, newY);
+
+      position = pointer.position.clone();
+    });
+    this.input.on("pointerup", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
+      holding = false;
+    });
+    this.input.on("wheel", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[], deltaX: number, deltaY: number, deltaZ: number) => {
+
+      if (deltaY === 0)
+        return;
+
+      // Чем ближе, тем медленнее идёт зум. нужно как то умнее скейлить TODO
+
+      const change = deltaY > 0 ? -0.1 : 0.1;
+
+      let newValue = this.cameras.main.zoom + change;
+      if (newValue <= 0.2) {
+        newValue = 0.2;
+      }
+      else if (newValue >= 1.5) {
+        newValue = 1.5;
+      }
+
+      this.cameras.main.zoomTo(newValue, 50);
+    });
   }
 
   destroyEntity(obj: object) {
