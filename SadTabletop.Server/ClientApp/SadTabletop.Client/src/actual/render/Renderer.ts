@@ -5,7 +5,7 @@ import Phaser from "phaser";
 import type Entity from "../things/Entity";
 import type Card from "../things/concrete/Card";
 import type TextItem from "../things/concrete/TextItem";
-import type Deck from "@/actual/things/concrete/Deck.ts";
+import type Deck from "@/actual/things/concrete/Decks/Deck";
 
 type MessageEvents = {
   test: () => void;

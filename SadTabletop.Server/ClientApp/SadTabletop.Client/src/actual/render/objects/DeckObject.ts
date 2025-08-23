@@ -1,7 +1,7 @@
 import Flipness from "@/actual/things/Flipness";
 import type MainScene from "../MainScene";
 import type RenderObjectRepresentation from "../RenderObjectRepresentation";
-import type Deck from "@/actual/things/concrete/Deck";
+import type Deck from "@/actual/things/concrete/Decks/Deck";
 import CardObject, { cardHeight, cardWidth, defaultBackSideKey, defaultFrontSidekey } from "./CardObject";
 
 export const deckSpotKey = "deckSpot";

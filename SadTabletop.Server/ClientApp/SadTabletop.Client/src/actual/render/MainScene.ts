@@ -8,7 +8,7 @@ import type TableItem from "../things/TableItem";
 import Animka from "./Animka";
 import type TextItem from "../things/concrete/TextItem";
 import TextItemObject from "./objects/TextItemObject";
-import type Deck from "@/actual/things/concrete/Deck.ts";
+import type Deck from "@/actual/things/concrete/Decks/Deck";
 import DeckObject, { deckSpotKey } from "./objects/DeckObject";
 
 export default class MainScene extends Phaser.Scene {

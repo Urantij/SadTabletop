@@ -4,6 +4,9 @@ import type TableItem from "./things/TableItem";
 import type Connection from "@/communication/Connection";
 import type Card from "./things/concrete/Card";
 import { FlipFlipness } from "./things/Flipness";
+import type DeckCardInsertedMessage from "./things/concrete/Decks/messages/server/DeckCardInsertedMessage";
+import type DeckCardRemovedMessage from "./things/concrete/Decks/messages/server/DeckCardRemovedMessage";
+import type DeckUpdatedMessage from "./things/concrete/Decks/messages/server/DeckUpdatedMessage";
 
 type MessageEvents = {
   ItemAdded: (item: TableItem) => void;
@@ -23,6 +26,10 @@ export default class Table {
   subscribeToConnection(connection: Connection) {
     connection.events.on("ItemMoved", (data) => this.moveItem(data.item, data.x, data.y));
     connection.events.on("CardFlipped", (data) => this.flipCard(data.card, data.frontSide));
+
+    connection.registerForMessage<DeckUpdatedMessage>("DeckUpdatedMessage", msg => this.deckUpdated(msg));
+    connection.registerForMessage<DeckCardInsertedMessage>("DeckCardInsertedMessage", msg => this.deckCardInserted(msg));
+    connection.registerForMessage<DeckCardRemovedMessage>("DeckCardRemovedMessage", msg => this.deckCardRemoved(msg))
   }
 
   isTableEntityByType(type: string) {
@@ -77,5 +84,17 @@ export default class Table {
     card.frontSide = frontSide;
 
     this.events.emit("CardFlipped", card);
+  }
+
+  private deckUpdated(msg: DeckUpdatedMessage): void {
+    throw new Error("Method not implemented.");
+  }
+
+  private deckCardInserted(msg: DeckCardInsertedMessage): void {
+    throw new Error("Method not implemented.");
+  }
+
+  private deckCardRemoved(msg: DeckCardRemovedMessage): void {
+    throw new Error("Method not implemented.");
   }
 }
