@@ -20,6 +20,11 @@ type MessageEvents = {
   CardFlipped: (data: CardFlippedMessage) => void;
 }
 
+interface SubInfo {
+  name: string;
+  callback: (message: any) => void;
+}
+
 export default class Connection {
 
   private readonly address: string;
@@ -30,8 +35,17 @@ export default class Connection {
 
   readonly userStore = useUserStore();
 
+  readonly subs: SubInfo[] = [];
+
   constructor(address: string) {
     this.address = address;
+  }
+
+  registerForMessage<T>(messageName: string, callback: (message: T) => void) {
+    this.subs.push({
+      name: messageName,
+      callback: callback
+    });
   }
 
   sendMessage(messageName: string, content: object) {
@@ -59,6 +73,9 @@ export default class Connection {
 
     console.log(`+message`);
     console.log(messageContainer);
+
+    this.subs.filter(s => s.name === messageContainer.name)
+      .forEach(s => s.callback(messageContainer.content));
 
     if (messageContainer.name === "JoinedMessage") {
       const data = messageContainer.content as JoinedMessage;
