@@ -64,6 +64,9 @@ public class SynchroSystem : SystemBase
 
     private void EntityRemoved(EntityRemovedEvent obj)
     {
+        if (!obj.SendRelatedMessage)
+            return;
+
         _communication.SendEntityRelated(new EntityRemovedMessage(obj.Entity), obj.Entity);
     }
 

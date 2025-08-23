@@ -5,6 +5,7 @@ namespace SadTabletop.Shared.Systems.Synchro;
 
 /// <summary>
 /// Обработанная <see cref="ViewerSystem"/> системой ентити с компонентами.
+/// Сам не создавай, используй систему <see cref="SynchroSystem"/>
 /// </summary>
 public class ViewedEntity(IEntity entity, IReadOnlyList<IComponent> components)
 {

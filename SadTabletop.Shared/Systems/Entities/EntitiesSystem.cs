@@ -43,20 +43,24 @@ public abstract class EntitiesSystem<T> : EntitiesSystem
     /// Добавляет энтити в список и рассказывает игрокам об этом.
     /// </summary>
     /// <param name="entity"></param>
-    public void AddEntity(T entity)
+    /// <param name="sendRelatedMessage">Если фолс, клиентам не будет отправлено сообщение о появлении этого ентити</param>
+    public void AddEntity(T entity, bool sendRelatedMessage = true)
     {
         entity.SetId(GenerateId());
 
         List.Add(entity);
 
-        Events.Invoke(new EntityAddedEvent(entity, this));
+        Events.Invoke(new EntityAddedEvent(entity, this, sendRelatedMessage));
     }
 
-    public void RemoveEntity(T entity)
+    public void RemoveEntity(T entity, bool sendRelatedMessage = true)
     {
         List.Remove(entity);
 
-        Events.Invoke(new EntityRemovedEvent(entity, this));
+        // И вот тут возникает вопрос. sendRelatedMessage класть в ивент, или мне нужно было руками вызывать прямо тут метод
+        // но я не думал и думать не буду
+
+        Events.Invoke(new EntityRemovedEvent(entity, this, sendRelatedMessage));
     }
 
     public T GetEntity(int id)

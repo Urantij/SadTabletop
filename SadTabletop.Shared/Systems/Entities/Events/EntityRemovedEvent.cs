@@ -6,8 +6,9 @@ namespace SadTabletop.Shared.Systems.Entities.Events;
 /// <summary>
 /// Срабатывает, когда удаляется ентити в любой ентити системе.
 /// </summary>
-public class EntityRemovedEvent(EntityBase entity, EntitiesSystem system) : EventBase
+public class EntityRemovedEvent(EntityBase entity, EntitiesSystem system, bool sendRelatedMessage) : EventBase
 {
     public EntityBase Entity { get; } = entity;
     public EntitiesSystem System { get; } = system;
+    public bool SendRelatedMessage { get; } = sendRelatedMessage;
 }

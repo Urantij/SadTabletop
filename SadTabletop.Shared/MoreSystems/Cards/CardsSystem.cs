@@ -42,7 +42,7 @@ public class CardsSystem : SystemBase
         _viewer.RegisterEntity<Card>(TransformCard);
     }
 
-    public Card Create(float x, float y, int frontSide, int backSide, Flipness flipness)
+    public Card Create(float x, float y, int frontSide, int backSide, Flipness flipness, bool sendRelatedMessage = true)
     {
         Card card = new(backSide, frontSide)
         {
@@ -50,7 +50,7 @@ public class CardsSystem : SystemBase
             X = x,
             Y = y,
         };
-        _table.AddEntity(card);
+        _table.AddEntity(card, sendRelatedMessage);
 
         return card;
     }
