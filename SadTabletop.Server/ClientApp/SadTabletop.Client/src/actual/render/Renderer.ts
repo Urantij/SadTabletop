@@ -3,9 +3,9 @@ import type LeGame from "../LeGame";
 import MainScene from "./MainScene";
 import Phaser from "phaser";
 import type Entity from "../things/Entity";
-import type Card from "../things/concrete/Card";
 import type TextItem from "../things/concrete/TextItem";
 import type Deck from "@/actual/things/concrete/Decks/Deck";
+import type Card from "../things/concrete/Cards/Card";
 
 type MessageEvents = {
   test: () => void;
@@ -70,7 +70,7 @@ export default class Renderer {
           this.leGame.table.events.on("ItemMoved", (item, oldX, oldY) => {
             this.scene?.moveItem(item, oldX, oldY);
           });
-          this.leGame.table.events.on("CardFlipped", (card) => {
+          this.leGame.table.cards.events.on("CardFlipped", (card) => {
             this.scene?.flipCard(card);
           });
 

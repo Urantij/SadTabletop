@@ -4,7 +4,6 @@ import type EntityAddedMessage from "@/communication/messages/server/EntityAdded
 import type EntityRemovedMessage from "@/communication/messages/server/EntityRemovedMessage";
 import type JoinedMessage from "@/communication/messages/server/JoinedMessage";
 import type AssetInfo from "./things/AssetInfo";
-import type ItemMovedMessage from "@/communication/messages/server/ItemMovedMessage";
 import type TableItem from "./things/TableItem";
 
 /**

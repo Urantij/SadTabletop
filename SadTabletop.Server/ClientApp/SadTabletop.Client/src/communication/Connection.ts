@@ -8,7 +8,7 @@ import { useUserStore } from "@/stores/UserStore";
 import type EntityAddedMessage from "./messages/server/EntityAddedMessage";
 import type EntityRemovedMessage from "./messages/server/EntityRemovedMessage";
 import type ItemMovedMessage from "./messages/server/ItemMovedMessage";
-import type CardFlippedMessage from "./messages/server/CardFlippedMessage";
+import type CardFlippedMessage from "../actual/things/concrete/Cards/messages/server/CardFlippedMessage";
 
 type MessageEvents = {
   MeJoined: (data: JoinedMessage) => void;
@@ -16,8 +16,6 @@ type MessageEvents = {
   PlayerLeft: (data: PlayerLeftMessage) => void;
   EntityAdded: (data: EntityAddedMessage) => void;
   EntityRemoved: (data: EntityRemovedMessage) => void;
-  ItemMoved: (data: ItemMovedMessage) => void;
-  CardFlipped: (data: CardFlippedMessage) => void;
 }
 
 interface SubInfo {
@@ -95,12 +93,6 @@ export default class Connection {
     }
     else if (messageContainer.name === "EntityRemovedMessage") {
       this.events.emit("EntityRemoved", messageContainer.content as EntityRemovedMessage);
-    }
-    else if (messageContainer.name === "ItemMovedMessage") {
-      this.events.emit("ItemMoved", messageContainer.content as ItemMovedMessage);
-    }
-    else if (messageContainer.name === "CardFlippedMessage") {
-      this.events.emit("CardFlipped", messageContainer.content as CardFlippedMessage);
     }
   }
 

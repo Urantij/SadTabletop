@@ -1,4 +1,4 @@
-import type Card from "../../../Card";
+import type Card from "../../../Cards/Card";
 
 export default interface DeckCardRemovedMessage {
   deck: number;

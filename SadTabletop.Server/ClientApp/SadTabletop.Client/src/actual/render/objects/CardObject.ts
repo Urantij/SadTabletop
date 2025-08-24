@@ -1,8 +1,8 @@
-import type Card from "@/actual/things/concrete/Card";
 import type MainScene from "../MainScene";
 import Flipness from "@/actual/things/Flipness";
 import type RenderObjectRepresentation from "@/actual/render/RenderObjectRepresentation.ts";
 import type Entity from "@/actual/things/Entity";
+import type Card from "@/actual/things/concrete/Cards/Card";
 
 export const cardWidth = 250;
 export const cardHeight = 350;
