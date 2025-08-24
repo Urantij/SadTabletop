@@ -53,6 +53,9 @@ public class SynchroSystem : SystemBase
 
     private void EntityAdded(EntityAddedEvent obj)
     {
+        if (!obj.SendRelatedMessage)
+            return;
+
         // TODO можно отправлять одно сообщение всем у кого вьювнутный ентити совпадает
 
         foreach (Seat? seat in _seats.EnumerateSeats())

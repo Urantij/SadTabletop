@@ -25,7 +25,7 @@ public class TimesSystem : SystemBase
 
         foreach (Delayed delayed in _list)
         {
-            Execute(delayed);
+            DelayRequested?.Invoke(delayed);
         }
     }
 
