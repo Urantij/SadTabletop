@@ -24,6 +24,7 @@ public class GameDataLoader
             .Where(t => t.IsAssignableTo(typeof(SystemBase)))
             .Select<Type, Func<Game, SystemBase>>(t => (Game game) => (SystemBase)Activator.CreateInstance(t, game))
             .Prepend(game => new TestSystem(game))
+            .Prepend(game => new AnotherTestSystem(game))
             .ToArray();
 
         return GameCreator.CreateBaseGame(systemsFactories);

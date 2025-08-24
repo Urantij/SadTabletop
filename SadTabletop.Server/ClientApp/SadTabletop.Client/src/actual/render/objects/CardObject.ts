@@ -34,13 +34,13 @@ export default class CardObject implements RenderObjectRepresentation {
     this.sprite.setPosition(x, y);
   }
 
-  public static create(card: Card, scene: MainScene) {
+  public static create(card: Card, scene: MainScene, x: number | null = null, y: number | null = null) {
 
     const fallback = card.flipness === Flipness.Shown ? defaultFrontSidekey : defaultBackSideKey;
     const sideTexture = card.flipness === Flipness.Shown ? CardObject.getCardSideTexture(card.frontSide, fallback, scene)
       : CardObject.getCardSideTexture(card.backSide, fallback, scene);
 
-    const cardSprite = new Phaser.GameObjects.Sprite(scene, card.x, card.y, sideTexture);
+    const cardSprite = new Phaser.GameObjects.Sprite(scene, x ?? card.x, y ?? card.y, sideTexture);
     cardSprite.setDisplaySize(cardWidth, cardHeight);
     scene.add.existing(cardSprite);
 
@@ -61,6 +61,7 @@ export default class CardObject implements RenderObjectRepresentation {
   }
 
   // мне впадлу сделать нормально унифицировано похуй.
+
   static getCardSideTextureKey(num: number | null, fallback: string, scene: MainScene) {
     if (num === null) {
       return fallback;

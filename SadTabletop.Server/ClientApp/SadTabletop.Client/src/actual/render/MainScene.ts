@@ -1,6 +1,5 @@
 import Phaser from "phaser";
 import type LeGame from "../LeGame";
-import type Card from "../things/concrete/Card";
 import CardObject, { defaultBackSideKey, defaultFrontSidekey } from "./objects/CardObject";
 import type RenderObjectRepresentation from "@/actual/render/RenderObjectRepresentation.ts";
 import { removeFromCollection } from "@/utilities/MyCollections.ts";
@@ -10,6 +9,8 @@ import type TextItem from "../things/concrete/TextItem";
 import TextItemObject from "./objects/TextItemObject";
 import type Deck from "@/actual/things/concrete/Decks/Deck";
 import DeckObject, { deckSpotKey } from "./objects/DeckObject";
+import type Card from "../things/concrete/Cards/Card";
+import DeckCardRemovedData from "../things/concrete/Decks/DeckCardRemovedData";
 
 export default class MainScene extends Phaser.Scene {
 
@@ -18,6 +19,8 @@ export default class MainScene extends Phaser.Scene {
   readonly objects: RenderObjectRepresentation[] = [];
 
   readonly animka: Animka = new Animka(this);
+
+  readonly speedPerUnit = 1.3;
 
   init(game: LeGame) {
     this.leGame = game;
@@ -112,19 +115,36 @@ export default class MainScene extends Phaser.Scene {
       y: yChange
     });
 
-    const speedPerUnit = 1.3;
     const distance = obj.getCurrentPosition().distance(targetPos);
 
-    const time = distance / speedPerUnit;
+    const time = distance / this.speedPerUnit;
 
     this.animka.moveObject(obj, targetPos.x, targetPos.y, time);
   }
 
-  createCard(card: Card) {
+  createCard(card: Card, data: object | null) {
     console.log(`создаём карту...`);
-    const obj = CardObject.create(card, this);
 
-    this.objects.push(obj);
+    if (data instanceof DeckCardRemovedData) {
+
+      const deckObj = this.objects.find(o => o.gameObject.id === data.deck.id);
+      if (deckObj === undefined) {
+        console.warn(`createCard deckObj === undefined`);
+        return;
+      }
+
+      const deckPos = deckObj.getCurrentPosition();
+
+      const obj = CardObject.create(card, this, deckPos.x, deckPos.y);
+      this.objects.push(obj);
+
+      // тупо
+      this.moveItem(card, deckPos.x, deckPos.y);
+    }
+    else {
+      const obj = CardObject.create(card, this);
+      this.objects.push(obj);
+    }
   }
 
   flipCard(card: Card) {
@@ -147,5 +167,47 @@ export default class MainScene extends Phaser.Scene {
     const obj = DeckObject.create(deck, this);
 
     this.objects.push(obj);
+  }
+
+  updateDeck(deck: Deck) {
+    const obj = this.objects.find(o => o.gameObject.id === deck.id) as DeckObject;
+    if (obj === undefined) {
+      console.warn(`при updateDeck такого нет ${deck}`);
+      return;
+    }
+
+    obj.updateThingsPlease();
+  }
+
+  insertCardToDeck(deck: Deck, card: Card) {
+    const deckObj = this.objects.find(o => o.gameObject.id === deck.id) as DeckObject;
+    if (deckObj === undefined) {
+      console.warn(`при insertCardToDeck такого нет deck ${deck}`);
+      return;
+    }
+
+    const cardObj = this.objects.find(o => o.gameObject.id === card.id) as CardObject;
+    if (cardObj === undefined) {
+      console.warn(`при insertCardToDeck такого нет card ${card}`);
+      return;
+    }
+
+    const distance = cardObj.getCurrentPosition().distance(deckObj.getCurrentPosition());
+    const time = distance / this.speedPerUnit;
+
+    this.animka.moveObjectToObject(cardObj, deckObj, time, () => {
+      cardObj.destroy();
+      deckObj.updateThingsPlease();
+    });
+  }
+
+  removeCardFromDeck(deck: Deck, card: Card) {
+    const deckObj = this.objects.find(o => o.gameObject.id === deck.id) as DeckObject;
+    if (deckObj === undefined) {
+      console.warn(`при insertCardToDeck такого нет deck ${deck}`);
+      return;
+    }
+
+    deckObj.updateThingsPlease();
   }
 }

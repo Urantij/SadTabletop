@@ -5,5 +5,5 @@ export default interface DeckCardInsertedMessage {
   side: number | null;
 
   cardFront: number | null;
-  cardIndex: number | null;
+  deckIndex: number | null;
 }

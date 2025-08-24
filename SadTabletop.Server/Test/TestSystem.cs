@@ -1,7 +1,6 @@
 using SadTabletop.Shared;
 using SadTabletop.Shared.Mechanics;
 using SadTabletop.Shared.MoreSystems.Cards;
-using SadTabletop.Shared.MoreSystems.Decks;
 using SadTabletop.Shared.MoreSystems.Texts;
 using SadTabletop.Shared.Systems.Assets;
 using SadTabletop.Shared.Systems.Table;
@@ -22,8 +21,6 @@ public class TestSystem : SystemBase
 
     private int movedTimes = 0;
 
-    private Deck deck;
-
     public TestSystem(Game game) : base(game)
     {
     }
@@ -37,13 +34,6 @@ public class TestSystem : SystemBase
         assets.AddCardAsset(7, "card7.png");
 
         var cards = Game.GetSystem<CardsSystem>();
-        var decks = Game.GetSystem<DecksSystem>();
-
-        deck = decks.Create(-200, 400, Flipness.Shown, [
-            new DeckCardInfo(77, 4),
-            new DeckCardInfo(77, 7),
-            new DeckCardInfo(77, 7),
-        ]);
 
         movingCard = cards.Create(-200, -70, 4, 77, Flipness.Shown);
 

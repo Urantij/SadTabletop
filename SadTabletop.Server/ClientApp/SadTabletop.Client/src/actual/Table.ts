@@ -7,7 +7,7 @@ import CardsSystem from "./things/concrete/Cards/CardsSystem";
 import type ItemMovedMessage from "@/communication/messages/server/ItemMovedMessage";
 
 type MessageEvents = {
-  ItemAdded: (item: TableItem) => void;
+  ItemAdded: (item: TableItem, data: object | null) => void;
   ItemRemoved: (item: TableItem) => void;
   ItemMoved: (item: TableItem, oldX: number, oldY: number) => void;
 }
@@ -34,13 +34,13 @@ export default class Table {
     return ["Card", "Dice", "Deck", "TextItem"].includes(type);
   }
 
-  addItem(item: TableItem) {
+  addItem(item: TableItem, data: object | null) {
 
     console.log(`в стол добавлена ентити ${item.type} ${item.id}`);
 
     this.items.push(item);
 
-    this.events.emit("ItemAdded", item);
+    this.events.emit("ItemAdded", item, data);
   }
 
   removeItem(id: number) {

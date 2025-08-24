@@ -61,8 +61,8 @@ export default class Renderer {
 
           this.scene?.cameras.main.centerOn(0, 0);
 
-          this.leGame.table.events.on("ItemAdded", (item) => {
-            this.createEntity(item);
+          this.leGame.table.events.on("ItemAdded", (item, data) => {
+            this.createEntity(item, data);
           });
           this.leGame.table.events.on("ItemRemoved", (item) => {
             this.scene?.destroyEntity(item);
@@ -74,8 +74,18 @@ export default class Renderer {
             this.scene?.flipCard(card);
           });
 
+          this.leGame.table.decks.events.on("DeckUpdated", (deck) => {
+            this.scene?.updateDeck(deck);
+          });
+          this.leGame.table.decks.events.on("CardInserted", (deck, card) => {
+            this.scene?.insertCardToDeck(deck, card);
+          });
+          this.leGame.table.decks.events.on("CardRemoved", (deck, card) => {
+            this.scene?.removeCardFromDeck(deck, card);
+          });
+
           for (const entity of this.leGame.table.items) {
-            this.createEntity(entity);
+            this.createEntity(entity, null);
           }
 
           resolve(null);
@@ -86,7 +96,7 @@ export default class Renderer {
     });
   }
 
-  private createEntity(entity: Entity) {
+  private createEntity(entity: Entity, data: object | null) {
     if (this.scene === null) {
       return;
     }
@@ -94,7 +104,7 @@ export default class Renderer {
     if (entity.type === "Card") {
       const card = entity as Card;
 
-      this.scene.createCard(card);
+      this.scene.createCard(card, data);
     }
     else if (entity.type === "Deck") {
       this.scene.createDeck(entity as Deck);

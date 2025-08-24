@@ -9,7 +9,14 @@ export default class Animka {
     this.scene = scene;
   }
 
-  public moveObject(obj: RenderObjectRepresentation, x: number, y: number, time: number): void {
+  public moveObjectToObject(obj: RenderObjectRepresentation, target: RenderObjectRepresentation, time: number, continuation: (() => void) | null = null): void {
+
+    const location = target.getCurrentPosition();
+
+    this.moveObject(obj, location.x, location.y, time, continuation);
+  }
+
+  public moveObject(obj: RenderObjectRepresentation, x: number, y: number, time: number, continuation: (() => void) | null = null): void {
 
     // const start = obj.getCurrentPosition();
     // const end = start.clone().add({
@@ -27,6 +34,13 @@ export default class Animka {
     this.scene.tweens.add({
       targets: holder,
       duration: time,
+      onComplete: function () {
+        if (continuation === null) {
+          return;
+        }
+
+        continuation();
+      },
       onUpdate: function (tween, target, key, current, previous, param) {
         holder.obj.changePosition(holder.start.x + holder.xChange, holder.start.y + holder.yChange);
       },

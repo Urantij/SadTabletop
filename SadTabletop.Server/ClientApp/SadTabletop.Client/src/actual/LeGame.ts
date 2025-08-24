@@ -31,7 +31,7 @@ export default class LeGame {
     for (const entity of data.entities) {
       if (this.table.isTableEntityByType(entity.type)) {
 
-        this.table.addItem(entity as TableItem);
+        this.table.addItem(entity as TableItem, null);
       }
       else if (entity.type === "AssetInfo") {
 
@@ -46,7 +46,7 @@ export default class LeGame {
 
   private entityAdded(data: EntityAddedMessage): void {
     if (this.table.isTableEntityByType(data.entity.type)) {
-      this.table.addItem(data.entity as TableItem);
+      this.table.addItem(data.entity as TableItem, null);
     }
   }
 
