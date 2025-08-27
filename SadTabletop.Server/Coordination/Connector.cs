@@ -158,6 +158,8 @@ public class Connector
                 return;
             }
 
+            using var scope = appClient.GameContainer.Locker.EnterScope();
+
             ClientMessageBase? message =
                 JsonSerializer.Deserialize(container.Content, messageType, _serializerOptions) as ClientMessageBase;
 

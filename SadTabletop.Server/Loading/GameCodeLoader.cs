@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Runtime.Loader;
+using SadTabletop.Shared;
 using SadTabletop.Shared.Systems.Communication;
 
 namespace SadTabletop.Server.Loading;
@@ -26,7 +27,7 @@ public class GameCodeLoader
 
     public static Type[] GetClientMessages(IReadOnlyCollection<Assembly> assemblies)
     {
-        return assemblies.SelectMany(ass => ass.GetTypes())
+        return assemblies.Prepend(Assembly.GetAssembly(typeof(Game))).SelectMany(ass => ass.GetTypes())
             .Where(t => !t.IsAbstract && t.IsAssignableTo(typeof(ClientMessageBase)))
             .ToArray();
     }

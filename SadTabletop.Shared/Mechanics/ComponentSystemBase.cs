@@ -7,15 +7,16 @@ namespace SadTabletop.Shared.Mechanics;
 public abstract class ComponentSystemBase : SystemBase
 {
     protected int NextId { get; set; } = 1;
-    
+
     protected ComponentSystemBase(Game game) : base(game)
     {
     }
 
     protected void AddComponentToEntity(EntityBase entity, ComponentBase component)
     {
-        component.SetId(GenerateId());
-        
+        if (component is ClientComponentBase client)
+            client.SetId(GenerateId());
+
         entity.AddComponent(component);
     }
 
@@ -23,7 +24,7 @@ public abstract class ComponentSystemBase : SystemBase
     {
         entity.RemoveComponent(component);
     }
-    
+
     private int GenerateId()
     {
         return Game.GetNextComponentId();

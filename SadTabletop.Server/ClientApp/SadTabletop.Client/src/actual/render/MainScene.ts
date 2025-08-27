@@ -11,6 +11,7 @@ import type Deck from "@/actual/things/concrete/Decks/Deck";
 import DeckObject, { deckSpotKey } from "./objects/DeckObject";
 import type Card from "../things/concrete/Cards/Card";
 import DeckCardRemovedData from "../things/concrete/Decks/DeckCardRemovedData";
+import { ContainerObjectDataKey } from "./SimpleRenderObjectRepresentation";
 
 export default class MainScene extends Phaser.Scene {
 
@@ -45,48 +46,88 @@ export default class MainScene extends Phaser.Scene {
     // ща оно вылетает ДО ПРЕЛОАДА БЛЯТЬ
     this.events.emit("READY)))");
 
-    let holding = false;
-    let position: Phaser.Math.Vector2 = Phaser.Math.Vector2.ZERO;
+    // кликаем по хуйне. надо бы вынести отсюда TODO
+    {
+      const clicked: RenderObjectRepresentation[] = [];
+      let clickDate = this.time.now;
 
-    this.input.on("pointerdown", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
-      holding = true;
-      position = pointer.position;
-    });
-    this.input.on("pointermove", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
-      if (!holding)
-        return;
+      this.input.on("pointerdown", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
 
-      const distance = position.clone().subtract(pointer.position);
+        clickDate = this.time.now;
 
-      const newX = this.cameras.main.scrollX + (distance.x / this.cameras.main.zoom);
-      const newY = this.cameras.main.scrollY + (distance.y / this.cameras.main.zoom);
+        clicked.splice(0);
 
-      this.cameras.main.setScroll(newX, newY);
+        for (const element of currentlyOver) {
+          const container = element.getData(ContainerObjectDataKey) as RenderObjectRepresentation | undefined;
+          if (container === undefined) {
+            continue;
+          }
+          if (!container.clicky) {
+            continue;
+          }
 
-      position = pointer.position.clone();
-    });
-    this.input.on("pointerup", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
-      holding = false;
-    });
-    this.input.on("wheel", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[], deltaX: number, deltaY: number, deltaZ: number) => {
+          clicked.push(container);
+        }
+      });
+      this.input.on("pointerup", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
+        if (this.time.now - clickDate > 150) {
+          return;
+        }
 
-      if (deltaY === 0)
-        return;
+        const wereClicked = clicked.splice(0).filter(container => container.clicky);
 
-      // Чем ближе, тем медленнее идёт зум. нужно как то умнее скейлить TODO
+        if (wereClicked.length !== 1) {
+          return;
+        }
 
-      const change = deltaY > 0 ? -0.2 : 0.2;
+        this.events.emit("ClickyClicked", wereClicked[0]);
+      });
+    }
 
-      let newValue = this.cameras.main.zoom + (this.cameras.main.zoom * change);
-      if (newValue <= 0.2) {
-        newValue = 0.2;
-      }
-      else if (newValue >= 1.5) {
-        newValue = 1.5;
-      }
+    // мувемент. надо бы вынести нахуй отсюда TODO
+    {
+      let holding = false;
+      let position: Phaser.Math.Vector2 = Phaser.Math.Vector2.ZERO;
+      this.input.on("pointerdown", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
+        holding = true;
+        position = pointer.position;
+      });
+      this.input.on("pointermove", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
+        if (!holding)
+          return;
 
-      this.cameras.main.zoomTo(newValue, 50);
-    });
+        const distance = position.clone().subtract(pointer.position);
+
+        const newX = this.cameras.main.scrollX + (distance.x / this.cameras.main.zoom);
+        const newY = this.cameras.main.scrollY + (distance.y / this.cameras.main.zoom);
+
+        this.cameras.main.setScroll(newX, newY);
+
+        position = pointer.position.clone();
+      });
+      this.input.on("pointerup", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
+        holding = false;
+      });
+      this.input.on("wheel", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[], deltaX: number, deltaY: number, deltaZ: number) => {
+
+        if (deltaY === 0)
+          return;
+
+        // Чем ближе, тем медленнее идёт зум. нужно как то умнее скейлить TODO
+
+        const change = deltaY > 0 ? -0.2 : 0.2;
+
+        let newValue = this.cameras.main.zoom + (this.cameras.main.zoom * change);
+        if (newValue <= 0.2) {
+          newValue = 0.2;
+        }
+        else if (newValue >= 1.5) {
+          newValue = 1.5;
+        }
+
+        this.cameras.main.zoomTo(newValue, 50);
+      });
+    }
   }
 
   destroyEntity(obj: object) {
@@ -209,5 +250,15 @@ export default class MainScene extends Phaser.Scene {
     }
 
     deckObj.updateThingsPlease();
+  }
+
+  updateClicky(item: TableItem, clicky: boolean) {
+    const obj = this.objects.find(o => o.gameObject.id === item.id);
+    if (obj === undefined) {
+      console.warn(`при updateClicky такого нет card ${item}`);
+      return;
+    }
+
+    obj.updateClicky(clicky);
   }
 }

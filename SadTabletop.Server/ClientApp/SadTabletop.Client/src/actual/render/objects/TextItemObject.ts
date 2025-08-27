@@ -29,8 +29,15 @@ export default class TextItemObject implements RenderObjectRepresentation {
   getCurrentPosition(): Phaser.Math.Vector2 {
     return this.text.getWorldPoint();
   }
+
   changePosition(x: number, y: number): void {
     this.text.setPosition(x, y);
+  }
+
+  clicky: boolean = false;
+  updateClicky(clicky: boolean): void {
+    // TODO на подумать
+    throw new Error("Method not implemented.");
   }
 
   destroy(): void {

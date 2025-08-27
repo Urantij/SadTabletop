@@ -6,9 +6,10 @@ import type Entity from "../things/Entity";
 import type TextItem from "../things/concrete/TextItem";
 import type Deck from "@/actual/things/concrete/Decks/Deck";
 import type Card from "../things/concrete/Cards/Card";
+import type RenderObjectRepresentation from "./RenderObjectRepresentation";
 
 type MessageEvents = {
-  test: () => void;
+  ClickyClicked: (entity: Entity) => void;
 }
 
 export default class Renderer {
@@ -61,6 +62,10 @@ export default class Renderer {
 
           this.scene?.cameras.main.centerOn(0, 0);
 
+          this.scene?.events.on("ClickyClicked", (container: RenderObjectRepresentation) => {
+            this.events.emit("ClickyClicked", container.gameObject);
+          });
+
           this.leGame.table.events.on("ItemAdded", (item, data) => {
             this.createEntity(item, data);
           });
@@ -82,6 +87,10 @@ export default class Renderer {
           });
           this.leGame.table.decks.events.on("CardRemoved", (deck, card) => {
             this.scene?.removeCardFromDeck(deck, card);
+          });
+
+          this.leGame.table.clicks.events.on("ItemClickyChanged", (item, clicky) => {
+            this.scene?.updateClicky(item, clicky);
           });
 
           for (const entity of this.leGame.table.items) {

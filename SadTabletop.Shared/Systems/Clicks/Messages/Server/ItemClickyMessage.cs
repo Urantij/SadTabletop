@@ -7,6 +7,6 @@ namespace SadTabletop.Shared.Systems.Clicks.Messages.Server;
 public class ItemClickyMessage(TableItem item, ClickComponent component, bool isClicky) : ServerMessageBase
 {
     public TableItem Item { get; } = item;
-    public ComponentBase Component { get; } = component;
+    public ClientComponentBase Component { get; } = component;
     public bool IsClicky { get; } = isClicky;
 }

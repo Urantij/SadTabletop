@@ -37,6 +37,9 @@ public class EventsSystem : SystemBase
             .Select(record => new Runner(record.Delegate, eventObject))
             .ToList();
 
+        if (runners.Count == 0)
+            return;
+
         _queueSystem.Insert(runners);
 
         if (!_queueSystem.Running)

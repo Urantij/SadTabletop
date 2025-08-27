@@ -17,6 +17,13 @@ leGame.subscribeToConnection(connection);
 
 const renderer = new Renderer(leGame, window.innerWidth, window.innerHeight, divId);
 
+renderer.events.on("ClickyClicked", (entity) => {
+
+  // здесь должна быть система ивентов
+  // но мне лень
+  leGame.table.clicks.clickyClicked(entity);
+});
+
 onMounted(async () => {
 
   {

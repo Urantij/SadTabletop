@@ -5,7 +5,7 @@ namespace SadTabletop.Shared.Systems.Viewer;
 
 public delegate IEntity EntityViewerTransform<in T>(T thing, Seat? target);
 
-public delegate IComponent ComponentViewerTransform<in T>(T thing, Seat? target);
+public delegate IClientComponent ComponentViewerTransform<in T>(T thing, Seat? target);
 
 public class PointOfView(Type type, Delegate @delegate)
 {
@@ -39,16 +39,16 @@ public class ViewerSystem : SystemBase
         return (IEntity)transform.Delegate.DynamicInvoke(entity, seat);
     }
 
-    public IComponent View(IComponent component, Seat? seat)
+    public IClientComponent View(IClientComponent clientComponent, Seat? seat)
     {
         // Если есть трансформ, применить вернуть. Иначе просто вернуть
 
-        PointOfView? transform = _components.FirstOrDefault(v => v.Type == component.GetType());
+        PointOfView? transform = _components.FirstOrDefault(v => v.Type == clientComponent.GetType());
 
         if (transform == null)
-            return component;
+            return clientComponent;
 
-        return (IComponent)transform.Delegate.DynamicInvoke(component, seat);
+        return (IClientComponent)transform.Delegate.DynamicInvoke(clientComponent, seat);
     }
 
     public void RegisterEntity<T>(EntityViewerTransform<T> transform) where T : EntityBase
@@ -62,7 +62,8 @@ public class ViewerSystem : SystemBase
         _entities.Add(new PointOfView(typeof(T), transform));
     }
 
-    public void RegisterComponent<T>(ComponentViewerTransform<T> transform) where T : ClientComponentBase, IComponent
+    public void RegisterComponent<T>(ComponentViewerTransform<T> transform)
+        where T : ClientComponentBase, IClientComponent
     {
         if (_components.Any(o => o.Type == typeof(T)))
         {

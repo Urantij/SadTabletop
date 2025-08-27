@@ -3,6 +3,7 @@ using SadTabletop.Shared.Mechanics;
 using SadTabletop.Shared.MoreSystems.Cards;
 using SadTabletop.Shared.MoreSystems.Texts;
 using SadTabletop.Shared.Systems.Assets;
+using SadTabletop.Shared.Systems.Clicks;
 using SadTabletop.Shared.Systems.Table;
 using SadTabletop.Shared.Systems.Times;
 
@@ -12,8 +13,11 @@ public class TestSystem : SystemBase
 {
     private readonly TableSystem _table;
     private readonly TimesSystem _times;
+    private readonly ClicksSystem _clicks;
 
     private Card? tempCard = null;
+
+    private Card? contsCard = null;
 
     private int _num = 4;
 
@@ -41,7 +45,15 @@ public class TestSystem : SystemBase
 
         texts.Create("двигаем", -200, -270, 300, 200);
 
-        cards.Create(1, 2, 55, 77, Flipness.Shown);
+        contsCard = cards.Create(1, 2, 4, 77, Flipness.Hidden);
+        _clicks.AddClick(contsCard, null, MovingClicked);
+    }
+
+    private void MovingClicked(Click obj)
+    {
+        var cards = Game.GetSystem<CardsSystem>();
+
+        cards.Flip(contsCard);
     }
 
     protected override void GameSetuped()

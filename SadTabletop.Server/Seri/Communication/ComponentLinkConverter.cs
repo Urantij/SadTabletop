@@ -7,14 +7,15 @@ namespace SadTabletop.Server.Seri.Communication;
 /// <summary>
 /// Сериализует компонент в его айди. Этого недостаточно, чтобы найти его, но это неважно.
 /// </summary>
-public class ComponentLinkConverter : JsonConverter<ComponentBase>
+public class ComponentLinkConverter : JsonConverter<ClientComponentBase>
 {
-    public override ComponentBase? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override ClientComponentBase? Read(ref Utf8JsonReader reader, Type typeToConvert,
+        JsonSerializerOptions options)
     {
         throw new NotImplementedException();
     }
 
-    public override void Write(Utf8JsonWriter writer, ComponentBase value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, ClientComponentBase value, JsonSerializerOptions options)
     {
         JsonSerializer.Serialize(writer, value.Id, options);
     }

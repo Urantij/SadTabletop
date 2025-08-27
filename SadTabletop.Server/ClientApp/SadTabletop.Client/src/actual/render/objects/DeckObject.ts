@@ -1,23 +1,21 @@
 import Flipness from "@/actual/things/Flipness";
 import type MainScene from "../MainScene";
-import type RenderObjectRepresentation from "../RenderObjectRepresentation";
 import type Deck from "@/actual/things/concrete/Decks/Deck";
 import CardObject, { cardHeight, cardWidth, defaultBackSideKey, defaultFrontSidekey } from "./CardObject";
+import SimpleRenderObjectRepresentation from "../SimpleRenderObjectRepresentation";
 
 export const deckSpotKey = "deckSpot";
 
-export default class DeckObject implements RenderObjectRepresentation {
+export default class DeckObject extends SimpleRenderObjectRepresentation {
 
-  gameObject: Deck;
+  declare readonly gameObject: Deck;
 
-  sprite: Phaser.GameObjects.Sprite;
   displayedSide: number | null;
 
   tooltip: Phaser.GameObjects.Text | null = null;
 
   constructor(gameObject: Deck, sprite: Phaser.GameObjects.Sprite, displayedSide: number | null) {
-    this.gameObject = gameObject;
-    this.sprite = sprite;
+    super(gameObject, sprite, true);
     this.displayedSide = displayedSide;
 
     this.sprite.on("pointerover", (poiner: Phaser.Input.Pointer, localX: number, localY: number, event: Phaser.Types.Input.EventData) => {
@@ -76,15 +74,5 @@ export default class DeckObject implements RenderObjectRepresentation {
     }
 
     return CardObject.getCardSideTextureKey(obj.backSide, defaultBackSideKey, scene);
-  }
-
-  getCurrentPosition(): Phaser.Math.Vector2 {
-    return this.sprite.getWorldPoint();
-  }
-  changePosition(x: number, y: number): void {
-    this.sprite.setPosition(x, y);
-  }
-  destroy(): void {
-    this.sprite.destroy();
   }
 }

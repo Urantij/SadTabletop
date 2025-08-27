@@ -1,11 +1,15 @@
-import type Entity from "../things/Entity";
+import type TableItem from "../things/TableItem";
 
 export default interface RenderObjectRepresentation {
-  gameObject: Entity;
+  gameObject: TableItem;
+
+  clicky: boolean;
 
   getCurrentPosition(): Phaser.Math.Vector2;
 
   changePosition(x: number, y: number): void;
+
+  updateClicky(clicky: boolean): void;
 
   destroy(): void;
 }

@@ -7,8 +7,8 @@ namespace SadTabletop.Shared.Systems.Synchro;
 /// Обработанная <see cref="ViewerSystem"/> системой ентити с компонентами.
 /// Сам не создавай, используй систему <see cref="SynchroSystem"/>
 /// </summary>
-public class ViewedEntity(IEntity entity, IReadOnlyList<IComponent> components)
+public class ViewedEntity(IEntity entity, IReadOnlyList<IClientComponent> components)
 {
     public IEntity Entity { get; } = entity;
-    public IReadOnlyList<IComponent> Components { get; } = components;
+    public IReadOnlyList<IClientComponent> Components { get; } = components;
 }

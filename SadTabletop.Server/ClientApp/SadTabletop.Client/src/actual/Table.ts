@@ -5,6 +5,7 @@ import type Connection from "@/communication/Connection";
 import DeckSystem from "./things/concrete/Decks/DecksSystem";
 import CardsSystem from "./things/concrete/Cards/CardsSystem";
 import type ItemMovedMessage from "@/communication/messages/server/ItemMovedMessage";
+import ClicksSystem from "./things/concrete/Clicks/ClicksSystem";
 
 type MessageEvents = {
   ItemAdded: (item: TableItem, data: object | null) => void;
@@ -23,11 +24,14 @@ export default class Table {
   readonly cards: CardsSystem = new CardsSystem(this);
   readonly decks: DeckSystem = new DeckSystem(this);
 
+  readonly clicks: ClicksSystem = new ClicksSystem(this);
+
   subscribeToConnection(connection: Connection) {
     connection.registerForMessage<ItemMovedMessage>("ItemMovedMessage", msg => this.itemMoved(msg));
 
     this.cards.subscribeToConnection(connection);
     this.decks.subscribeToConnection(connection);
+    this.clicks.subscribeToConnection(connection);
   }
 
   isTableEntityByType(type: string) {

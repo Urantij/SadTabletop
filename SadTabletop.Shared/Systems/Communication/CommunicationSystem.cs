@@ -28,7 +28,10 @@ public class CommunicationSystem : SystemBase
     // наверное, стоит вынести отсюда?
     public void Receive(Seat? seat, ClientMessageBase message)
     {
-        ClientMessageReceivedEvent ev = new(seat, message);
+        // уу рефлексия... но есть один варик с кодогенерацией канеш, если в каждое сообщение сделать партиал и добавить создание ивента
+        Type targetEventType = typeof(ClientMessageReceivedEvent<>).MakeGenericType(message.GetType());
+        EventBase ev = (EventBase)Activator.CreateInstance(targetEventType, seat, message);
+
         _events.Invoke(ev);
     }
 

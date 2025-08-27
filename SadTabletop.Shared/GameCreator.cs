@@ -5,6 +5,7 @@ using SadTabletop.Shared.MoreSystems.Decks;
 using SadTabletop.Shared.MoreSystems.Dices;
 using SadTabletop.Shared.MoreSystems.Texts;
 using SadTabletop.Shared.Systems.Assets;
+using SadTabletop.Shared.Systems.Clicks;
 using SadTabletop.Shared.Systems.Communication;
 using SadTabletop.Shared.Systems.Events;
 using SadTabletop.Shared.Systems.Limit;
@@ -36,6 +37,8 @@ public static class GameCreator
         game.Systems.Add(new ViewerSystem(game));
         game.Systems.Add(new VisabilitySystem(game));
         game.Systems.Add(new TimesSystem(game));
+
+        game.Systems.Add(new ClicksSystem(game));
 
         game.Systems.Add(new CardsSystem(game));
         game.Systems.Add(new DecksSystem(game));

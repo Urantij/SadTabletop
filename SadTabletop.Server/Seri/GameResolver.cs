@@ -59,7 +59,7 @@ public class GameResolver
         return type.Name;
     }
 
-    public string GetComponentName(IComponent entity)
+    public string GetComponentName(IClientComponent entity)
     {
         return entity.WhatIsMyType().Name;
     }
