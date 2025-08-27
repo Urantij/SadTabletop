@@ -36,13 +36,13 @@ public class ClicksSystem : ComponentSystemBase
         Game.GetSystem<ViewerSystem>().RegisterComponent<ClickComponent>(TransformClick);
     }
 
-    public ClickComponent AddClick(TableItem item, Seat? seat, Action<Click> @delegate)
+    public ClickComponent AddClick(TableItem item, Seat? seat, Action<Click> @delegate, bool singleUse = true)
     {
-        ClickComponent component = new(seat, @delegate);
+        ClickComponent component = new(seat, @delegate, singleUse);
         AddComponentToEntity(item, component);
 
         // компоненты всем видны.. наверное в будущем надо как то поменять, а то тупо
-        _communication.SendEntityRelated(new ItemClickyMessage(item, component, true), item);
+        _communication.SendEntityRelated(new ItemClickyMessage(item, component, true, singleUse), item);
 
         return component;
     }
@@ -51,7 +51,7 @@ public class ClicksSystem : ComponentSystemBase
     {
         RemoveComponentFromEntity(item, component);
 
-        _communication.SendEntityRelated(new ItemClickyMessage(item, component, false), item);
+        _communication.SendEntityRelated(new ItemClickyMessage(item, component, false, null), item);
     }
 
     private void ClientClicked(ClientMessageReceivedEvent<ClickMessage> obj)
@@ -71,6 +71,16 @@ public class ClicksSystem : ComponentSystemBase
         {
             // TODO warn
             return;
+        }
+
+        if (clickComponent.SingleUse)
+        {
+            // TODO есть нескоко моментов. если я собираюсь делать 1 клики доступный несколькоим ситам,
+            // то мне нужно уведомлять всех ситов кроме того который нажал.
+            // но я вроде бы не собирался. но при этом если кнопка для сита нулл, то там может быть несколько клиентов.
+            // впрочем, кнопок для нул сита не должно быть мне каж
+            // сейчас оно отсылает ивент, и на клиенте будет варн. но пока похуй, я думаю
+            RemoveClick(obj.Message.Item, clickComponent);
         }
 
         clickComponent.Delegate(new Click(obj.Seat, obj.Message.Item, clickComponent));

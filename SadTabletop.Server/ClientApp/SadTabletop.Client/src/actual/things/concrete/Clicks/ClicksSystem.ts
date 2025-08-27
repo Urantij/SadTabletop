@@ -3,8 +3,7 @@ import type Connection from "@/communication/Connection";
 import type TypedEmitter from "@/utilities/TypedEmiiter";
 import type ItemClickyMessage from "./messages/server/ItemClickyMessage";
 import type TableItem from "../../TableItem";
-import { removeFromCollection } from "@/utilities/MyCollections";
-import type Entity from "../../Entity";
+import { removeFromCollection, removeItemFromCollection } from "@/utilities/MyCollections";
 import type ClickMessage from "./messages/client/ClickMessage";
 import { findClicky, isClicky } from "@/utilities/Componenter";
 import type ClickComponent from "./ClickComponent";
@@ -30,16 +29,24 @@ export default class ClicksSystem {
     connection.registerForMessage<ItemClickyMessage>("ItemClickyMessage", (msg) => this.itemClickyChanged(msg));
   }
 
-  clickyClicked(entity: Entity) {
+  clickyClicked(item: TableItem) {
 
-    const component = findClicky(entity);
+    const component = findClicky(item);
     if (component === undefined) {
-      console.warn(`clickyClicked странна ${entity}`);
+      console.warn(`clickyClicked странна ${item}`);
       return;
     }
 
+    if (component.singleUse) {
+      removeItemFromCollection(item.components, component);
+
+      if (!isClicky(item)) {
+        this.events.emit("ItemClickyChanged", item, false);
+      }
+    }
+
     const message: ClickMessage = {
-      item: entity.id,
+      item: item.id,
       clickId: component.id,
     };
 
@@ -59,7 +66,8 @@ export default class ClicksSystem {
     if (msg.isClicky) {
       const component: ClickComponent = {
         id: msg.component,
-        type: "ClickComponent"
+        type: "ClickComponent",
+        singleUse: msg.singleUse === true
       };
       item.components.push(component);
     }

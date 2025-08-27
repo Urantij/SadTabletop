@@ -4,9 +4,11 @@ using SadTabletop.Shared.Systems.Table;
 
 namespace SadTabletop.Shared.Systems.Clicks.Messages.Server;
 
-public class ItemClickyMessage(TableItem item, ClickComponent component, bool isClicky) : ServerMessageBase
+public class ItemClickyMessage(TableItem item, ClickComponent component, bool isClicky, bool? singleUse)
+    : ServerMessageBase
 {
     public TableItem Item { get; } = item;
     public ClientComponentBase Component { get; } = component;
     public bool IsClicky { get; } = isClicky;
+    public bool? SingleUse { get; } = singleUse;
 }

@@ -7,9 +7,10 @@ import type TextItem from "../things/concrete/TextItem";
 import type Deck from "@/actual/things/concrete/Decks/Deck";
 import type Card from "../things/concrete/Cards/Card";
 import type RenderObjectRepresentation from "./RenderObjectRepresentation";
+import type TableItem from "../things/TableItem";
 
 type MessageEvents = {
-  ClickyClicked: (entity: Entity) => void;
+  ClickyClicked: (entity: TableItem) => void;
 }
 
 export default class Renderer {
