@@ -11,6 +11,7 @@ type MessageEvents = {
   ItemAdded: (item: TableItem, data: object | null) => void;
   ItemRemoved: (item: TableItem) => void;
   ItemMoved: (item: TableItem, oldX: number, oldY: number) => void;
+  Clearing: () => void;
 }
 
 /**
@@ -32,6 +33,11 @@ export default class Table {
     this.cards.subscribeToConnection(connection);
     this.decks.subscribeToConnection(connection);
     this.clicks.subscribeToConnection(connection);
+  }
+
+  clear() {
+    this.items.splice(0);
+    this.events.emit("Clearing");
   }
 
   isTableEntityByType(type: string) {

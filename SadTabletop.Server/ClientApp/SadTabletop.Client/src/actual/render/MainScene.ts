@@ -140,6 +140,13 @@ export default class MainScene extends Phaser.Scene {
     rended.destroy();
   }
 
+  clearItems() {
+    for (const obj of this.objects) {
+      obj.destroy();
+    }
+    this.objects.splice(0);
+  }
+
   moveItem(item: TableItem, oldX: number, oldY: number) {
 
     const obj = this.objects.find(o => o.gameObject.id === item.id);

@@ -68,6 +68,11 @@ public abstract class EntitiesSystem<T> : EntitiesSystem
         return List.First(e => e.Id == id);
     }
 
+    public T? MaybeGetEntity(int id)
+    {
+        return List.FirstOrDefault(e => e.Id == id);
+    }
+
     public override IEnumerable<EntityBase> EnumerateRawEntities()
     {
         return List;

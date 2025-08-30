@@ -150,6 +150,13 @@ public class Connector
         else if (container.Name == nameof(RegisterMessage))
         {
         }
+        else if (container.Name == nameof(TakeSeatMessage))
+        {
+            TakeSeatMessage message =
+                JsonSerializer.Deserialize<TakeSeatMessage>(container.Content, _serializerOptions);
+
+            TakeSeatReceived(appClient, message);
+        }
         else if (_clientMessageTypes.TryGetValue(container.Name, out Type? messageType))
         {
             if (appClient.GameContainer == null)
@@ -215,7 +222,7 @@ public class Connector
         appClient.Player = player;
         appClient.GameContainer = gameContainer;
 
-        JoinedMessage response = new(content, pInfos);
+        JoinedMessage response = new(player.Seat?.Id, content, pInfos);
 
         PlayerJoinedMessage playerJoinedMessage = new(player.Id, player.Name, player.Seat?.Id);
         JsonNode joinedSerialized = SerializeMessage(playerJoinedMessage);
@@ -226,6 +233,51 @@ public class Connector
         }
 
         QueueMessage(appClient, SerializeMessage(response));
+    }
+
+    private void TakeSeatReceived(AppClient appClient, TakeSeatMessage message)
+    {
+        if (appClient.GameContainer == null || appClient.Player == null)
+        {
+            Terminate(appClient);
+            return;
+        }
+
+        // TODO рейсим кондишены
+
+        using Lock.Scope scope = appClient.GameContainer.Locker.EnterScope();
+
+        Seat? targetSeat = null;
+        if (message.SeatId != null)
+        {
+            targetSeat = appClient.GameContainer.Game.GetSystem<SeatsSystem>().MaybeGetEntity(message.SeatId.Value);
+
+            Player? busyPlayer = appClient.GameContainer.Players.FirstOrDefault(s => s.Seat == targetSeat);
+            if (busyPlayer != null)
+            {
+                // TODO log
+                return;
+            }
+        }
+
+        if (targetSeat == appClient.Player.Seat)
+        {
+            // TODO log
+            return;
+        }
+
+        appClient.Player.Seat = targetSeat;
+
+        PlayerTookSeatMessage sendMessage = new(appClient.Player.Id, targetSeat?.Id);
+        JsonNode serializedMessage = SerializeMessage(sendMessage);
+
+        foreach (Player player in appClient.GameContainer.Players.Where(p => p != appClient.Player))
+        {
+            QueueMessage(player.Client, serializedMessage);
+        }
+
+        ViewedEntity[] content = appClient.GameContainer.MakeSynchroContent(targetSeat);
+        QueueMessage(appClient, SerializeMessage(new YouTookSeatMessage(targetSeat?.Id, content)));
     }
 
     /// <summary>
