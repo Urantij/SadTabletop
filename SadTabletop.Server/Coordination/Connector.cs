@@ -222,7 +222,7 @@ public class Connector
         appClient.Player = player;
         appClient.GameContainer = gameContainer;
 
-        JoinedMessage response = new(player.Seat?.Id, content, pInfos);
+        JoinedMessage response = new(player.Id, content, pInfos);
 
         PlayerJoinedMessage playerJoinedMessage = new(player.Id, player.Name, player.Seat?.Id);
         JsonNode joinedSerialized = SerializeMessage(playerJoinedMessage);

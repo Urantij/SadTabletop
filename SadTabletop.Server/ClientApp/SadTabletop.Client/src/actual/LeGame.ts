@@ -10,6 +10,7 @@ import type YouTookSeatMessage from "@/communication/messages/server/YouTookSeat
 import Bench from "./Bench";
 import type Seat from "./things/Seat";
 import PlayersContainer from "./PlayersContainer";
+import type Player from "./things/Player";
 
 /**
  * Хранит все данные игры.
@@ -24,7 +25,7 @@ export default class LeGame {
 
   public readonly playersContainer: PlayersContainer = new PlayersContainer(this);
 
-  public ourSeat: Seat | null = null;
+  public ourPlayer: Player | null = null;
 
   constructor() {
   }
@@ -44,7 +45,11 @@ export default class LeGame {
   private meJoined(data: JoinedMessage): void {
     this.eatEntities(data.entities);
 
-    this.ourSeat = this.bench.seats.find(s => s.id === data.seatId) ?? null;
+    for (const player of data.players) {
+      this.playersContainer.addPlayer(player);
+    }
+
+    this.ourPlayer = this.playersContainer.players.find(p => p.id === data.playerId) ?? null;
   }
 
   private entityAdded(data: EntityAddedMessage): void {
@@ -83,6 +88,6 @@ export default class LeGame {
     this.bench.clear();
     this.eatEntities(msg.entities);
 
-    this.ourSeat = this.bench.seats.find(s => s.id === msg.seatId) ?? null;
+    this.ourPlayer!.seat = this.bench.seats.find(s => s.id === msg.seatId) ?? null;
   }
 }
