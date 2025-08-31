@@ -5,7 +5,9 @@ import { onUnmounted, ref } from 'vue';
 
 const props = defineProps<{
   game: LeGame,
-  player: Player
+  player: Player,
+  width: number,
+  height: number
 }>();
 
 const emit = defineEmits<{
@@ -44,6 +46,8 @@ function getColor() {
 <template>
   <div :style="[
     {
+      width: `${props.width}px`,
+      height: `${props.height}px`,
       backgroundColor: color
     }
   ]" v-on:click="clicked">

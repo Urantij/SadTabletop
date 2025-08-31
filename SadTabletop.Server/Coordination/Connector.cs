@@ -213,14 +213,14 @@ public class Connector
             seat = gameContainer.Game.GetSystem<SeatsSystem>().GetEntity(targetSeatId.Value);
         }
 
-        ViewedEntity[] content = gameContainer.MakeSynchroContent(seat);
-        PlayerInfo[] pInfos = gameContainer.MakePlayerInfo();
-
         Player player = new(gameContainer.GetNextPlayerId(), name, appClient, seat);
         gameContainer.Players.Add(player);
 
         appClient.Player = player;
         appClient.GameContainer = gameContainer;
+
+        ViewedEntity[] content = gameContainer.MakeSynchroContent(seat);
+        PlayerInfo[] pInfos = gameContainer.MakePlayerInfo();
 
         JoinedMessage response = new(player.Id, content, pInfos);
 

@@ -28,8 +28,6 @@ export default class PlayersContainer {
 
   subscribeToConnection(connection: Connection) {
 
-    connection.registerForMessage<JoinedMessage>("JoinedMessage", (msg) => this.joined(msg));
-
     connection.registerForMessage<PlayerJoinedMessage>("PlayerJoinedMessage", (msg) => this.playerJoined(msg));
     connection.registerForMessage<PlayerLeftMessage>("PlayerLeftMessage", (msg) => this.playerLeft(msg));
 
@@ -51,12 +49,6 @@ export default class PlayersContainer {
     this.players.push(player);
 
     this.events.emit("PlayerAdded", player);
-  }
-
-  private joined(msg: JoinedMessage): void {
-    for (const playerInfo of msg.players) {
-      this.addPlayer(playerInfo);
-    }
   }
 
   private playerJoined(msg: PlayerJoinedMessage): void {
