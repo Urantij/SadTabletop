@@ -69,7 +69,8 @@ onMounted(async () => {
       {
         'position': 'absolute',
         'left': '0px',
-        'top': '0px'
+        'top': '0px',
+        // pointerEvents: 'none'
       }
     ]" :id="divId">
       <UiContainer :draw="draw" :game="leGame"></UiContainer>

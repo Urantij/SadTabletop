@@ -301,7 +301,8 @@ public class Connector
 
         appClient.Player.Name = message.NewName;
 
-        JsonNode serializedResponse = SerializeMessage(new PlayerChangedNameMessage(appClient.Player.Id, appClient.Player.Name));
+        JsonNode serializedResponse =
+            SerializeMessage(new PlayerChangedNameMessage(appClient.Player.Id, appClient.Player.Name));
 
         foreach (Player player in appClient.GameContainer.Players.Where(p => p != appClient.Player))
         {

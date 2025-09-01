@@ -8,5 +8,4 @@ namespace SadTabletop.Shared.Systems.Seats;
 /// </summary>
 public class Seat : EntityBase
 {
-    
 }

@@ -7,7 +7,7 @@ import type Seat from "./things/Seat";
 import type PlayerInfo from "@/communication/models/PlayerInfo";
 import type PlayerTookSeatMessage from "@/communication/messages/server/PlayerTookSeatMessage";
 import type PlayerLeftMessage from "@/communication/messages/server/PlayerLeftMessage";
-import PlayerChangedNameMessage from "@/communication/messages/server/PlayerChangedNameMessage";
+import type PlayerChangedNameMessage from "@/communication/messages/server/PlayerChangedNameMessage";
 
 type MessageEvents = {
   PlayerAdded: (player: Player) => void;

@@ -40,7 +40,7 @@ function playerClicked(player: Player) {
 </script>
 
 <template>
-  <div>
+  <div style="pointer-events: auto;">
     <PlayerPlate v-for="player in players" :game="props.game" :player="player"
       v-on:left-click="() => playerClicked(player)" :width="plateWidth" :height="plateHeight" />
   </div>
