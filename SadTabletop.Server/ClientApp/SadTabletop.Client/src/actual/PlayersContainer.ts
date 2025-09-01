@@ -2,17 +2,18 @@ import type TypedEmitter from "@/utilities/TypedEmiiter";
 import type Connection from "@/communication/Connection";
 import type Player from "./things/Player";
 import type LeGame from "./LeGame";
-import type JoinedMessage from "@/communication/messages/server/JoinedMessage";
 import type PlayerJoinedMessage from "@/communication/messages/server/PlayerJoinedMessage";
 import type Seat from "./things/Seat";
 import type PlayerInfo from "@/communication/models/PlayerInfo";
 import type PlayerTookSeatMessage from "@/communication/messages/server/PlayerTookSeatMessage";
 import type PlayerLeftMessage from "@/communication/messages/server/PlayerLeftMessage";
+import PlayerChangedNameMessage from "@/communication/messages/server/PlayerChangedNameMessage";
 
 type MessageEvents = {
   PlayerAdded: (player: Player) => void;
   PlayerRemoved: (Player: Player) => void;
   PlayerSeatChanged: (player: Player) => void;
+  PlayerNameChanged: (player: Player) => void;
 }
 
 export default class PlayersContainer {
@@ -32,6 +33,7 @@ export default class PlayersContainer {
     connection.registerForMessage<PlayerLeftMessage>("PlayerLeftMessage", (msg) => this.playerLeft(msg));
 
     connection.registerForMessage<PlayerTookSeatMessage>("PlayerTookSeatMessage", (msg) => this.playerTookSeat(msg));
+    connection.registerForMessage<PlayerChangedNameMessage>("PlayerChangedNameMessage", (msg) => this.playerChangedName(msg));
   }
 
   addPlayer(playerInfo: PlayerInfo) {
@@ -88,5 +90,18 @@ export default class PlayersContainer {
     player.seat = seat;
 
     this.events.emit("PlayerSeatChanged", player);
+  }
+
+  private playerChangedName(msg: PlayerChangedNameMessage): void {
+    const player = this.players.find(p => p.id === msg.playerId);
+
+    if (player === undefined) {
+      console.warn(`playerChangedName не нашолся игрок ${msg.playerId}`);
+      return;
+    }
+
+    player.name = msg.newName;
+
+    this.events.emit("PlayerNameChanged", player);
   }
 }

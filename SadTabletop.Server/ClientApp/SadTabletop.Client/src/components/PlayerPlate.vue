@@ -18,9 +18,11 @@ const color = ref(getColor());;
 const name = ref(props.player.name);
 
 props.game.playersContainer.events.on("PlayerSeatChanged", playerSeatChanged, this);
+props.game.playersContainer.events.on("PlayerNameChanged", playerNameChanged, this);
 
 onUnmounted(() => {
   props.game.playersContainer.events.off("PlayerSeatChanged", playerSeatChanged, this);
+  props.game.playersContainer.events.off("PlayerNameChanged", playerNameChanged, this);
 });
 
 function playerSeatChanged(player: Player) {
@@ -28,6 +30,12 @@ function playerSeatChanged(player: Player) {
     return;
 
   color.value = getColor();
+}
+function playerNameChanged(player: Player) {
+  if (player !== props.player)
+    return;
+
+  name.value = player.name;
 }
 
 function clicked() {

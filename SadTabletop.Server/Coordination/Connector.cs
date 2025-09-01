@@ -157,6 +157,13 @@ public class Connector
 
             TakeSeatReceived(appClient, message);
         }
+        else if (container.Name == nameof(ChangeNameMessage))
+        {
+            ChangeNameMessage message =
+                JsonSerializer.Deserialize<ChangeNameMessage>(container.Content, _serializerOptions);
+
+            ChangeNameReceived(appClient, message);
+        }
         else if (_clientMessageTypes.TryGetValue(container.Name, out Type? messageType))
         {
             if (appClient.GameContainer == null)
@@ -278,6 +285,28 @@ public class Connector
 
         ViewedEntity[] content = appClient.GameContainer.MakeSynchroContent(targetSeat);
         QueueMessage(appClient, SerializeMessage(new YouTookSeatMessage(targetSeat?.Id, content)));
+    }
+
+    private void ChangeNameReceived(AppClient appClient, ChangeNameMessage message)
+    {
+        if (appClient.GameContainer == null || appClient.Player == null)
+        {
+            Terminate(appClient);
+            return;
+        }
+
+        using Lock.Scope scope = appClient.GameContainer.Locker.EnterScope();
+
+        // TODO рейсим кондишены
+
+        appClient.Player.Name = message.NewName;
+
+        JsonNode serializedResponse = SerializeMessage(new PlayerChangedNameMessage(appClient.Player.Id, appClient.Player.Name));
+
+        foreach (Player player in appClient.GameContainer.Players.Where(p => p != appClient.Player))
+        {
+            QueueMessage(player.Client, serializedResponse);
+        }
     }
 
     /// <summary>
