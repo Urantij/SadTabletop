@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import type LeGame from '@/actual/LeGame';
-import { onMounted, onUnmounted, reactive, ref, render, useTemplateRef } from 'vue';
+import { onMounted, onUnmounted, reactive, ref, render, useTemplateRef, type Ref } from 'vue';
 import PlayerPanel from './PlayerPanel.vue';
 import SettingsPanel from './SettingsPanel.vue';
+import type PopitOption from './PopitOption';
+import Popit from './Popit.vue';
+import type PopitData from './PopitData';
 
 const uicontainer = useTemplateRef("uicontainer");
 
@@ -12,7 +15,16 @@ const props = defineProps<{
   draw: boolean
 }>();
 
+defineExpose({
+  addPopit
+});
+
 const showSettings = ref(false);
+const showPopit = ref(true);
+const showPopitButton = ref(false);
+
+const popits: PopitData[] = [];
+const currentPopit: Ref<PopitData | null> = ref(null);
 
 const style = reactive({
   'width': window.innerWidth + 'px',
@@ -32,10 +44,42 @@ onUnmounted(() => {
   window.removeEventListener('resize', onResize);
 });
 
+function addPopit(title: string, options: PopitOption[], canHide: boolean = true, canClose: boolean = true) {
+
+  const data: PopitData = {
+    title: title,
+    options: options,
+    canHide: canHide,
+    canClose: canClose
+  };
+
+  if (currentPopit.value !== null) {
+    popits.push(data);
+    return;
+  }
+
+  currentPopit.value = data;
+}
+
 function onResize(ev: UIEvent) {
 
   style.width = window.innerWidth + 'px';
   style.height = window.innerHeight + 'px';
+}
+
+function popitWantsClose() {
+  const newData = popits.shift() ?? null;
+  currentPopit.value = newData;
+}
+function popitWantsHide() {
+  showPopitButton.value = true;
+  showPopit.value = false;
+}
+function popitChoseOption(option: PopitOption) {
+  const newData = popits.shift() ?? null;
+  currentPopit.value = newData;
+
+  option.callback();
 }
 
 function settingsClicked() {
@@ -58,6 +102,11 @@ function settingsClicked() {
 
   // render(node, uicontainer.value);
 }
+
+function popitButtonClicked() {
+  showPopitButton.value = false;
+  showPopit.value = true;
+}
 </script>
 
 <template>
@@ -68,6 +117,10 @@ function settingsClicked() {
       <PlayerPanel :game="game"></PlayerPanel>
     </div>
     <button style="pointer-events: auto; width: 100px; height: 100px;" @click="(ev) => settingsClicked()">O</button>
+    <button style="pointer-events: auto; width: 100px; height: 100px;" @click="(ev) => popitButtonClicked()">P</button>
+    <Popit v-if="currentPopit !== null" style="top: 300px; left: 300px" :width="500" :height="300" :data="currentPopit"
+      @close-me="popitWantsClose()" @hide-me="popitWantsHide()" @option-clicked="(option) => popitChoseOption(option)">
+    </Popit>
     <SettingsPanel style="position: absolute; top: 100px; left: 100px;" v-if="showSettings" :width="500" :height="400"
       @close-me="() => showSettings = false">
     </SettingsPanel>
