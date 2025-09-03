@@ -33,7 +33,9 @@ function optionClicked(option: PopitOption) {
   <div :style="[
     {
       width: `${props.width}px`,
-      height: `${props.height}px`
+      height: `${props.height}px`,
+      pointerEvents: 'auto',
+      backgroundColor: 'darkcyan'
     }
   ]">
     <div>

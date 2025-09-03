@@ -4,6 +4,7 @@ using SadTabletop.Shared.MoreSystems.Cards;
 using SadTabletop.Shared.MoreSystems.Texts;
 using SadTabletop.Shared.Systems.Assets;
 using SadTabletop.Shared.Systems.Clicks;
+using SadTabletop.Shared.Systems.Seats;
 using SadTabletop.Shared.Systems.Table;
 using SadTabletop.Shared.Systems.Times;
 
@@ -32,6 +33,11 @@ public class TestSystem : SystemBase
     protected override void GameCreated()
     {
         base.GameCreated();
+
+        var seats = this.Game.GetSystem<SeatsSystem>();
+        seats.AddSeat();
+        seats.AddSeat();
+        seats.AddSeat();
 
         var assets = this.Game.GetSystem<AssetsSystem>();
         assets.AddCardAsset(4, "card4.png");

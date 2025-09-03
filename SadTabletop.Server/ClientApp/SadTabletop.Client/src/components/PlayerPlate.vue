@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type LeGame from '@/actual/LeGame';
 import type Player from '@/actual/things/Player';
+import SeatColor from '@/actual/things/SeatColor';
 import { onUnmounted, ref } from 'vue';
 
 const props = defineProps<{
@@ -47,7 +48,16 @@ function getColor() {
     return "gray";
   }
 
-  return "green";
+  switch (props.player.seat.color) {
+    case SeatColor.Red: return "red";
+    case SeatColor.Blue: return "blue";
+    case SeatColor.Green: return "green";
+    case SeatColor.Pink: return "pink";
+    case SeatColor.Yellow: return "yellow";
+    case SeatColor.White: return "white";
+
+    default: return "black";
+  }
 }
 </script>
 

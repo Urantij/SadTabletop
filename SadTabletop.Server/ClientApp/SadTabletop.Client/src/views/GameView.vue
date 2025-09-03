@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import LeGame from '@/actual/LeGame';
 import Renderer from '@/actual/render/Renderer';
-import Connection from '@/communication/Connection';
+import connectionInstance from '@/communication/ConnectionDva';
 import type ChangeNameMessage from '@/communication/messages/client/ChangeNameMessage';
 import UiContainer from '@/components/UiContainer.vue';
 import { useUserStore } from '@/stores/UserStore';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, useTemplateRef } from 'vue';
+
+const uicontainer = useTemplateRef("uicontainer");
 
 const userStore = useUserStore();
 
 const divId = "taskete";
 
-const connection = new Connection(`${window.location.host}/ws`);
+const connection = connectionInstance;
 
 const draw = ref(false);
 
@@ -73,7 +75,7 @@ onMounted(async () => {
         // pointerEvents: 'none'
       }
     ]" :id="divId">
-      <UiContainer :draw="draw" :game="leGame"></UiContainer>
+      <UiContainer ref="uicontainer" :draw="draw" :game="leGame"></UiContainer>
     </div>
   </main>
 </template>

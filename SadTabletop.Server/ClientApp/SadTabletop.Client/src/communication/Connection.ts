@@ -7,8 +7,6 @@ import type PlayerLeftMessage from "./messages/server/PlayerLeftMessage";
 import { useUserStore } from "@/stores/UserStore";
 import type EntityAddedMessage from "./messages/server/EntityAddedMessage";
 import type EntityRemovedMessage from "./messages/server/EntityRemovedMessage";
-import type ItemMovedMessage from "./messages/server/ItemMovedMessage";
-import type CardFlippedMessage from "../actual/things/concrete/Cards/messages/server/CardFlippedMessage";
 
 type MessageEvents = {
   MeJoined: (data: JoinedMessage) => void;
@@ -30,8 +28,6 @@ export default class Connection {
   private socket: WebSocket | null = null;
 
   readonly events: TypedEmitter<MessageEvents> = new Phaser.Events.EventEmitter();
-
-  readonly userStore = useUserStore();
 
   readonly subs: SubInfo[] = [];
 
@@ -97,9 +93,11 @@ export default class Connection {
   }
 
   private connected() {
+    const userStore = useUserStore();
+    // TODO регистер впадлу делать мнеее
     const message: JoinMessage = {
-      key: this.userStore.key,
-      name: this.userStore.name,
+      key: userStore.key ?? "123",
+      name: userStore.name,
     };
 
     this.sendMessage("JoinMessage", message);
