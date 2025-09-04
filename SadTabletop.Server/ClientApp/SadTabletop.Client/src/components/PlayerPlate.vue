@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type LeGame from '@/actual/LeGame';
 import type Player from '@/actual/things/Player';
-import SeatColor from '@/actual/things/SeatColor';
+import SeatColor, { getLocalizedSeatColor } from '@/actual/things/SeatColor';
 import connectionInstance from '@/communication/ConnectionDva';
 import { usePopitStore } from '@/stores/PopitStore';
 import { onUnmounted, ref } from 'vue';
@@ -71,7 +71,7 @@ function clicked() {
       .filter(s => !props.game.playersContainer.isSeatBusy(s))
       .map<PopitOption>(seat => {
         return {
-          title: seat.color.toString(),
+          title: getLocalizedSeatColor(seat.color),
           callback: () => {
 
             if (props.game.playersContainer.isSeatBusy(seat)) {
