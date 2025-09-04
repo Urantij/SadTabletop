@@ -72,6 +72,7 @@ function onResize(ev: UIEvent) {
 }
 
 function popitWantsClose() {
+  currentPopit.value!.finished = true;
   trySetNextPopit();
 }
 function popitWantsHide() {
@@ -79,6 +80,7 @@ function popitWantsHide() {
   showPopit.value = false;
 }
 function popitChoseOption(option: PopitOption) {
+  currentPopit.value!.finished = true;
   trySetNextPopit();
 
   option.callback();

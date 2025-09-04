@@ -2,17 +2,22 @@
 import type LeGame from '@/actual/LeGame';
 import type Player from '@/actual/things/Player';
 import SeatColor from '@/actual/things/SeatColor';
+import connectionInstance from '@/communication/ConnectionDva';
+import { usePopitStore } from '@/stores/PopitStore';
 import { onUnmounted, ref } from 'vue';
+import type PopitOption from './PopitOption';
+import type TakeSeatMessage from '@/communication/messages/client/TakeSeatMessage';
+import type PopitData from './PopitData';
+
+const popitStore = usePopitStore();
+
+let changeChairPopit: PopitData | null = null;
 
 const props = defineProps<{
   game: LeGame,
   player: Player,
   width: number,
   height: number
-}>();
-
-const emit = defineEmits<{
-  leftClick: []
 }>();
 
 const color = ref(getColor());;
@@ -39,10 +44,6 @@ function playerNameChanged(player: Player) {
   name.value = player.name;
 }
 
-function clicked() {
-  emit("leftClick");
-}
-
 function getColor() {
   if (props.player.seat === null) {
     return "gray";
@@ -57,6 +58,52 @@ function getColor() {
     case SeatColor.White: return "white";
 
     default: return "black";
+  }
+}
+
+function clicked() {
+  if (props.player === props.game.ourPlayer) {
+
+    if (changeChairPopit?.finished === false)
+      return;
+
+    const options: PopitOption[] = props.game.bench.seats
+      .filter(s => !props.game.playersContainer.isSeatBusy(s))
+      .map<PopitOption>(seat => {
+        return {
+          title: seat.color.toString(),
+          callback: () => {
+
+            if (props.game.playersContainer.isSeatBusy(seat)) {
+              return;
+            }
+
+            const message: TakeSeatMessage = {
+              seatId: seat.id
+            };
+
+            connectionInstance.sendMessage("TakeSeatMessage", message);
+          }
+        };
+      });
+
+    if (props.game.ourPlayer.seat !== null) {
+      options.push({
+        title: "слезть",
+        callback: () => {
+          if (props.game.ourPlayer?.seat === null)
+            return;
+
+          const message: TakeSeatMessage = {
+            seatId: null
+          };
+
+          connectionInstance.sendMessage("TakeSeatMessage", message);
+        }
+      });
+    }
+
+    changeChairPopit = popitStore.addPopit("Выбираешь стул?", options, false, true);
   }
 }
 </script>

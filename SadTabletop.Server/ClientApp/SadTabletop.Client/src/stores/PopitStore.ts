@@ -13,10 +13,14 @@ export const usePopitStore = defineStore('popit', () => {
       title: title,
       options: options,
       canHide: canHide,
-      canClose: canClose
+      canClose: canClose,
+
+      finished: false
     };
 
     arr.value.push(data);
+
+    return data;
   }
 
   return { arr, addPopit };

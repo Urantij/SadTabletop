@@ -5,4 +5,6 @@ export default interface PopitData {
   options: PopitOption[];
   canHide: boolean;
   canClose: boolean;
+
+  finished: boolean;
 }
