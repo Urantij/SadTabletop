@@ -8,6 +8,8 @@ export default class TextItemObject implements RenderObjectRepresentation {
 
   text: Phaser.GameObjects.Text;
 
+  destroyed: boolean = false;
+
   constructor(gameObject: TextItem, text: Phaser.GameObjects.Text) {
     this.gameObject = gameObject;
     this.text = text;
@@ -41,6 +43,7 @@ export default class TextItemObject implements RenderObjectRepresentation {
   }
 
   destroy(): void {
+    this.destroyed = true;
     this.text.destroy();
   }
 }

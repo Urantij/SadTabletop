@@ -5,6 +5,8 @@ export default interface RenderObjectRepresentation {
 
   clicky: boolean;
 
+  destroyed: boolean;
+
   getCurrentPosition(): Phaser.Math.Vector2;
 
   changePosition(x: number, y: number): void;

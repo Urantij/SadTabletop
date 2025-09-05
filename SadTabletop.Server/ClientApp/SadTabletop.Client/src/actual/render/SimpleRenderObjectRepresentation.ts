@@ -13,6 +13,8 @@ export default class SimpleRenderObjectRepresentation implements RenderObjectRep
 
   clicky: boolean = false;
 
+  destroyed: boolean = false;
+
   constructor(gameObject: TableItem, sprite: Phaser.GameObjects.Sprite, needInteraction: boolean) {
     this.gameObject = gameObject;
     this.sprite = sprite;
@@ -48,6 +50,7 @@ export default class SimpleRenderObjectRepresentation implements RenderObjectRep
     }
   }
   destroy(): void {
+    this.destroyed = true;
     this.sprite.destroy();
   }
 }

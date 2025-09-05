@@ -42,6 +42,11 @@ export default class Animka {
         continuation();
       },
       onUpdate: function (tween, target, key, current, previous, param) {
+        if (holder.obj.destroyed) {
+          tween.destroy();
+          return;
+        }
+
         holder.obj.changePosition(holder.start.x + holder.xChange, holder.start.y + holder.yChange);
       },
       props: {
@@ -69,7 +74,12 @@ export default class Animka {
     const tween2: Phaser.Types.Tweens.TweenBuilderConfig = {
       targets: obj.sprite,
       duration: time,
-      onStart: () => {
+      onStart: (tween) => {
+        if (obj.destroyed) {
+          tween.destroy();
+          return;
+        }
+
         obj.sprite.setTexture(newSideTexture.key);
       },
       props: {
