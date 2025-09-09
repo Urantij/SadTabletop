@@ -2,6 +2,10 @@ import type MainScene from "../MainScene";
 import Flipness from "@/actual/things/Flipness";
 import type Card from "@/actual/things/concrete/Cards/Card";
 import SimpleRenderObjectRepresentation from "../SimpleRenderObjectRepresentation";
+import { findComponent, findComponentForSure } from "@/utilities/Componenter";
+import type { InHandComponent } from "@/actual/things/concrete/Hands/InHandComponent";
+import GameValues from "@/actual/GameValues";
+import type Hand from "@/actual/things/concrete/Hands/Hand";
 
 export const cardWidth = 250;
 export const cardHeight = 350;
@@ -32,7 +36,48 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
 
     const obj = new CardObject(card, scene, cardSprite);
 
+    scene.leGame.hands.events.on("CardMovedToHand", obj.moveToHand, obj);
+    scene.leGame.hands.events.on("CardRemovedFromHand", obj.removeFromHand, obj);
+    scene.leGame.hands.events.on("CardsSwapped", obj.swapInHands, obj);
+
     return obj;
+  }
+
+  private moveToHand(movingCard: Card) {
+    if (movingCard !== this.gameObject)
+      return;
+
+    const component = findComponentForSure<InHandComponent>(this.gameObject, "InHandComponent");
+
+    const position = GameValues.calculateCardPosition(this.scene.leGame.bench, component);
+    this.changePosition(position.x, position.y);
+  }
+
+  private removeFromHand(movingCard: Card, hand: Hand) {
+
+    const component = findComponent<InHandComponent>(this.gameObject, "InHandComponent");
+
+    if (component?.hand !== hand)
+      return;
+
+    if (movingCard !== this.gameObject) {
+      const position = GameValues.calculateCardPosition(this.scene.leGame.bench, component);
+      this.changePosition(position.x, position.y);
+
+      return;
+    }
+
+    this.changePosition(movingCard.x, movingCard.y);
+  }
+
+  private swapInHands(movingCard1: Card, movingCard2: Card) {
+    if (movingCard1 !== this.gameObject && movingCard2 !== this.gameObject)
+      return;
+
+    const component = findComponentForSure<InHandComponent>(this.gameObject, "InHandComponent");
+
+    const position = GameValues.calculateCardPosition(this.scene.leGame.bench, component);
+    this.changePosition(position.x, position.y);
   }
 
   getCardSideTexture() {
@@ -68,5 +113,13 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
       return scene.textures.get(cardId);
 
     return scene.textures.get(fallback);
+  }
+
+  override destroy(): void {
+    super.destroy();
+
+    this.scene.leGame.hands.events.off("CardMovedToHand", this.moveToHand, this);
+    this.scene.leGame.hands.events.off("CardRemovedFromHand", this.moveToHand, this);
+    this.scene.leGame.hands.events.off("CardsSwapped", this.moveToHand, this);
   }
 }

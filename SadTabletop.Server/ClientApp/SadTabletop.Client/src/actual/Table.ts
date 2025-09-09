@@ -80,6 +80,15 @@ export default class Table {
     this.events.emit("ItemMoved", item, oldX, oldY)
   }
 
+  findItem<T extends TableItem>(id: number) {
+    const res = this.items.find(i => i.id === id);
+
+    if (res === undefined)
+      return res;
+
+    return res as T;
+  }
+
   private itemMoved(msg: ItemMovedMessage): void {
     this.moveItem(msg.item, msg.x, msg.y);
   }

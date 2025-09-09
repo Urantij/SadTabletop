@@ -11,6 +11,7 @@ import Bench from "./Bench";
 import type Seat from "./things/Seat";
 import PlayersContainer from "./PlayersContainer";
 import type Player from "./things/Player";
+import HandsSystem from "./things/concrete/Hands/HandsSystem";
 
 /**
  * Хранит все данные игры.
@@ -19,6 +20,8 @@ export default class LeGame {
 
   public readonly table: Table = new Table();
   public readonly bench: Bench = new Bench();
+
+  public readonly hands: HandsSystem = new HandsSystem(this.table, this.bench);
 
   public readonly sidesData: { num: number; path: string }[] = [];
   public readonly assetsData: { name: string; url: string }[] = [];
@@ -40,6 +43,7 @@ export default class LeGame {
     this.table.subscribeToConnection(connection);
     this.bench.subscribeToConnection(connection);
     this.playersContainer.subscribeToConnection(connection);
+    this.hands.subscribeToConnection(connection);
   }
 
   private meJoined(data: JoinedMessage): void {
