@@ -30,7 +30,9 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
     const sideTexture = card.flipness === Flipness.Shown ? CardObject.getCardSideTexture(card.frontSide, fallback, scene)
       : CardObject.getCardSideTexture(card.backSide, fallback, scene);
 
-    const cardSprite = new Phaser.GameObjects.Sprite(scene, x ?? card.x, y ?? card.y, sideTexture);
+    const pos = this.getResultPosition(card, scene);
+
+    const cardSprite = new Phaser.GameObjects.Sprite(scene, x ?? pos.x, y ?? pos.y, sideTexture);
     cardSprite.setDisplaySize(cardWidth, cardHeight);
     scene.add.existing(cardSprite);
 
@@ -55,19 +57,18 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
 
   private removeFromHand(movingCard: Card, hand: Hand) {
 
+    if (movingCard === this.gameObject) {
+      this.changePosition(movingCard.x, movingCard.y);
+      return;
+    }
+
     const component = findComponent<InHandComponent>(this.gameObject, "InHandComponent");
 
     if (component?.hand !== hand)
       return;
 
-    if (movingCard !== this.gameObject) {
-      const position = GameValues.calculateCardPosition(this.scene.leGame.bench, component);
-      this.changePosition(position.x, position.y);
-
-      return;
-    }
-
-    this.changePosition(movingCard.x, movingCard.y);
+    const position = GameValues.calculateCardPosition(this.scene.leGame.bench, component);
+    this.changePosition(position.x, position.y);
   }
 
   private swapInHands(movingCard1: Card, movingCard2: Card) {
@@ -78,6 +79,18 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
 
     const position = GameValues.calculateCardPosition(this.scene.leGame.bench, component);
     this.changePosition(position.x, position.y);
+  }
+
+  private static getResultPosition(card: Card, scene: MainScene) {
+
+    const component = findComponent<InHandComponent>(card, "InHandComponent");
+
+    if (component !== undefined) {
+      return GameValues.calculateCardPosition(scene.leGame.bench, component);
+    }
+    else {
+      return new Phaser.Geom.Point(card.x, card.y);
+    }
   }
 
   getCardSideTexture() {

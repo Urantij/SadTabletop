@@ -364,6 +364,7 @@ public class Connector
         // Никакой инфы по тому как работает рисив тупа нет. Везде тока один пример и всё.
         // Здорово.
 
+        // TODO крашит при вылете
         ValueWebSocketReceiveResult result = await webSocket.ReceiveAsync(buffer, cancellation);
 
         // а я ноль идей вообще как это всё работает.

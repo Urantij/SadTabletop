@@ -49,14 +49,11 @@ public class TestSystem : SystemBase
 
         // movingCard = cards.Create(-200, -70, 4, 77, Flipness.Shown);
 
-        this.Game.GetSystem<ShapesSystem>().AddRect(GameValues.HandsArrayStartX, GameValues.HandsArrayStartY,
-            GameValues.HandsArrayWidth, 200, 0x776600);
-
         var texts = Game.GetSystem<TextsSystem>();
-        texts.Create("двигаем", -200, -270, 300, 200);
+        texts.Create("двигаем", -200, -400, 300, 200);
 
-        contsCard = cards.Create(1, 2, 4, 77, Flipness.Hidden);
-        _clicks.AddClick(contsCard, null, MovingClicked);
+        // contsCard = cards.Create(1, 2, 4, 77, Flipness.Hidden);
+        // _clicks.AddClick(contsCard, null, MovingClicked);
     }
 
     private void MovingClicked(Click obj)
