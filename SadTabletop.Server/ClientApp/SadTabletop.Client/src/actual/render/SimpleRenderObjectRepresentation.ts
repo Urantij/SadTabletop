@@ -4,10 +4,12 @@ import type TableItem from "../things/TableItem";
 
 export const ContainerObjectDataKey = "gameObject";
 
+type RenderMinimum = Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform;
+
 export default class SimpleRenderObjectRepresentation implements RenderObjectRepresentation {
   readonly gameObject: TableItem;
 
-  readonly sprite: Phaser.GameObjects.Sprite;
+  readonly sprite: RenderMinimum;
 
   readonly needInteraction: boolean;
 
@@ -15,7 +17,7 @@ export default class SimpleRenderObjectRepresentation implements RenderObjectRep
 
   destroyed: boolean = false;
 
-  constructor(gameObject: TableItem, sprite: Phaser.GameObjects.Sprite, needInteraction: boolean) {
+  constructor(gameObject: TableItem, sprite: RenderMinimum, needInteraction: boolean) {
     this.gameObject = gameObject;
     this.sprite = sprite;
     this.needInteraction = needInteraction;

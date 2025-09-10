@@ -1,6 +1,8 @@
 using SadTabletop.Shared;
+using SadTabletop.Shared.Helps;
 using SadTabletop.Shared.Mechanics;
 using SadTabletop.Shared.MoreSystems.Cards;
+using SadTabletop.Shared.MoreSystems.Shapes;
 using SadTabletop.Shared.MoreSystems.Texts;
 using SadTabletop.Shared.Systems.Assets;
 using SadTabletop.Shared.Systems.Clicks;
@@ -45,10 +47,12 @@ public class TestSystem : SystemBase
 
         var cards = Game.GetSystem<CardsSystem>();
 
-        movingCard = cards.Create(-200, -70, 4, 77, Flipness.Shown);
+        // movingCard = cards.Create(-200, -70, 4, 77, Flipness.Shown);
+
+        this.Game.GetSystem<ShapesSystem>().AddRect(GameValues.HandsArrayStartX, GameValues.HandsArrayStartY,
+            GameValues.HandsArrayWidth, 200, 0x776600);
 
         var texts = Game.GetSystem<TextsSystem>();
-
         texts.Create("двигаем", -200, -270, 300, 200);
 
         contsCard = cards.Create(1, 2, 4, 77, Flipness.Hidden);
@@ -64,9 +68,9 @@ public class TestSystem : SystemBase
 
     protected override void GameSetuped()
     {
-        _times.RequestDelayedExecution(Execution1, TimeSpan.FromSeconds(5));
+        // _times.RequestDelayedExecution(Execution1, TimeSpan.FromSeconds(5));
 
-        _times.RequestDelayedExecution(MoveExecution, TimeSpan.FromSeconds(1));
+        // _times.RequestDelayedExecution(MoveExecution, TimeSpan.FromSeconds(1));
     }
 
     public Card Create(float x, float y, int side)

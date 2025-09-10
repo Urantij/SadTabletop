@@ -8,6 +8,7 @@ import type Deck from "@/actual/things/concrete/Decks/Deck";
 import type Card from "../things/concrete/Cards/Card";
 import type RenderObjectRepresentation from "./RenderObjectRepresentation";
 import type TableItem from "../things/TableItem";
+import type RectShape from "../things/concrete/Shapes/RectShape";
 
 type MessageEvents = {
   ClickyClicked: (entity: TableItem) => void;
@@ -127,6 +128,9 @@ export default class Renderer {
     }
     else if (entity.type === "TextItem") {
       this.scene.createText(entity as TextItem)
+    }
+    else if (entity.type === "RectShape") {
+      this.scene.createRectShape(entity as RectShape)
     }
     else {
       console.log(`Непонятная ентити в мире ${entity.type}`);

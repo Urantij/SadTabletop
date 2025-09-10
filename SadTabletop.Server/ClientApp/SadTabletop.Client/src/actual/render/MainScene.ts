@@ -12,6 +12,8 @@ import DeckObject, { deckSpotKey } from "./objects/DeckObject";
 import type Card from "../things/concrete/Cards/Card";
 import DeckCardRemovedData from "../things/concrete/Decks/DeckCardRemovedData";
 import { ContainerObjectDataKey } from "./SimpleRenderObjectRepresentation";
+import type RectShape from "../things/concrete/Shapes/RectShape";
+import RectShapeObject from "./objects/RectShapeObject";
 
 export default class MainScene extends Phaser.Scene {
 
@@ -207,7 +209,11 @@ export default class MainScene extends Phaser.Scene {
 
   createText(textItem: TextItem) {
     const obj = TextItemObject.create(textItem, this);
+    this.objects.push(obj);
+  }
 
+  createRectShape(shape: RectShape) {
+    const obj = RectShapeObject.create(shape, this);
     this.objects.push(obj);
   }
 

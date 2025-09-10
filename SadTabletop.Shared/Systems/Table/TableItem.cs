@@ -5,8 +5,19 @@ namespace SadTabletop.Shared.Systems.Table;
 
 public abstract class TableItem : EntityBase
 {
-    public float X { get; set; }
-    public float Y { get; set; }
+    public TableItem()
+    {
+        
+    }
+
+    protected TableItem(float x, float y)
+    {
+        X = x;
+        Y = y;
+    }
+
+    public float X { get; internal set; }
+    public float Y { get; internal set; }
 }
 
 public abstract class TableItemDto(TableItem entity) : EntityBaseDto(entity)
