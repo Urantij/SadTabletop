@@ -117,7 +117,10 @@ public class LimitSystem : ComponentSystemBase
 
     public void LiftLimitsBySource<T>(T entity, object source) where T : EntityBase, ILimitable
     {
-        LimitComponent[] comps = entity.EnumerateComponents().OfType<LimitComponent>().Where(c => c.Source == source).ToArray();
+        LimitComponent[] comps = entity.EnumerateComponents()
+        .OfType<LimitComponent>()
+        .Where(c => c.Source == source)
+        .ToArray();
 
         if (comps.Length == 0)
             return;
@@ -139,7 +142,9 @@ public class LimitSystem : ComponentSystemBase
             RemoveComponentFromEntity(entity, comp);
         }
 
-        Seat?[] theyKnow = theyWereLimited.Where(s => IsLimitedFor(entity, s)).ToArray();
+        Seat?[] theyKnow = theyWereLimited
+        .Where(s => !IsLimitedFor(entity, s))
+        .ToArray();
 
         if (theyKnow.Length > 0)
         {
