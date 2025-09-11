@@ -2,6 +2,7 @@ using SadTabletop.Shared.Mechanics;
 using SadTabletop.Shared.MoreSystems.Cards;
 using SadTabletop.Shared.MoreSystems.Hands.Messages.Server;
 using SadTabletop.Shared.Systems.Communication;
+using SadTabletop.Shared.Systems.Limit;
 using SadTabletop.Shared.Systems.Seats;
 using SadTabletop.Shared.Systems.Viewer;
 
@@ -10,6 +11,7 @@ namespace SadTabletop.Shared.MoreSystems.Hands;
 public class HandsSystem : ComponentSystemBase
 {
     private readonly CommunicationSystem _communication;
+    private readonly LimitSystem _limit;
 
     // TODO searialize
     private readonly List<Hand> _hands = [];
@@ -60,6 +62,8 @@ public class HandsSystem : ComponentSystemBase
         AddComponentToEntity(card, inHand);
         hand.InsertCard(card, index);
 
+        _limit.LimitAllExcept(card, this, seat);
+
         CardMovedToHandMessage message = new(seat, card, index);
         _communication.SendEntityRelated(message, card);
     }
@@ -98,6 +102,8 @@ public class HandsSystem : ComponentSystemBase
 
     private void RemoveInHandComponent(Card card, InHandComponent inHand)
     {
+        _limit.LiftLimitsBySource(card, this);
+
         RemoveComponentFromEntity(card, inHand);
         inHand.Hand.RemoveCard(card);
     }

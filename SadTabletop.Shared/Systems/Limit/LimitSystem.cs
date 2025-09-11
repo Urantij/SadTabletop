@@ -13,9 +13,41 @@ namespace SadTabletop.Shared.Systems.Limit;
 public class LimitSystem : ComponentSystemBase
 {
     private readonly EventsSystem _events;
+    private readonly SeatsSystem _seats;
 
     public LimitSystem(Game game) : base(game)
     {
+    }
+
+    public LimitComponent LimitAllExcept<T>(T entity, object source, Seat seat) where T : EntityBase, ILimitable
+    {
+        LimitComponent? limit = entity.TryGetComponent<LimitComponent>(l => l.Source == source);
+
+        Seat?[] toLimit = _seats.EnumerateSeats()
+        .Where(s => s != seat)
+        .Where(s => !IsLimitedFor(entity, s))
+        .ToArray();
+
+        if (limit != null)
+        {
+            foreach (Seat? target in toLimit)
+            {
+                if (!limit.Targets.Included(target))
+                    limit.Targets.AddToInclude(target);
+            }
+        }
+        else
+        {
+            limit = new LimitComponent(source, Spisok<Seat?>.CreateAllWithExcluded(seat));
+            AddComponentToEntity(entity, limit);
+        }
+
+        if (toLimit.Length > 0)
+        {
+            _events.Invoke(new LimitedEvent(entity, theyDontKnowNow: toLimit));
+        }
+
+        return limit;
     }
 
     /// <summary>
@@ -27,7 +59,7 @@ public class LimitSystem : ComponentSystemBase
     /// <param name="source"></param>
     /// <param name="seat"></param>
     /// <returns></returns>
-    public LimitComponent Limit<T>(T entity, object source, Seat? seat) where T : EntityBase, ILimitable
+    public LimitComponent LimitFor<T>(T entity, object source, Seat? seat) where T : EntityBase, ILimitable
     {
         LimitComponent? limit = entity.TryGetComponent<LimitComponent>(l => l.Source == source);
 
@@ -80,6 +112,38 @@ public class LimitSystem : ComponentSystemBase
         if (wasLimited && !IsLimitedFor(entity, seat))
         {
             _events.Invoke(new LimitedEvent(entity, theyKnowNow: [seat]));
+        }
+    }
+
+    public void LiftLimitsBySource<T>(T entity, object source) where T : EntityBase, ILimitable
+    {
+        LimitComponent[] comps = entity.EnumerateComponents().OfType<LimitComponent>().Where(c => c.Source == source).ToArray();
+
+        if (comps.Length == 0)
+            return;
+
+        // TODO тупо както
+
+        List<Seat?> theyWereLimited = [];
+
+        foreach (Seat? seat in _seats.EnumerateSeats())
+        {
+            if (IsLimitedFor(entity, seat))
+            {
+                theyWereLimited.Add(seat);
+            }
+        }
+
+        foreach (LimitComponent comp in comps)
+        {
+            RemoveComponentFromEntity(entity, comp);
+        }
+
+        Seat?[] theyKnow = theyWereLimited.Where(s => IsLimitedFor(entity, s)).ToArray();
+
+        if (theyKnow.Length > 0)
+        {
+            _events.Invoke(new LimitedEvent(entity, theyKnowNow: theyKnow));
         }
     }
 
