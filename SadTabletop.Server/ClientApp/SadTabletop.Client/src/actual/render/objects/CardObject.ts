@@ -16,6 +16,7 @@ export const defaultFrontSidekey = "defaultFrontSide";
 export default class CardObject extends SimpleRenderObjectRepresentation {
 
   declare readonly gameObject: Card;
+  declare readonly sprite: Phaser.GameObjects.Sprite;
 
   readonly scene: MainScene;
 
@@ -38,11 +39,22 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
 
     const obj = new CardObject(card, scene, cardSprite);
 
+    scene.leGame.table.cards.events.on("CardFrontChanged", obj.cardChanged, obj);
     scene.leGame.hands.events.on("CardMovedToHand", obj.moveToHand, obj);
     scene.leGame.hands.events.on("CardRemovedFromHand", obj.removeFromHand, obj);
     scene.leGame.hands.events.on("CardsSwapped", obj.swapInHands, obj);
 
     return obj;
+  }
+
+  private cardChanged(changedCard: Card) {
+    if (changedCard !== this.gameObject)
+      return;
+
+    // TODO бредик
+    const texture = this.getCardSideTexture();
+
+    this.sprite.setTexture(texture.key);
   }
 
   private moveToHand(movingCard: Card) {
@@ -131,6 +143,7 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
   override destroy(): void {
     super.destroy();
 
+    this.scene.leGame.table.cards.events.off("CardFrontChanged", this.cardChanged, this);
     this.scene.leGame.hands.events.off("CardMovedToHand", this.moveToHand, this);
     this.scene.leGame.hands.events.off("CardRemovedFromHand", this.moveToHand, this);
     this.scene.leGame.hands.events.off("CardsSwapped", this.moveToHand, this);

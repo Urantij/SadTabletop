@@ -4,9 +4,11 @@ import type Card from "./Card";
 import { FlipFlipness } from "../../Flipness";
 import type Connection from "@/communication/Connection";
 import type CardFlippedMessage from "@/actual/things/concrete/Cards/messages/server/CardFlippedMessage";
+import type CardInfoMessage from "./messages/server/CardInfoMessage";
 
 type MessageEvents = {
   CardFlipped: (card: Card) => void;
+  CardFrontChanged: (card: Card) => void;
 }
 
 export default class CardsSystem {
@@ -20,7 +22,8 @@ export default class CardsSystem {
   }
 
   subscribeToConnection(connection: Connection) {
-    connection.registerForMessage<CardFlippedMessage>("CardFlippedMessage", msg => this.cardFlipped(msg))
+    connection.registerForMessage<CardFlippedMessage>("CardFlippedMessage", msg => this.cardFlipped(msg));
+    connection.registerForMessage<CardInfoMessage>("CardInfoMessage", msg => this.cardInfoChanged(msg));
   }
 
   flipCard(cardId: number, frontSide: number | null): void {
@@ -39,5 +42,18 @@ export default class CardsSystem {
 
   private cardFlipped(msg: CardFlippedMessage): void {
     this.flipCard(msg.card, msg.frontSide);
+  }
+
+  private cardInfoChanged(msg: CardInfoMessage) {
+    const card = this.table.items.find(i => i.id === msg.card) as Card;
+
+    if (card === undefined) {
+      console.warn(`При попытке cardInfoChanged ентити не был найден. ${msg.card}`);
+      return;
+    }
+
+    card.frontSide = msg.front;
+
+    this.events.emit("CardFrontChanged", card);
   }
 }
