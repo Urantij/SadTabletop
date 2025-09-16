@@ -14,6 +14,13 @@ type MessageEvents = {
   ClickyClicked: (entity: TableItem) => void;
 }
 
+export class DepthChart {
+  public static Default = 0;
+
+  public static CardStart = 10;
+  public static CardEnd = 100;
+}
+
 export default class Renderer {
 
   readonly leGame: LeGame;

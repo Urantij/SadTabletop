@@ -47,13 +47,31 @@ export default class LeGame {
   }
 
   private meJoined(data: JoinedMessage): void {
-    this.eatEntities(data.entities);
-
     for (const player of data.players) {
       this.playersContainer.addPlayer(player);
     }
 
+    for (const entity of data.entities) {
+      if (this.bench.isBenchEntityByType(entity.type)) {
+        this.bench.addSeat(entity as Seat);
+      }
+      else if (entity.type === "AssetInfo") {
+
+        const info = entity as AssetInfo;
+        this.assetsData.push({
+          name: info.name,
+          url: info.url
+        });
+      }
+    }
+
     this.ourPlayer = this.playersContainer.players.find(p => p.id === data.playerId) ?? null;
+
+    for (const entity of data.entities) {
+      if (this.table.isTableEntityByType(entity.type)) {
+        this.table.addItem(entity as TableItem, null);
+      }
+    }
   }
 
   private entityAdded(data: EntityAddedMessage): void {
@@ -68,12 +86,12 @@ export default class LeGame {
     }
   }
 
-  private eatEntities(entities: Entity[]) {
-    for (const entity of entities) {
-      if (this.table.isTableEntityByType(entity.type)) {
-        this.table.addItem(entity as TableItem, null);
-      }
-      else if (this.bench.isBenchEntityByType(entity.type)) {
+  private youTookSeatMessage(msg: YouTookSeatMessage): void {
+    this.table.clear();
+    this.bench.clear();
+
+    for (const entity of msg.entities) {
+      if (this.bench.isBenchEntityByType(entity.type)) {
         this.bench.addSeat(entity as Seat);
       }
       else if (entity.type === "AssetInfo") {
@@ -85,13 +103,13 @@ export default class LeGame {
         });
       }
     }
-  }
-
-  private youTookSeatMessage(msg: YouTookSeatMessage): void {
-    this.table.clear();
-    this.bench.clear();
-    this.eatEntities(msg.entities);
 
     this.ourPlayer!.seat = this.bench.seats.find(s => s.id === msg.seatId) ?? null;
+
+    for (const entity of msg.entities) {
+      if (this.table.isTableEntityByType(entity.type)) {
+        this.table.addItem(entity as TableItem, null);
+      }
+    }
   }
 }

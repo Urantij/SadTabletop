@@ -27,6 +27,21 @@ public class HandsSystem : ComponentSystemBase
         Game.GetSystem<ViewerSystem>().RegisterComponent<InHandComponent>(TransformInHand);
     }
 
+    public Hand GetHand(Seat seat)
+    {
+        // TODO по хорошему руку сразу создавать на все ситы надо. но это нужно ловить ивенты, тырыпыры
+        // мне лень
+        // а может и нет...
+        Hand? hand = _hands.FirstOrDefault(h => h.Owner == seat);
+        if (hand == null)
+        {
+            hand = new Hand(seat);
+            _hands.Add(hand);
+        }
+
+        return hand;
+    }
+
     /// <summary>
     /// Предполагается юзать один раз при создании игры, так что повторные юзы или юзы в игре не обработаны.
     /// </summary>
@@ -45,12 +60,7 @@ public class HandsSystem : ComponentSystemBase
         // TODO по хорошему руку сразу создавать на все ситы надо. но это нужно ловить ивенты, тырыпыры
         // мне лень
         // а может и нет...
-        Hand? hand = _hands.FirstOrDefault(h => h.Owner == seat);
-        if (hand == null)
-        {
-            hand = new Hand(seat);
-            _hands.Add(hand);
-        }
+        Hand hand = GetHand(seat);
 
         InHandComponent? inHand = card.TryGetComponent<InHandComponent>();
         if (inHand != null)

@@ -14,7 +14,7 @@ import Hand from "./Hand";
 import type Seat from "../../Seat";
 
 type MessageEvents = {
-  CardMovedToHand: (card: Card) => void;
+  CardMovedToHand: (card: Card, component: InHandComponent) => void;
   CardRemovedFromHand: (card: Card, hand: Hand) => void;
   CardsSwapped: (card1: Card, card2: Card) => void;
 }
@@ -87,6 +87,7 @@ export default class HandsSystem {
   // }
 
   private cardMovedToHand(msg: CardMovedToHandMessage): void {
+
     const card = this.table.findItem<Card>(msg.card);
     if (card === undefined) {
       console.warn(`cardMovedToHand ${msg.card} card`);
@@ -110,7 +111,7 @@ export default class HandsSystem {
     card.components.push(component);
     hand.cards.push(card);
 
-    this.events.emit("CardMovedToHand", card);
+    this.events.emit("CardMovedToHand", card, component);
   }
 
   private cardRemovedFromHand(msg: CardRemovedFromHandMessage): void {

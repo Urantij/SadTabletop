@@ -31,12 +31,18 @@ export default class SimpleRenderObjectRepresentation implements RenderObjectRep
     this.sprite.setData(ContainerObjectDataKey, this);
   }
 
+  getDataManager() {
+    return this.sprite.data;
+  }
+
   getCurrentPosition(): Phaser.Math.Vector2 {
     return this.sprite.getWorldPoint();
   }
+
   changePosition(x: number, y: number): void {
     this.sprite.setPosition(x, y);
   }
+
   updateClicky(clicky: boolean): void {
     if (this.needInteraction) {
       return;
@@ -51,6 +57,7 @@ export default class SimpleRenderObjectRepresentation implements RenderObjectRep
       this.sprite.disableInteractive();
     }
   }
+
   destroy(): void {
     this.destroyed = true;
     this.sprite.destroy();

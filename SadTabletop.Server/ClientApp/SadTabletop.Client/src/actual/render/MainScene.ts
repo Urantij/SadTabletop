@@ -14,6 +14,8 @@ import DeckCardRemovedData from "../things/concrete/Decks/DeckCardRemovedData";
 import { ContainerObjectDataKey } from "./SimpleRenderObjectRepresentation";
 import type RectShape from "../things/concrete/Shapes/RectShape";
 import RectShapeObject from "./objects/RectShapeObject";
+import { handPositionX, handPositionY } from "./objects/InHandCardObject";
+import SceneHand from "./SceneHand";
 
 export default class MainScene extends Phaser.Scene {
 
@@ -23,7 +25,7 @@ export default class MainScene extends Phaser.Scene {
 
   readonly animka: Animka = new Animka(this);
 
-  readonly speedPerUnit = 1.3;
+  hand: SceneHand = null!;
 
   init(game: LeGame) {
     this.leGame = game;
@@ -43,6 +45,9 @@ export default class MainScene extends Phaser.Scene {
   }
 
   private create() {
+
+    this.hand = SceneHand.create(this);
+
     // я понятия нахуй не имею что происходит
     // в старом проекте реди шло когда сцена была ГОТОВА
     // ща оно вылетает ДО ПРЕЛОАДА БЛЯТЬ
@@ -132,6 +137,50 @@ export default class MainScene extends Phaser.Scene {
     }
   }
 
+  // override update(time: number, delta: number): void {
+  //   super.update(time, delta);
+
+  //   // я поспрашивал людей, трое сказали, что объект сам должен себя двигать
+  //   // я офк сделал по своему, но осадочек остался
+  //   for (const obj of this.objects) {
+  //     const current = obj.getCurrentPosition();
+
+  //     if (current.equals(obj.targetPosition))
+  //       continue;
+
+  //     const difference = obj.targetPosition.clone().subtract(current);
+  //     const change = difference.normalize();
+  //     change.x *= obj.speed * delta;
+  //     change.y *= obj.speed * delta;
+
+  //     const newPosition = current.clone().add(change);
+
+  //     // TODO как это сделать нормально?
+  //     if (difference.x < 0) {
+  //       if (newPosition.x < obj.targetPosition.x) {
+  //         newPosition.x = obj.targetPosition.x;
+  //       }
+  //     }
+  //     else {
+  //       if (newPosition.x > obj.targetPosition.x) {
+  //         newPosition.x = obj.targetPosition.x;
+  //       }
+  //     }
+  //     if (difference.y < 0) {
+  //       if (newPosition.y < obj.targetPosition.y) {
+  //         newPosition.y = obj.targetPosition.y;
+  //       }
+  //     }
+  //     else {
+  //       if (newPosition.y > obj.targetPosition.y) {
+  //         newPosition.y = obj.targetPosition.y;
+  //       }
+  //     }
+
+  //     obj.changePosition2(newPosition.x, newPosition.y);
+  //   }
+  // }
+
   destroyEntity(obj: object) {
     const rended = removeFromCollection(this.objects, o => o.gameObject === obj);
     if (rended === undefined) {
@@ -157,19 +206,17 @@ export default class MainScene extends Phaser.Scene {
       return;
     }
 
-    const xChange = item.x - oldX;
-    const yChange = item.y - oldY;
+    // const xChange = item.x - oldX;
+    // const yChange = item.y - oldY;
 
-    const targetPos = obj.getCurrentPosition().add({
-      x: xChange,
-      y: yChange
-    });
+    // const targetPos = obj.getCurrentPosition().add({
+    //   x: xChange,
+    //   y: yChange
+    // });
 
-    const distance = obj.getCurrentPosition().distance(targetPos);
+    const targetPos = new Phaser.Math.Vector2(item.x, item.y);
 
-    const time = distance / this.speedPerUnit;
-
-    this.animka.moveObject(obj, targetPos.x, targetPos.y, time);
+    this.animka.moveObject2(obj, targetPos.x, targetPos.y);
   }
 
   createCard(card: Card, data: object | null) {
@@ -246,10 +293,7 @@ export default class MainScene extends Phaser.Scene {
       return;
     }
 
-    const distance = cardObj.getCurrentPosition().distance(deckObj.getCurrentPosition());
-    const time = distance / this.speedPerUnit;
-
-    this.animka.moveObjectToObject(cardObj, deckObj, time, () => {
+    this.animka.moveObjectToObject(cardObj, deckObj, () => {
       cardObj.destroy();
       deckObj.updateThingsPlease();
     });

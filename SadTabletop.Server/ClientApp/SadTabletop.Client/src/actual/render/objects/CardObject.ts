@@ -64,13 +64,14 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
     const component = findComponentForSure<InHandComponent>(this.gameObject, "InHandComponent");
 
     const position = GameValues.calculateCardPosition(this.scene.leGame.bench, component);
-    this.changePosition(position.x, position.y);
+
+    this.scene.animka.moveObject2(this, position.x, position.y,);
   }
 
   private removeFromHand(movingCard: Card, hand: Hand) {
 
     if (movingCard === this.gameObject) {
-      this.changePosition(movingCard.x, movingCard.y);
+      this.scene.animka.moveObject2(this, movingCard.x, movingCard.y,);
       return;
     }
 
@@ -80,7 +81,7 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
       return;
 
     const position = GameValues.calculateCardPosition(this.scene.leGame.bench, component);
-    this.changePosition(position.x, position.y);
+    this.scene.animka.moveObject2(this, position.x, position.y,);
   }
 
   private swapInHands(movingCard1: Card, movingCard2: Card) {
@@ -90,7 +91,7 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
     const component = findComponentForSure<InHandComponent>(this.gameObject, "InHandComponent");
 
     const position = GameValues.calculateCardPosition(this.scene.leGame.bench, component);
-    this.changePosition(position.x, position.y);
+    this.scene.animka.moveObject2(this, position.x, position.y,);
   }
 
   private static getResultPosition(card: Card, scene: MainScene) {

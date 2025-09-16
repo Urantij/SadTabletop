@@ -29,6 +29,7 @@ public abstract class EntitiesSystem : SystemBase
 public abstract class EntitiesSystem<T> : EntitiesSystem
     where T : EntityBase
 {
+    // Бд не любит, когда у ентити айди 0.
     protected int NextId = 1;
 
     protected readonly List<T> List = [];

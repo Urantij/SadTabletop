@@ -2,21 +2,25 @@ import type MainScene from "@/actual/render/MainScene.ts";
 import type RenderObjectRepresentation from "./RenderObjectRepresentation";
 import CardObject from "./objects/CardObject";
 
+const moveKey = "AnimkaMove";
+
 export default class Animka {
   private readonly scene: MainScene;
+
+  readonly speedPerUnit = 1.3;
 
   constructor(scene: MainScene) {
     this.scene = scene;
   }
 
-  public moveObjectToObject(obj: RenderObjectRepresentation, target: RenderObjectRepresentation, time: number, continuation: (() => void) | null = null): void {
+  public moveObjectToObject(obj: RenderObjectRepresentation, target: RenderObjectRepresentation, continuation: (() => void) | null = null): void {
 
     const location = target.getCurrentPosition();
 
-    this.moveObject(obj, location.x, location.y, time, continuation);
+    this.moveObject2(obj, location.x, location.y, continuation);
   }
 
-  public moveObject(obj: RenderObjectRepresentation, x: number, y: number, time: number, continuation: (() => void) | null = null): void {
+  public moveObject2(obj: RenderObjectRepresentation, x: number, y: number, continuation: (() => void) | null = null): void {
 
     // const start = obj.getCurrentPosition();
     // const end = start.clone().add({
@@ -24,17 +28,37 @@ export default class Animka {
     //   y: y
     // });
 
+    const current = obj.getCurrentPosition();
+
+    // TODO лишнее
+    const distance = current.distance(new Phaser.Math.Vector2(x, y));
+    const time = distance / this.speedPerUnit;
+
+    const data = obj.getDataManager();
+    const moveData = data.get(moveKey);
+
+    if (moveData !== undefined) {
+      const moveTween = moveData as Phaser.Tweens.Tween;
+
+      moveTween.stop();
+      moveTween.destroy();
+
+      data.remove(moveKey);
+    }
+
     const holder = {
       obj,
-      start: obj.getCurrentPosition(),
-      xChange: 0,
-      yChange: 0
+      x: current.x,
+      y: current.y
     };
 
-    this.scene.tweens.add({
+    const tween = this.scene.tweens.add({
       targets: holder,
       duration: time,
       onComplete: function () {
+
+        data.remove(moveKey);
+
         if (continuation === null) {
           return;
         }
@@ -43,17 +67,20 @@ export default class Animka {
       },
       onUpdate: function (tween, target, key, current, previous, param) {
         if (holder.obj.destroyed) {
+          tween.stop();
           tween.destroy();
           return;
         }
 
-        holder.obj.changePosition(holder.start.x + holder.xChange, holder.start.y + holder.yChange);
+        holder.obj.changePosition(holder.x, holder.y);
       },
       props: {
-        xChange: x - holder.start.x,
-        yChange: y - holder.start.y
+        x: x,
+        y: y
       }
     });
+
+    data.set(moveKey, tween);
   }
 
   public flipCard(obj: CardObject) {

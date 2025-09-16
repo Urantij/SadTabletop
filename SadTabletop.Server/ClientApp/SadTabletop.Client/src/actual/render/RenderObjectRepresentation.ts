@@ -7,6 +7,8 @@ export default interface RenderObjectRepresentation {
 
   destroyed: boolean;
 
+  getDataManager(): Phaser.Data.DataManager;
+
   getCurrentPosition(): Phaser.Math.Vector2;
 
   changePosition(x: number, y: number): void;

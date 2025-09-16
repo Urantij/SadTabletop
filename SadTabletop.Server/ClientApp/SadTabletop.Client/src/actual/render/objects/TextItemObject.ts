@@ -1,18 +1,15 @@
 import type MainScene from "../MainScene";
-import type RenderObjectRepresentation from "../RenderObjectRepresentation";
 import type TextItem from "@/actual/things/concrete/TextItem";
+import SimpleRenderObjectRepresentation from "../SimpleRenderObjectRepresentation";
 
-export default class TextItemObject implements RenderObjectRepresentation {
+export default class TextItemObject extends SimpleRenderObjectRepresentation {
 
-  gameObject: TextItem;
+  declare gameObject: TextItem;
 
-  text: Phaser.GameObjects.Text;
-
-  destroyed: boolean = false;
+  declare sprite: Phaser.GameObjects.Text;
 
   constructor(gameObject: TextItem, text: Phaser.GameObjects.Text) {
-    this.gameObject = gameObject;
-    this.text = text;
+    super(gameObject, text, false);
   }
 
   static create(gameObject: TextItem, scene: MainScene): TextItemObject {
@@ -26,24 +23,5 @@ export default class TextItemObject implements RenderObjectRepresentation {
     const result = new TextItemObject(gameObject, text);
 
     return result;
-  }
-
-  getCurrentPosition(): Phaser.Math.Vector2 {
-    return this.text.getWorldPoint();
-  }
-
-  changePosition(x: number, y: number): void {
-    this.text.setPosition(x, y);
-  }
-
-  clicky: boolean = false;
-  updateClicky(clicky: boolean): void {
-    // TODO на подумать
-    throw new Error("Method not implemented.");
-  }
-
-  destroy(): void {
-    this.destroyed = true;
-    this.text.destroy();
   }
 }
