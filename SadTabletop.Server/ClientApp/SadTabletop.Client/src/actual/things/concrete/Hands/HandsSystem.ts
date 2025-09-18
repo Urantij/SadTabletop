@@ -111,6 +111,8 @@ export default class HandsSystem {
     card.components.push(component);
     hand.cards.push(card);
 
+    this.updateIndexesLikeStupid(hand);
+
     this.events.emit("CardMovedToHand", card, component);
   }
 
@@ -125,6 +127,8 @@ export default class HandsSystem {
 
     removeItemFromCollection(card.components, component);
     removeItemFromCollection(component.hand.cards, card);
+
+    this.updateIndexesLikeStupid(component.hand);
 
     this.events.emit("CardRemovedFromHand", card, component.hand);
   }
@@ -158,5 +162,13 @@ export default class HandsSystem {
     component2.index = a;
 
     this.events.emit("CardsSwapped", card1, card2);
+  }
+
+  // TODO нормально сделать
+  private updateIndexesLikeStupid(hand: Hand) {
+    for (let index = 0; index < hand.cards.length; index++) {
+      const element = hand.cards[index];
+      findComponentForSure<InHandComponent>(element, "InHandComponent").index = index;
+    }
   }
 }

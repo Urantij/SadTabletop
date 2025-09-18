@@ -3,9 +3,14 @@ import type Card from "../things/concrete/Cards/Card";
 import type { InHandComponent } from "../things/concrete/Hands/InHandComponent";
 import type TableItem from "../things/TableItem";
 import type MainScene from "./MainScene";
-import InHandCardObject, { handPositionX, handPositionY } from "./objects/InHandCardObject";
+import InHandCardObject, { inhandCardWidth } from "./objects/InHandCardObject";
 import { removeFromCollection } from "@/utilities/MyCollections";
 import { DepthChart } from "./Renderer";
+import GameValues from "../GameValues";
+
+const handPositionX = -10000;
+const handPositionY = -10000;
+const handWidth = 600;
 
 export default class SceneHand {
 
@@ -197,6 +202,9 @@ export default class SceneHand {
 
   private createCardObject(card: Card, component: InHandComponent) {
     const obj = InHandCardObject.create(card, component, this.scene);
+    const inHandXPosition = GameValues.calculatePosition(component.index, component.hand.cards.length, inhandCardWidth, handWidth);
+    obj.sprite.x = handPositionX + inHandXPosition;
+    obj.sprite.y = handPositionY;
     obj.sprite.setOrigin(0.5, 1);
     // obj.sprite.on("pointerover", (poiner: Phaser.Input.Pointer, localX: number, localY: number, event: Phaser.Types.Input.EventData) => {
     //   this.hoveredObject = obj;
@@ -224,9 +232,9 @@ export default class SceneHand {
     for (let index = 0; index < this.objs.length; index++) {
       const element = this.objs[index];
 
-      const pos = InHandCardObject.calculatePosition(index, this.objs.length);
+      const inHandXPosition = GameValues.calculatePosition(element.component.index, element.component.hand.cards.length, inhandCardWidth, handWidth);
 
-      element.changePosition(pos.x, pos.y);
+      element.changePosition(handPositionX + inHandXPosition, handPositionY);
       this.updateObjHoverness(element);
     }
   }

@@ -6,6 +6,8 @@ import { findComponent, findComponentForSure } from "@/utilities/Componenter";
 import type { InHandComponent } from "@/actual/things/concrete/Hands/InHandComponent";
 import GameValues from "@/actual/GameValues";
 import type Hand from "@/actual/things/concrete/Hands/Hand";
+import type HandOverrideComponent from "@/actual/things/concrete/Hands/HandOverrideComponent";
+import type Bench from "@/actual/Bench";
 
 export const cardWidth = 250;
 export const cardHeight = 350;
@@ -57,14 +59,22 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
     this.sprite.setTexture(texture.key);
   }
 
-  private moveToHand(movingCard: Card) {
-    if (movingCard !== this.gameObject)
+  private moveToHand(movingCard: Card, movingComponent: InHandComponent) {
+
+    if (movingCard === this.gameObject) {
+      const position = CardObject.calculateCardPosition(this.scene.leGame.bench, movingComponent!);
+
+      this.scene.animka.moveObject2(this, position.x, position.y,);
+
+      return;
+    }
+
+    const component = findComponent<InHandComponent>(this.gameObject, "InHandComponent");
+
+    if (component?.hand !== movingComponent.hand)
       return;
 
-    const component = findComponentForSure<InHandComponent>(this.gameObject, "InHandComponent");
-
-    const position = GameValues.calculateCardPosition(this.scene.leGame.bench, component);
-
+    const position = CardObject.calculateCardPosition(this.scene.leGame.bench, component);
     this.scene.animka.moveObject2(this, position.x, position.y,);
   }
 
@@ -80,7 +90,7 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
     if (component?.hand !== hand)
       return;
 
-    const position = GameValues.calculateCardPosition(this.scene.leGame.bench, component);
+    const position = CardObject.calculateCardPosition(this.scene.leGame.bench, component);
     this.scene.animka.moveObject2(this, position.x, position.y,);
   }
 
@@ -90,7 +100,7 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
 
     const component = findComponentForSure<InHandComponent>(this.gameObject, "InHandComponent");
 
-    const position = GameValues.calculateCardPosition(this.scene.leGame.bench, component);
+    const position = CardObject.calculateCardPosition(this.scene.leGame.bench, component);
     this.scene.animka.moveObject2(this, position.x, position.y,);
   }
 
@@ -99,7 +109,7 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
     const component = findComponent<InHandComponent>(card, "InHandComponent");
 
     if (component !== undefined) {
-      return GameValues.calculateCardPosition(scene.leGame.bench, component);
+      return CardObject.calculateCardPosition(scene.leGame.bench, component);
     }
     else {
       return new Phaser.Geom.Point(card.x, card.y);
@@ -141,12 +151,29 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
     return scene.textures.get(fallback);
   }
 
+  // TODO наверное лучше индекс ситов добавить в ситы, а не искать каждый раз? :)
+  static calculateCardPosition(bench: Bench, component: InHandComponent) {
+
+    const seatIndex = bench.seats.indexOf(component.hand.owner);
+
+    // я не буду обрабатывать -1
+
+    const handOverride = findComponent<HandOverrideComponent>(component.hand.owner, "HandOverrideComponent");
+
+    const handStartX = handOverride?.x ?? GameValues.HandsArrayStartX + seatIndex * (GameValues.HandsArrayWidth + GameValues.HandsArrayDistance);
+    const handStartY = handOverride?.y ?? GameValues.HandsArrayStartY
+
+    const inHandXPosition = GameValues.calculatePosition(component.index, component.hand.cards.length, cardWidth, GameValues.HandsArrayWidth);
+
+    return new Phaser.Math.Vector2(handStartX + inHandXPosition, handStartY);
+  }
+
   override destroy(): void {
     super.destroy();
 
     this.scene.leGame.table.cards.events.off("CardFrontChanged", this.cardChanged, this);
     this.scene.leGame.hands.events.off("CardMovedToHand", this.moveToHand, this);
-    this.scene.leGame.hands.events.off("CardRemovedFromHand", this.moveToHand, this);
-    this.scene.leGame.hands.events.off("CardsSwapped", this.moveToHand, this);
+    this.scene.leGame.hands.events.off("CardRemovedFromHand", this.removeFromHand, this);
+    this.scene.leGame.hands.events.off("CardsSwapped", this.swapInHands, this);
   }
 }

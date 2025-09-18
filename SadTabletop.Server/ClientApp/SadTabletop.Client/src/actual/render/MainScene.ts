@@ -14,7 +14,6 @@ import DeckCardRemovedData from "../things/concrete/Decks/DeckCardRemovedData";
 import { ContainerObjectDataKey } from "./SimpleRenderObjectRepresentation";
 import type RectShape from "../things/concrete/Shapes/RectShape";
 import RectShapeObject from "./objects/RectShapeObject";
-import { handPositionX, handPositionY } from "./objects/InHandCardObject";
 import SceneHand from "./SceneHand";
 
 export default class MainScene extends Phaser.Scene {
