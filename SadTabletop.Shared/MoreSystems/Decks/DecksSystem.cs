@@ -92,7 +92,7 @@ public class DecksSystem : SystemBase
         // Если клиент видит и деку, и карту, то нужно сообщить о инсерте
         // Если клиент должен знать новое лицо деки, и он его не знал, его нужно подложить в сообщение
 
-        foreach (Seat? seat in _seats.EnumerateSeats())
+        foreach (Seat? seat in _seats.EnumerateAllSeats())
         {
             bool deckVisible = _visability.IsVisibleFor(deck, seat);
             bool cardVisible = _visability.IsVisibleFor(card, seat);
@@ -162,7 +162,7 @@ public class DecksSystem : SystemBase
     {
         AddCardToDeckLocally(deck, front, back, way);
 
-        foreach (Seat? seat in _seats.EnumerateSeats())
+        foreach (Seat? seat in _seats.EnumerateAllSeats())
         {
             DeckUpdatedMessage message = FormUpdateMessage(deck, seat);
 
@@ -210,7 +210,7 @@ public class DecksSystem : SystemBase
         // Если клиент видит колоду, нужно для него достать карту.
         // Если клиент не видит, нужно карту просто заспавнить.
 
-        foreach (Seat? seat in _seats.EnumerateSeats())
+        foreach (Seat? seat in _seats.EnumerateAllSeats())
         {
             bool deckVisible = _visability.IsVisibleFor(deck, seat);
 

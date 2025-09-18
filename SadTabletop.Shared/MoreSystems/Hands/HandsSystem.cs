@@ -55,6 +55,13 @@ public class HandsSystem : ComponentSystemBase
         AddComponentToEntity(seat, handOverride);
     }
 
+    public void AddToHand(Card card, Seat seat)
+    {
+        Hand hand = GetHand(seat);
+
+        AddToHand(hand, card, hand.Cards.Count);
+    }
+
     public void AddToHand(Card card, Seat seat, int index)
     {
         // TODO по хорошему руку сразу создавать на все ситы надо. но это нужно ловить ивенты, тырыпыры
@@ -62,6 +69,11 @@ public class HandsSystem : ComponentSystemBase
         // а может и нет...
         Hand hand = GetHand(seat);
 
+        AddToHand(hand, card, index);
+    }
+
+    private void AddToHand(Hand hand, Card card, int index)
+    {
         InHandComponent? inHand = card.TryGetComponent<InHandComponent>();
         if (inHand != null)
         {
@@ -72,9 +84,9 @@ public class HandsSystem : ComponentSystemBase
         AddComponentToEntity(card, inHand);
         hand.InsertCard(card, index);
 
-        _limit.LimitAllExcept(card, this, seat);
+        _limit.LimitAllExcept(card, this, hand.Owner);
 
-        CardMovedToHandMessage message = new(seat, card, index);
+        CardMovedToHandMessage message = new(hand.Owner, card, index);
         _communication.SendEntityRelated(message, card);
     }
 

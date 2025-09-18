@@ -37,7 +37,7 @@ public class CommunicationSystem : SystemBase
 
     public void Send(ServerMessageBase message, Spisok<Seat?> spisok)
     {
-        IEnumerable<Seat?> targets = _seats.EnumerateSeats().Where(spisok.Included);
+        IEnumerable<Seat?> targets = _seats.EnumerateAllSeats().Where(spisok.Included);
 
         Send(message, targets);
     }
@@ -61,7 +61,7 @@ public class CommunicationSystem : SystemBase
     /// <param name="entity"></param>
     public void SendEntityRelated(ServerMessageBase message, EntityBase entity)
     {
-        IEnumerable<Seat?> targets = _seats.EnumerateSeats().Where(s => _visability.IsVisibleFor(entity, s));
+        IEnumerable<Seat?> targets = _seats.EnumerateAllSeats().Where(s => _visability.IsVisibleFor(entity, s));
 
         Send(message, targets);
     }

@@ -15,6 +15,8 @@ import { ContainerObjectDataKey } from "./SimpleRenderObjectRepresentation";
 import type RectShape from "../things/concrete/Shapes/RectShape";
 import RectShapeObject from "./objects/RectShapeObject";
 import SceneHand from "./SceneHand";
+import type CircleShape from "../things/concrete/Shapes/CircleShape";
+import CircleShapeObject from "./objects/CircleShapeObject";
 
 export default class MainScene extends Phaser.Scene {
 
@@ -260,6 +262,11 @@ export default class MainScene extends Phaser.Scene {
 
   createRectShape(shape: RectShape) {
     const obj = RectShapeObject.create(shape, this);
+    this.objects.push(obj);
+  }
+
+  createCircleShape(shape: CircleShape) {
+    const obj = CircleShapeObject.create(shape, this);
     this.objects.push(obj);
   }
 

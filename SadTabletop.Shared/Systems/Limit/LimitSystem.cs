@@ -23,7 +23,7 @@ public class LimitSystem : ComponentSystemBase
     {
         LimitComponent? limit = entity.TryGetComponent<LimitComponent>(l => l.Source == source);
 
-        Seat?[] toLimit = _seats.EnumerateSeats()
+        Seat?[] toLimit = _seats.EnumerateAllSeats()
         .Where(s => s != seat)
         .Where(s => !IsLimitedFor(entity, s))
         .ToArray();
@@ -129,7 +129,7 @@ public class LimitSystem : ComponentSystemBase
 
         List<Seat?> theyWereLimited = [];
 
-        foreach (Seat? seat in _seats.EnumerateSeats())
+        foreach (Seat? seat in _seats.EnumerateAllSeats())
         {
             if (IsLimitedFor(entity, seat))
             {

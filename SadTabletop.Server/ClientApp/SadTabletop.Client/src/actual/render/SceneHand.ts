@@ -202,7 +202,7 @@ export default class SceneHand {
 
   private createCardObject(card: Card, component: InHandComponent) {
     const obj = InHandCardObject.create(card, component, this.scene);
-    const inHandXPosition = GameValues.calculatePosition(component.index, component.hand.cards.length, inhandCardWidth, handWidth);
+    const inHandXPosition = GameValues.calculatePosition(component.index, component.hand.cards.length, inhandCardWidth, handWidth, 0).x;
     obj.sprite.x = handPositionX + inHandXPosition;
     obj.sprite.y = handPositionY;
     obj.sprite.setOrigin(0.5, 1);
@@ -232,7 +232,7 @@ export default class SceneHand {
     for (let index = 0; index < this.objs.length; index++) {
       const element = this.objs[index];
 
-      const inHandXPosition = GameValues.calculatePosition(element.component.index, element.component.hand.cards.length, inhandCardWidth, handWidth);
+      const inHandXPosition = GameValues.calculatePosition(element.component.index, element.component.hand.cards.length, inhandCardWidth, handWidth, 0).x;
 
       element.changePosition(handPositionX + inHandXPosition, handPositionY);
       this.updateObjHoverness(element);

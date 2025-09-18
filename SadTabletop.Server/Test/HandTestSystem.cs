@@ -25,8 +25,8 @@ public class HandTestSystem : SystemBase
     {
         base.GameCreated();
 
-        this.Game.GetSystem<ShapesSystem>().AddRect(GameValues.HandsArrayStartX, GameValues.HandsArrayStartY,
-            GameValues.HandsArrayWidth, 200, 0x776600);
+        // this.Game.GetSystem<ShapesSystem>().AddRect(GameValues.HandsArrayStartX, GameValues.HandsArrayStartY,
+        //     GameValues.HandsArrayWidth, 200, 0x776600);
 
         var cards = Game.GetSystem<CardsSystem>();
 

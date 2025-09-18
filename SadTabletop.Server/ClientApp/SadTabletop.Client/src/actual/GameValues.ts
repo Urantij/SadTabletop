@@ -12,21 +12,37 @@ export default class GameValues {
    * @param handWidth
    * @returns
    */
-  public static calculatePosition(index: number, cardsCount: number, cardWidth: number, handWidth: number) {
+  public static calculatePosition(index: number, cardsCount: number, cardWidth: number, handWidth: number, radians: number) {
 
     if (cardsCount === 1) {
-      return 0;
+      return new Phaser.Math.Vector2(0, 0);
     }
 
     let wholeDisplayWidth = cardsCount * cardWidth;
 
+    let x = 0;
+    let y = 0;
     if (wholeDisplayWidth <= handWidth) {
-      return (index * cardWidth) - (wholeDisplayWidth / 2) + (cardWidth / 2);
+      x = (index * cardWidth) - (wholeDisplayWidth / 2) + (cardWidth / 2);
+      y = 0;
+    }
+    else {
+      const cardDisplayWidth = cardWidth * ((handWidth - cardWidth) / (wholeDisplayWidth - cardWidth));
+
+      x = index * cardDisplayWidth - (handWidth / 2) + (cardWidth / 2);
+      y = 0;
     }
 
-    const cardDisplayWidth = cardWidth * ((handWidth - cardWidth) / (wholeDisplayWidth - cardWidth));
+    const pos = new Phaser.Math.Vector2(x, y);
 
-    return index * cardDisplayWidth - (handWidth / 2) + (cardWidth / 2);
+    const length = pos.length();
+    const normi = pos.normalize();
+
+    const angle = normi.rotate(radians);
+
+    const resulted = angle.setLength(length);
+
+    return resulted;
 
     // let wholeDisplayWidth = cardsCount * cardWidth;
     // let cardDisplayWidth = cardWidth;

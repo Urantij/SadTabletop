@@ -58,7 +58,7 @@ public class SynchroSystem : SystemBase
 
         // TODO можно отправлять одно сообщение всем у кого вьювнутный ентити совпадает
 
-        foreach (Seat? seat in _seats.EnumerateSeats())
+        foreach (Seat? seat in _seats.EnumerateAllSeats())
         {
             ViewedEntity viewed = ViewEntity(obj.Entity, seat);
             _communication.Send(new EntityAddedMessage(viewed), seat);

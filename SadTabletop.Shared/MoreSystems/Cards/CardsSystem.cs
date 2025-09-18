@@ -66,7 +66,7 @@ public class CardsSystem : SystemBase
 
         if (card.Flipness == Flipness.Shown)
         {
-            foreach (Seat? seat in _seats.EnumerateSeats())
+            foreach (Seat? seat in _seats.EnumerateAllSeats())
             {
                 int? front = _limit.IsLimitedFor(card, seat) ? null : card.FrontSide;
 

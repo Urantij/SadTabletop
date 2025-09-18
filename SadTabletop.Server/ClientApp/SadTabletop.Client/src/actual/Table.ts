@@ -41,7 +41,7 @@ export default class Table {
   }
 
   isTableEntityByType(type: string) {
-    return ["Card", "Dice", "Deck", "TextItem", "RectShape"].includes(type);
+    return ["Card", "Dice", "Deck", "TextItem", "RectShape", "CircleShape"].includes(type);
   }
 
   addItem(item: TableItem, data: object | null) {

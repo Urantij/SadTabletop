@@ -2,6 +2,7 @@ using SadTabletop.Shared;
 using SadTabletop.Shared.Helps;
 using SadTabletop.Shared.Mechanics;
 using SadTabletop.Shared.MoreSystems.Cards;
+using SadTabletop.Shared.MoreSystems.Hands;
 using SadTabletop.Shared.MoreSystems.Shapes;
 using SadTabletop.Shared.MoreSystems.Texts;
 using SadTabletop.Shared.Systems.Assets;
@@ -37,15 +38,25 @@ public class TestSystem : SystemBase
         base.GameCreated();
 
         var seats = this.Game.GetSystem<SeatsSystem>();
-        seats.AddSeat();
-        seats.AddSeat();
-        seats.AddSeat();
+        var hands = this.Game.GetSystem<HandsSystem>();
+        // seats.AddSeat();
+        // seats.AddSeat();
+        // seats.AddSeat();
+
+        this.Game.GetSystem<ShapesSystem>().AddCircle(0, 0, 500, 0x000033);
+        seats.CreateRoundSeats(3, 0, 0, 500);
 
         var assets = this.Game.GetSystem<AssetsSystem>();
         assets.AddCardAsset(4, "card4.png");
         assets.AddCardAsset(7, "card7.png");
 
         var cards = Game.GetSystem<CardsSystem>();
+
+        foreach (Seat seat in seats.EnumerateRealSeats().Skip(1))
+        {
+            hands.AddToHand(cards.Create(0, 0, 4, 22, Flipness.Shown, false), seat);
+            hands.AddToHand(cards.Create(0, 0, 7, 22, Flipness.Shown, false), seat);
+        }
 
         // movingCard = cards.Create(-200, -70, 4, 77, Flipness.Shown);
 

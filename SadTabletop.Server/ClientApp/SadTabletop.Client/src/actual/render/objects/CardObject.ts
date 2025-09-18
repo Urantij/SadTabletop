@@ -34,10 +34,15 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
     const sideTexture = card.flipness === Flipness.Shown ? CardObject.getCardSideTexture(card.frontSide, fallback, scene)
       : CardObject.getCardSideTexture(card.backSide, fallback, scene);
 
+    // TODO надо бы вынести это в поле и перестать страдать хернёй
+    const inhand = findComponent<InHandComponent>(card, "InHandComponent");
+    const radians = CardObject.radiansOverride(inhand);
+
     const pos = this.getResultPosition(card, scene);
 
     const cardSprite = new Phaser.GameObjects.Sprite(scene, x ?? pos.x, y ?? pos.y, sideTexture);
     cardSprite.setDisplaySize(cardWidth, cardHeight);
+    cardSprite.setRotation(radians)
     scene.add.existing(cardSprite);
 
     const obj = new CardObject(card, scene, cardSprite);
@@ -85,6 +90,9 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
     if (movingCard === this.gameObject) {
       const position = CardObject.calculateCardPosition(this.scene.leGame.bench, movingComponent!);
 
+      const radians = CardObject.radiansOverride(movingComponent);
+      this.sprite.setRotation(radians);
+
       this.scene.animka.moveObject2(this, position.x, position.y,);
 
       return;
@@ -102,6 +110,7 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
   private removeFromHand(movingCard: Card, hand: Hand) {
 
     if (movingCard === this.gameObject) {
+      this.sprite.setRotation(0);
       this.scene.animka.moveObject2(this, movingCard.x, movingCard.y,);
       return;
     }
@@ -184,9 +193,19 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
     const handStartX = handOverride?.x ?? GameValues.HandsArrayStartX + seatIndex * (GameValues.HandsArrayWidth + GameValues.HandsArrayDistance);
     const handStartY = handOverride?.y ?? GameValues.HandsArrayStartY
 
-    const inHandXPosition = GameValues.calculatePosition(component.index, component.hand.cards.length, cardWidth, GameValues.HandsArrayWidth);
+    const inHandPosition = GameValues.calculatePosition(component.index, component.hand.cards.length, cardWidth, GameValues.HandsArrayWidth, handOverride?.rotation ?? 0);
 
-    return new Phaser.Math.Vector2(handStartX + inHandXPosition, handStartY);
+    return new Phaser.Math.Vector2(handStartX + inHandPosition.x, handStartY + inHandPosition.y);
+  }
+
+  static radiansOverride(inhand: InHandComponent | undefined) {
+    if (inhand !== undefined) {
+      const override = findComponent<HandOverrideComponent>(inhand.hand.owner, "HandOverrideComponent");
+
+      return override?.rotation ?? 0;
+    }
+
+    return 0;
   }
 
   override destroy(): void {
