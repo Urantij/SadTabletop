@@ -36,6 +36,8 @@ export default class SceneHand {
     scene.leGame.table.events.on("ItemRemoved", hand.itemRemoved, hand);
     scene.leGame.table.events.on("Clearing", hand.clearing, hand);
 
+    scene.input.on("pointermove", hand.pointerMoved, hand);
+
     return hand;
   }
 
@@ -111,19 +113,101 @@ export default class SceneHand {
     this.hoveredObject = null;
   }
 
+  private pointerMoved(pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) {
+    if (currentlyOver.length === 0) {
+      if (this.hoveredObject !== null) {
+        this.hoveredObject = null;
+        this.updateHoverness();
+      }
+      return;
+    }
+
+    const overedSprite = currentlyOver[0];
+    const overedObj = this.objs.find(o => o.sprite === overedSprite);
+
+    if (overedObj === undefined) {
+      if (this.hoveredObject !== null) {
+        this.hoveredObject = null;
+        this.updateHoverness();
+      }
+      return;
+    }
+
+    const pointerHandWorldPosition = pointer.positionToCamera(this.handCamera) as Phaser.Math.Vector2;
+
+    const closest = this.objs
+      .map(o => {
+
+        const scale = o.sprite.scale;
+        o.sprite.scale = 1;
+        const center = o.sprite.getCenter();
+        o.sprite.scale = scale;
+
+        return {
+          obj: o,
+          distance: pointerHandWorldPosition.distanceSq(center)
+        }
+      })
+      .sort((a, b) => a.distance - b.distance)[0];
+
+    if (closest.obj !== this.hoveredObject) {
+      this.hoveredObject = closest.obj;
+      this.updateHoverness();
+    }
+  }
+
+  // тока один объект в массиве всегда
+  // private pointerMoved(pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) {
+  //   const overed = this.objs
+  //     .filter(o => currentlyOver.find(overed => overed === o.sprite) !== undefined)
+  //     .map(obj => ({
+  //       obj: obj,
+  //       distance: this.eueueue(pointer, obj)
+  //     }))
+  //     .sort((a, b) => a.distance - b.distance);
+
+  //   if (overed.length === 0) {
+
+  //     if (this.hoveredObject !== null) {
+  //       this.hoveredObject = null;
+  //       this.updateHoverness();
+  //     }
+
+  //     return;
+  //   }
+
+  //   const first = overed[0];
+
+  //   if (first.obj !== this.hoveredObject) {
+  //     this.hoveredObject = first.obj;
+  //     this.updateHoverness();
+  //   }
+  // }
+
+  /**
+   * Дистанция от курсора до центра карты
+   * @param pointer
+   * @param obj
+   * @returns
+   */
+  private eueueue(pointer: Phaser.Input.Pointer, obj: InHandCardObject) {
+    const pos = pointer.positionToCamera(this.handCamera) as Phaser.Math.Vector2;
+    return pos.distanceSq(obj.sprite.getCenter());
+  }
+
   private createCardObject(card: Card, component: InHandComponent) {
     const obj = InHandCardObject.create(card, component, this.scene);
     obj.sprite.setOrigin(0.5, 1);
-    obj.sprite.on("pointerover", (poiner: Phaser.Input.Pointer, localX: number, localY: number, event: Phaser.Types.Input.EventData) => {
-      this.hoveredObject = obj;
-      this.updateHoverness();
-    });
-    obj.sprite.on("pointerout", (poiner: Phaser.Input.Pointer, localX: number, localY: number, event: Phaser.Types.Input.EventData) => {
-      if (this.hoveredObject !== obj)
-        return;
-      this.hoveredObject = null;
-      this.updateHoverness();
-    });
+    // obj.sprite.on("pointerover", (poiner: Phaser.Input.Pointer, localX: number, localY: number, event: Phaser.Types.Input.EventData) => {
+    //   this.hoveredObject = obj;
+    //   this.updateHoverness();
+    // });
+    // obj.sprite.on("pointerout", (poiner: Phaser.Input.Pointer, localX: number, localY: number, event: Phaser.Types.Input.EventData) => {
+    //   if (this.hoveredObject !== obj)
+    //     return;
+    //   this.hoveredObject = null;
+    //   this.updateHoverness();
+    // });
     this.objs.splice(component.index, 0, obj);
     this.updatePositions();
   }
