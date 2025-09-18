@@ -8,6 +8,7 @@ import GameValues from "@/actual/GameValues";
 import type Hand from "@/actual/things/concrete/Hands/Hand";
 import type HandOverrideComponent from "@/actual/things/concrete/Hands/HandOverrideComponent";
 import type Bench from "@/actual/Bench";
+import type TableItem from "@/actual/things/TableItem";
 
 export const cardWidth = 250;
 export const cardHeight = 350;
@@ -41,7 +42,10 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
 
     const obj = new CardObject(card, scene, cardSprite);
 
+    // TODO какой урод должен за это отвечать?
+
     scene.leGame.table.cards.events.on("CardFrontChanged", obj.cardChanged, obj);
+    scene.leGame.table.events.on("ItemAdded", obj.itemAdded, obj);
     scene.leGame.hands.events.on("CardMovedToHand", obj.moveToHand, obj);
     scene.leGame.hands.events.on("CardRemovedFromHand", obj.removeFromHand, obj);
     scene.leGame.hands.events.on("CardsSwapped", obj.swapInHands, obj);
@@ -57,6 +61,23 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
     const texture = this.getCardSideTexture();
 
     this.sprite.setTexture(texture.key);
+  }
+
+  private itemAdded(item: TableItem) {
+    if (item.type !== "Card")
+      return;
+
+    const card = item as Card;
+
+    const component = findComponent<InHandComponent>(this.gameObject, "InHandComponent");
+
+    const inHand = findComponent<InHandComponent>(card, "InHandComponent");
+
+    if (inHand === undefined || inHand.hand !== component?.hand)
+      return;
+
+    const position = CardObject.calculateCardPosition(this.scene.leGame.bench, component);
+    this.scene.animka.moveObject2(this, position.x, position.y,);
   }
 
   private moveToHand(movingCard: Card, movingComponent: InHandComponent) {
@@ -172,6 +193,7 @@ export default class CardObject extends SimpleRenderObjectRepresentation {
     super.destroy();
 
     this.scene.leGame.table.cards.events.off("CardFrontChanged", this.cardChanged, this);
+    this.scene.leGame.table.events.off("ItemAdded", this.itemAdded, this);
     this.scene.leGame.hands.events.off("CardMovedToHand", this.moveToHand, this);
     this.scene.leGame.hands.events.off("CardRemovedFromHand", this.removeFromHand, this);
     this.scene.leGame.hands.events.off("CardsSwapped", this.swapInHands, this);

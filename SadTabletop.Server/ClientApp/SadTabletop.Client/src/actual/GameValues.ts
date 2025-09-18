@@ -5,7 +5,7 @@ export default class GameValues {
   public static readonly HandsArrayDistance = 100;
 
   /**
-   * Возвращает позицию карты внутри руки.
+   * Возвращает позицию карты внутри руки. 0 это центр руки. С ориджином 0.5 по иксу у карты
    * @param index
    * @param cardsCount
    * @param cardWidth
@@ -19,14 +19,24 @@ export default class GameValues {
     }
 
     let wholeDisplayWidth = cardsCount * cardWidth;
-    let cardDisplayWidth = cardWidth;
 
-    if (wholeDisplayWidth > handWidth) {
-      cardDisplayWidth *= handWidth / wholeDisplayWidth;
-      wholeDisplayWidth = handWidth;
+    if (wholeDisplayWidth <= handWidth) {
+      return (index * cardWidth) - (wholeDisplayWidth / 2) + (cardWidth / 2);
     }
 
-    // старт + положение карты в массиве - половина отображаемой руки даст нужную позицию. и + половина карты так как ориджин Х 0.5, а не 0
-    return 0 + cardDisplayWidth * index - wholeDisplayWidth / 2 + cardWidth / 2;
+    const cardDisplayWidth = cardWidth * ((handWidth - cardWidth) / (wholeDisplayWidth - cardWidth));
+
+    return index * cardDisplayWidth - (handWidth / 2) + (cardWidth / 2);
+
+    // let wholeDisplayWidth = cardsCount * cardWidth;
+    // let cardDisplayWidth = cardWidth;
+
+    // if (wholeDisplayWidth > handWidth) {
+    //   cardDisplayWidth *= (handWidth / wholeDisplayWidth);
+    //   wholeDisplayWidth = handWidth;
+    // }
+
+    // return (index * cardWidth) - (wholeDisplayWidth / 2) + (cardWidth / 2) - index * (cardWidth - cardDisplayWidth);
+    // return (index * cardDisplayWidth) - (wholeDisplayWidth / 2);
   }
 }
