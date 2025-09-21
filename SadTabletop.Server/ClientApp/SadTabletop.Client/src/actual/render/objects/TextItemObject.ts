@@ -1,6 +1,7 @@
 import type MainScene from "../MainScene";
 import type TextItem from "@/actual/things/concrete/TextItem";
 import SimpleRenderObjectRepresentation from "../SimpleRenderObjectRepresentation";
+import { DepthChart } from "../Renderer";
 
 export default class TextItemObject extends SimpleRenderObjectRepresentation<TextItem, Phaser.GameObjects.Text> {
 
@@ -18,6 +19,7 @@ export default class TextItemObject extends SimpleRenderObjectRepresentation<Tex
       fontSize: 30
     });
     text.setDisplaySize(gameObject.width, gameObject.height);
+    text.setDepth(DepthChart.Text);
     scene.add.existing(text);
 
     const result = new TextItemObject(gameObject, text);

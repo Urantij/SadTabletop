@@ -17,7 +17,12 @@ type MessageEvents = {
 }
 
 export class DepthChart {
+
+  public static Shapes = -1;
+
   public static Default = 0;
+
+  public static Text: 3;
 
   public static Cursor = 5;
 
