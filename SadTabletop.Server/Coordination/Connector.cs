@@ -37,7 +37,7 @@ public class Connector
         _clientMessageTypes = gameClientMessagesTypes.ToDictionary(t => t.Name, t => t);
     }
 
-    public void QueueMessage(AppClient client, JsonNode message)
+    private void QueueMessage(AppClient client, JsonNode message)
     {
         lock (client.SendQueue)
         {
@@ -50,6 +50,13 @@ public class Connector
         }
 
         Task.Run(() => SendingLoopAsync(client));
+    }
+
+    public void QueueAppMessage(AppServerMessageBase appMessage, AppClient client)
+    {
+        JsonNode result = SerializeMessage(appMessage);
+
+        QueueMessage(client, result);
     }
 
     private async Task SendingLoopAsync(AppClient client, CancellationToken cancellation = default)
@@ -164,6 +171,13 @@ public class Connector
 
             ChangeNameReceived(appClient, message);
         }
+        else if (container.Name == nameof(MoveCursorMessage))
+        {
+            MoveCursorMessage message =
+                JsonSerializer.Deserialize<MoveCursorMessage>(container.Content, _serializerOptions);
+
+            MoveCursorReceived(appClient, message);
+        }
         else if (_clientMessageTypes.TryGetValue(container.Name, out Type? messageType))
         {
             if (appClient.GameContainer == null)
@@ -220,7 +234,10 @@ public class Connector
             seat = gameContainer.Game.GetSystem<SeatsSystem>().GetEntity(targetSeatId.Value);
         }
 
-        Player player = new(gameContainer.GetNextPlayerId(), name, appClient, seat);
+        // TODO мооожно посылать курсор при входе. мооожно
+        PlayerCursor cursor = new();
+
+        Player player = new(gameContainer.GetNextPlayerId(), name, appClient, seat, cursor);
         gameContainer.Players.Add(player);
 
         appClient.Player = player;
@@ -308,6 +325,21 @@ public class Connector
         {
             QueueMessage(player.Client, serializedResponse);
         }
+    }
+
+    private void MoveCursorReceived(AppClient appClient, MoveCursorMessage message)
+    {
+        if (appClient.GameContainer == null || appClient.Player == null)
+        {
+            Terminate(appClient);
+            return;
+        }
+
+        using Lock.Scope scope = appClient.GameContainer.Locker.EnterScope();
+
+        appClient.Player.Cursor.X = message.X;
+        appClient.Player.Cursor.Y = message.Y;
+        appClient.Player.Cursor.Changed = true;
     }
 
     /// <summary>

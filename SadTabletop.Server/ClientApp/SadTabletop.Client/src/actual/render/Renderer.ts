@@ -1,6 +1,6 @@
 import type TypedEmitter from "@/utilities/TypedEmiiter";
 import type LeGame from "../LeGame";
-import MainScene from "./MainScene";
+import MainScene, { cursorMovedInTheWorldName } from "./MainScene";
 import Phaser from "phaser";
 import type Entity from "../things/Entity";
 import type TextItem from "../things/concrete/TextItem";
@@ -13,10 +13,13 @@ import type CircleShape from "../things/concrete/Shapes/CircleShape";
 
 type MessageEvents = {
   ClickyClicked: (entity: TableItem) => void;
+  CursorMoved: (pos: Phaser.Math.Vector2) => void;
 }
 
 export class DepthChart {
   public static Default = 0;
+
+  public static Cursor = 5;
 
   public static CardStart = 10;
   public static CardEnd = 100;
@@ -75,6 +78,9 @@ export default class Renderer {
           this.scene?.events.on("ClickyClicked", (container: RenderObjectRepresentation) => {
             this.events.emit("ClickyClicked", container.gameObject);
           });
+          this.scene?.events.on(cursorMovedInTheWorldName, (pos: Phaser.Math.Vector2) => {
+            this.events.emit("CursorMoved", pos);
+          });
 
           this.leGame.table.events.on("ItemAdded", (item, data) => {
             this.createEntity(item, data);
@@ -107,8 +113,22 @@ export default class Renderer {
             this.scene?.updateClicky(item, clicky);
           });
 
+          this.leGame.playersContainer.events.on("PlayerAdded", (player) => {
+            this.scene?.createCursor(player);
+          });
+          this.leGame.playersContainer.events.on("PlayerRemoved", (player) => {
+            this.scene?.destroyEntity(player.cursor);
+          });
+
           for (const entity of this.leGame.table.items) {
             this.createEntity(entity, null);
+          }
+
+          for (const player of this.leGame.playersContainer.players) {
+            if (player === this.leGame.ourPlayer)
+              continue;
+
+            this.scene?.createCursor(player);
           }
 
           resolve(null);

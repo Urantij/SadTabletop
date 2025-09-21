@@ -17,6 +17,10 @@ import RectShapeObject from "./objects/RectShapeObject";
 import SceneHand from "./SceneHand";
 import type CircleShape from "../things/concrete/Shapes/CircleShape";
 import CircleShapeObject from "./objects/CircleShapeObject";
+import CursorObject, { cursorTextureKey } from "./objects/CursorObject";
+import type Player from "../things/Player";
+
+export const cursorMovedInTheWorldName = "CursorMovedInTheWorld";
 
 export default class MainScene extends Phaser.Scene {
 
@@ -37,6 +41,7 @@ export default class MainScene extends Phaser.Scene {
 
     this.load.image(defaultBackSideKey, "back.png");
     this.load.image(defaultFrontSidekey, "front.png");
+    this.load.image(cursorTextureKey, "cursor.png");
 
     this.load.image(deckSpotKey, "deckspot.png");
 
@@ -136,6 +141,19 @@ export default class MainScene extends Phaser.Scene {
         this.cameras.main.zoomTo(newValue, 50);
       });
     }
+
+    // Курсор. Вынести бы нахуй отсюда TODO
+    {
+      this.input.on("pointermove", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
+
+        const pos = pointer.positionToCamera(this.cameras.main) as Phaser.Math.Vector2;
+
+        pos.x /= this.cameras.main.zoom;
+        pos.y /= this.cameras.main.zoom;
+
+        this.events.emit(cursorMovedInTheWorldName, pos);
+      });
+    }
   }
 
   // override update(time: number, delta: number): void {
@@ -218,6 +236,12 @@ export default class MainScene extends Phaser.Scene {
     const targetPos = new Phaser.Math.Vector2(item.x, item.y);
 
     this.animka.moveObject2(obj, targetPos.x, targetPos.y);
+  }
+
+  createCursor(player: Player) {
+    const cursor = CursorObject.create(player, this);
+
+    this.objects.push(cursor);
   }
 
   createCard(card: Card, data: object | null) {

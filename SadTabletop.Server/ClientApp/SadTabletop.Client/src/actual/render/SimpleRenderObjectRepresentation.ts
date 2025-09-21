@@ -6,10 +6,10 @@ export const ContainerObjectDataKey = "gameObject";
 
 type RenderMinimum = Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform;
 
-export default class SimpleRenderObjectRepresentation implements RenderObjectRepresentation {
-  readonly gameObject: TableItem;
+export default class SimpleRenderObjectRepresentation<TGameObj extends TableItem, TRender extends RenderMinimum> implements RenderObjectRepresentation {
+  readonly gameObject: TGameObj;
 
-  readonly sprite: RenderMinimum;
+  readonly sprite: TRender;
 
   readonly needInteraction: boolean;
 
@@ -17,7 +17,7 @@ export default class SimpleRenderObjectRepresentation implements RenderObjectRep
 
   destroyed: boolean = false;
 
-  constructor(gameObject: TableItem, sprite: RenderMinimum, needInteraction: boolean) {
+  constructor(gameObject: TGameObj, sprite: TRender, needInteraction: boolean) {
     this.gameObject = gameObject;
     this.sprite = sprite;
     this.needInteraction = needInteraction;

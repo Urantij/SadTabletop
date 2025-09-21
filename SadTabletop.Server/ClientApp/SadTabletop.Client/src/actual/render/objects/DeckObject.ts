@@ -6,10 +6,7 @@ import SimpleRenderObjectRepresentation from "../SimpleRenderObjectRepresentatio
 
 export const deckSpotKey = "deckSpot";
 
-export default class DeckObject extends SimpleRenderObjectRepresentation {
-
-  declare readonly gameObject: Deck;
-  declare readonly sprite: Phaser.GameObjects.Sprite;
+export default class DeckObject extends SimpleRenderObjectRepresentation<Deck, Phaser.GameObjects.Sprite> {
 
   displayedSide: number | null;
 

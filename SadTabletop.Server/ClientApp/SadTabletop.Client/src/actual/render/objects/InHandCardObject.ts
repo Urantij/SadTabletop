@@ -9,9 +9,7 @@ import type { InHandComponent } from "@/actual/things/concrete/Hands/InHandCompo
 export const inhandCardWidth = 250 * 0.8;
 export const inhandCardHeight = 350 * 0.8;
 
-export default class InHandCardObject extends SimpleRenderObjectRepresentation {
-  declare readonly gameObject: Card;
-  declare readonly sprite: Phaser.GameObjects.Sprite;
+export default class InHandCardObject extends SimpleRenderObjectRepresentation<Card, Phaser.GameObjects.Sprite> {
 
   readonly component: InHandComponent;
 

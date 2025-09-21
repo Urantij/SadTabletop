@@ -1,5 +1,6 @@
 using SadTabletop.Server.Coordination;
 using SadTabletop.Server.Coordination.Data;
+using SadTabletop.Server.Coordination.Messages.Server;
 using SadTabletop.Shared;
 using SadTabletop.Shared.Systems.Communication;
 using SadTabletop.Shared.Systems.Entities;
@@ -34,7 +35,51 @@ public class GameContainer
         TimesSystem times = Game.GetSystem<TimesSystem>();
         times.DelayRequested += TimesOnDelayRequested;
 
+        // TODO не забудь выключатель как нить
+        Task.Run(() => CursorUpdateLoopAsync(default));
+
         GameCreator.TriggerSetupedGame(Game);
+    }
+
+    private async Task CursorUpdateLoopAsync(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+            }
+            catch
+            {
+                return;
+            }
+
+            using var scope = Locker.EnterScope();
+
+            // TODO сто проц как то можно не делать сто тыщ сериализаций. 
+            // типа к ноде всё сериализовывать и потом раздавать...
+
+            foreach (Player player in Players)
+            {
+                CursorsInfoMessage.CursorInfo[] cursors = Players
+                .Where(p => p != player)
+                .Where(p => p.Cursor.Changed)
+                .Select(p => new CursorsInfoMessage.CursorInfo(p.Id, p.Cursor.X, p.Cursor.Y))
+                .ToArray();
+
+                if (cursors.Length == 0)
+                    continue;
+
+                CursorsInfoMessage message = new(cursors);
+
+                _connector.QueueAppMessage(message, player.Client);
+            }
+
+            foreach (Player player in Players)
+            {
+                player.Cursor.Changed = false;
+            }
+        }
     }
 
     private void CommunicationOnCommunicationRequired(ServerMessageBase gameMessage, IReadOnlyList<Seat?> receivers)

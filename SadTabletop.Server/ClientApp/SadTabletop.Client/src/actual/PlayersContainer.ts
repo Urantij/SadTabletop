@@ -9,12 +9,14 @@ import type PlayerTookSeatMessage from "@/communication/messages/server/PlayerTo
 import type PlayerLeftMessage from "@/communication/messages/server/PlayerLeftMessage";
 import type PlayerChangedNameMessage from "@/communication/messages/server/PlayerChangedNameMessage";
 import type YouTookSeatMessage from "@/communication/messages/server/YouTookSeatMessage";
+import type { CursorsInfoMessage } from "@/communication/messages/server/CursorsInfoMessage";
 
 type MessageEvents = {
   PlayerAdded: (player: Player) => void;
   PlayerRemoved: (Player: Player) => void;
   PlayerSeatChanged: (player: Player) => void;
   PlayerNameChanged: (player: Player) => void;
+  CursorMoved: (player: Player) => void;
 }
 
 export default class PlayersContainer {
@@ -36,6 +38,8 @@ export default class PlayersContainer {
     connection.registerForMessage<PlayerTookSeatMessage>("PlayerTookSeatMessage", (msg) => this.playerTookSeat(msg));
     connection.registerForMessage<PlayerChangedNameMessage>("PlayerChangedNameMessage", (msg) => this.playerChangedName(msg));
     connection.registerForMessage<YouTookSeatMessage>("YouTookSeatMessage", (msg) => this.youTookSeatMessage(msg));
+
+    connection.registerForMessage<CursorsInfoMessage>("CursorsInfoMessage", (msg) => this.cursorsInfoMessage(msg));
   }
 
   addPlayer(playerInfo: PlayerInfo) {
@@ -47,7 +51,14 @@ export default class PlayersContainer {
     const player: Player = {
       id: playerInfo.id,
       name: playerInfo.name,
-      seat: seat
+      seat: seat,
+      cursor: {
+        id: -1,
+        components: [],
+        type: "Cursor",
+        x: 0,
+        y: 0
+      }
     };
 
     this.players.push(player);
@@ -129,5 +140,22 @@ export default class PlayersContainer {
 
     this.leGame.ourPlayer.seat = seat;
     this.events.emit("PlayerSeatChanged", this.leGame.ourPlayer);
+  }
+
+  private cursorsInfoMessage(msg: CursorsInfoMessage) {
+    for (const cursorInfo of msg.cursors) {
+
+      const player = this.players.find(p => p.id === cursorInfo.playerId);
+
+      if (player === undefined) {
+        console.warn(`при курсоре непонятный плеер ${cursorInfo.playerId}`);
+        continue;
+      }
+
+      player.cursor.x = cursorInfo.x;
+      player.cursor.y = cursorInfo.y;
+
+      this.events.emit("CursorMoved", player);
+    }
   }
 }

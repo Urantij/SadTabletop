@@ -3,7 +3,7 @@ using SadTabletop.Shared.Systems.Seats;
 
 namespace SadTabletop.Server.Main;
 
-public class Player(int id, string name, AppClient client, Seat? seat)
+public class Player(int id, string name, AppClient client, Seat? seat, PlayerCursor cursor)
 {
     public int Id { get; } = id;
     public string Name { get; set; } = name;
@@ -11,4 +11,6 @@ public class Player(int id, string name, AppClient client, Seat? seat)
     public AppClient Client { get; } = client;
 
     public Seat? Seat { get; set; } = seat;
+
+    public PlayerCursor Cursor { get; } = cursor;
 }

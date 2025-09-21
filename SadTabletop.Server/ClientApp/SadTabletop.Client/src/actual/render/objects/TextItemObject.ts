@@ -2,7 +2,7 @@ import type MainScene from "../MainScene";
 import type TextItem from "@/actual/things/concrete/TextItem";
 import SimpleRenderObjectRepresentation from "../SimpleRenderObjectRepresentation";
 
-export default class TextItemObject extends SimpleRenderObjectRepresentation {
+export default class TextItemObject extends SimpleRenderObjectRepresentation<TextItem, Phaser.GameObjects.Text> {
 
   declare gameObject: TextItem;
 

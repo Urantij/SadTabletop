@@ -16,10 +16,7 @@ export const cardHeight = 350;
 export const defaultBackSideKey = "defaultBackSide";
 export const defaultFrontSidekey = "defaultFrontSide";
 
-export default class CardObject extends SimpleRenderObjectRepresentation {
-
-  declare readonly gameObject: Card;
-  declare readonly sprite: Phaser.GameObjects.Sprite;
+export default class CardObject extends SimpleRenderObjectRepresentation<Card, Phaser.GameObjects.Sprite> {
 
   readonly scene: MainScene;
 

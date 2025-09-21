@@ -3,6 +3,7 @@ import LeGame from '@/actual/LeGame';
 import Renderer from '@/actual/render/Renderer';
 import connectionInstance from '@/communication/ConnectionDva';
 import type ChangeNameMessage from '@/communication/messages/client/ChangeNameMessage';
+import type MoveCursorMessage from '@/communication/messages/client/MoveCursorMessage';
 import UiContainer from '@/components/UiContainer.vue';
 import { useUserStore } from '@/stores/UserStore';
 import { onMounted, ref, useTemplateRef } from 'vue';
@@ -45,6 +46,13 @@ renderer.events.on("ClickyClicked", (entity) => {
   leGame.table.clicks.clickyClicked(entity);
 });
 
+let lastCursorPos: Phaser.Math.Vector2 | null = null;
+let lastSentPos: Phaser.Math.Vector2 | null = null;
+renderer.events.on("CursorMoved", (pos) => {
+  // кстати там наноизменения ещё бывают. если не раундить, всё равно до какой то точки лучше смотреть
+  lastCursorPos = new Phaser.Math.Vector2(Math.round(pos.x), Math.round(pos.y));
+});
+
 onMounted(async () => {
 
   {
@@ -57,6 +65,26 @@ onMounted(async () => {
   connection.events.once("MeJoined", () => {
     draw.value = true;
     renderer.initAsync();
+
+    // TODO кабуиабы моджно найти место получше
+    setInterval(() => {
+      if (lastCursorPos === null)
+        return;
+
+      if (lastSentPos === null || !lastCursorPos.equals(lastSentPos)) {
+
+        const message: MoveCursorMessage = {
+          x: lastCursorPos.x,
+          y: lastCursorPos.y,
+        };
+
+        lastSentPos = lastCursorPos;
+
+        console.log(lastSentPos);
+
+        connection.sendMessage("MoveCursorMessage", message);
+      }
+    }, 1000);
   });
 
   console.log(`стартуем конекшен...`);
