@@ -20,6 +20,7 @@ export default class SceneHand {
   readonly objs: InHandCardObject[] = [];
 
   hoveredObject: InHandCardObject | null = null;
+  relativePointerPosition: Phaser.Math.Vector2 | null = null;
 
   constructor(handCamera: Phaser.Cameras.Scene2D.Camera, scene: MainScene) {
     this.handCamera = handCamera;
@@ -157,7 +158,11 @@ export default class SceneHand {
 
     if (closest.obj !== this.hoveredObject) {
       this.hoveredObject = closest.obj;
+      this.relativePointerPosition = this.getRelativePosition(pointer, closest.obj);
       this.updateHoverness();
+    }
+    else {
+      this.relativePointerPosition = this.getRelativePosition(pointer, closest.obj);
     }
   }
 
@@ -249,5 +254,21 @@ export default class SceneHand {
       element.setDepth(DepthChart.CardStart + element.component.index);
       element.sprite.setScale(1, 1);
     }
+  }
+
+  private getRelativePosition(pointer: Phaser.Input.Pointer, element: InHandCardObject) {
+    const cursorPos = pointer.positionToCamera(this.handCamera) as Phaser.Math.Vector2;
+
+    // const spritePos = element.sprite.getLocalPoint(cursorPos.x, cursorPos.y, undefined, this.handCamera);
+
+    const spritePos = element.sprite.getCenter(undefined, true);
+
+    cursorPos.x -= spritePos.x;
+    cursorPos.y -= spritePos.y;
+
+    cursorPos.x /= element.sprite.displayWidth;
+    cursorPos.y /= element.sprite.displayHeight;
+
+    return cursorPos;
   }
 }

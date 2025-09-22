@@ -146,10 +146,25 @@ export default class MainScene extends Phaser.Scene {
     {
       this.input.on("pointermove", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
 
+        if (this.hand.hoveredObject !== null && this.hand.relativePointerPosition !== null) {
+
+          const cardObj = this.objects.find(o => o.gameObject === this.hand.hoveredObject?.gameObject && o instanceof CardObject) as CardObject | undefined;
+
+          if (cardObj !== undefined) {
+            const pos = cardObj.getCurrentPosition().clone();
+
+            pos.x += cardObj.sprite.displayWidth * this.hand.relativePointerPosition.x;
+            pos.y += cardObj.sprite.displayHeight * this.hand.relativePointerPosition.y;
+
+            this.events.emit(cursorMovedInTheWorldName, pos);
+            return;
+          }
+        }
+
         const pos = pointer.positionToCamera(this.cameras.main) as Phaser.Math.Vector2;
 
-        pos.x /= this.cameras.main.zoom;
-        pos.y /= this.cameras.main.zoom;
+        // pos.x /= this.cameras.main.zoom;
+        // pos.y /= this.cameras.main.zoom;
 
         this.events.emit(cursorMovedInTheWorldName, pos);
       });
