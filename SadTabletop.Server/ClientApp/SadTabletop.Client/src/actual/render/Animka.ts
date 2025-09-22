@@ -41,7 +41,7 @@ export default class Animka {
       const moveTween = moveData as Phaser.Tweens.Tween;
 
       moveTween.stop();
-      moveTween.destroy();
+      // moveTween.destroy();
 
       data.remove(moveKey);
     }
@@ -68,7 +68,7 @@ export default class Animka {
       onUpdate: function (tween, target, key, current, previous, param) {
         if (holder.obj.destroyed) {
           tween.stop();
-          tween.destroy();
+          // tween.destroy();
           return;
         }
 
