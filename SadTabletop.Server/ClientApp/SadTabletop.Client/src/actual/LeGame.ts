@@ -47,9 +47,6 @@ export default class LeGame {
   }
 
   private meJoined(data: JoinedMessage): void {
-    for (const player of data.players) {
-      this.playersContainer.addPlayer(player);
-    }
 
     for (const entity of data.entities) {
       if (this.bench.isBenchEntityByType(entity.type)) {
@@ -63,6 +60,10 @@ export default class LeGame {
           url: info.url
         });
       }
+    }
+
+    for (const player of data.players) {
+      this.playersContainer.addPlayer(player);
     }
 
     this.ourPlayer = this.playersContainer.players.find(p => p.id === data.playerId) ?? null;
