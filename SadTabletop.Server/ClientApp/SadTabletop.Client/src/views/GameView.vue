@@ -80,11 +80,9 @@ onMounted(async () => {
 
         lastSentPos = lastCursorPos;
 
-        console.log(lastSentPos);
-
         connection.sendMessage("MoveCursorMessage", message);
       }
-    }, 1000);
+    }, 100);
   });
 
   console.log(`стартуем конекшен...`);
