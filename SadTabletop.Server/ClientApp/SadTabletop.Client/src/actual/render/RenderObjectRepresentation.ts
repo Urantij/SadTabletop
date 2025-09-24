@@ -15,5 +15,7 @@ export default interface RenderObjectRepresentation {
 
   updateClicky(clicky: boolean): void;
 
+  isDraggable(): boolean;
+
   destroy(): void;
 }

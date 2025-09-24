@@ -58,6 +58,10 @@ export default class SimpleRenderObjectRepresentation<TGameObj extends TableItem
     }
   }
 
+  isDraggable(): boolean {
+    return false;
+  }
+
   destroy(): void {
     this.destroyed = true;
     this.sprite.destroy();

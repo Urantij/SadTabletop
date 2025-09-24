@@ -36,4 +36,8 @@ export default class InHandCardObject extends SimpleRenderObjectRepresentation<C
 
     return obj;
   }
+
+  override isDraggable(): boolean {
+    return true;
+  }
 }

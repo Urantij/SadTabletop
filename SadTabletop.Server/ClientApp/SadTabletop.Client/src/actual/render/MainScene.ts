@@ -60,40 +60,77 @@ export default class MainScene extends Phaser.Scene {
     this.events.emit("READY)))");
 
     // кликаем по хуйне. надо бы вынести отсюда TODO
+    let heldObject: RenderObjectRepresentation | null = null;
     {
-      const clicked: RenderObjectRepresentation[] = [];
+      const clickedClicky: RenderObjectRepresentation[] = [];
+      const clickedDraggy: RenderObjectRepresentation[] = [];
       let clickDate = this.time.now;
+
+      let clickTimeoutNum: number | undefined = undefined;
 
       this.input.on("pointerdown", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
 
         clickDate = this.time.now;
 
-        clicked.splice(0);
+        clickedClicky.splice(0);
+        clickedDraggy.splice(0);
 
         for (const element of currentlyOver) {
           const container = element.getData(ContainerObjectDataKey) as RenderObjectRepresentation | undefined;
           if (container === undefined) {
             continue;
           }
-          if (!container.clicky) {
-            continue;
+          if (container.clicky) {
+            clickedClicky.push(container);
           }
+          if (container.isDraggable()) {
+            clickedDraggy.push(container);
+          }
+        }
 
-          clicked.push(container);
+        if (clickedDraggy.length === 1) {
+          clickTimeoutNum = setTimeout(() => {
+            const obj = clickedDraggy.splice(0)[0];
+
+            if (!obj.isDraggable())
+              return;
+
+            const pos = pointer.positionToCamera(this.hand.handCamera) as Phaser.Math.Vector2;;
+
+            heldObject = obj;
+            this.animka.moveObject2(heldObject, pos.x, pos.y);
+          }, 50);
         }
       });
       this.input.on("pointerup", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
+
+        if (heldObject !== null) {
+          heldObject = null;
+          return;
+        }
+
         if (this.time.now - clickDate > 150) {
           return;
         }
 
-        const wereClicked = clicked.splice(0).filter(container => container.clicky);
+        clearTimeout(clickTimeoutNum);
+
+        const wereClicked = clickedClicky.splice(0).filter(container => container.clicky);
 
         if (wereClicked.length !== 1) {
           return;
         }
 
         this.events.emit("ClickyClicked", wereClicked[0]);
+      });
+      this.input.on("pointermove", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
+        if (heldObject === null)
+          return;
+
+        const pos = pointer.positionToCamera(this.hand.handCamera) as Phaser.Math.Vector2;;
+
+        this.animka.moveObject2(heldObject, pos.x, pos.y);
+        // heldObject.followPoint = pointer.positionToCamera(this.hand.handCamera) as Phaser.Math.Vector2;
       });
     }
 
@@ -106,7 +143,7 @@ export default class MainScene extends Phaser.Scene {
         position = pointer.position;
       });
       this.input.on("pointermove", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
-        if (!holding)
+        if (!holding || heldObject !== null)
           return;
 
         const distance = position.clone().subtract(pointer.position);

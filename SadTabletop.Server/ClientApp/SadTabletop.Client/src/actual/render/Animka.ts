@@ -28,6 +28,8 @@ export default class Animka {
     //   y: y
     // });
 
+    const scene = this.scene;
+
     const current = obj.getCurrentPosition();
 
     // TODO лишнее
@@ -37,8 +39,11 @@ export default class Animka {
     const data = obj.getDataManager();
     const moveData = data.get(moveKey);
 
+    let passedTime: number | null = null;
+
     if (moveData !== undefined) {
-      const moveTween = moveData as Phaser.Tweens.Tween;
+      const moveTween = moveData.tween as Phaser.Tweens.Tween;
+      passedTime = moveData.time;
 
       moveTween.stop();
       // moveTween.destroy();
@@ -50,6 +55,14 @@ export default class Animka {
       obj,
       x: current.x,
       y: current.y
+    };
+
+    const test: {
+      tween: Phaser.Tweens.Tween | null,
+      time: number
+    } = {
+      tween: null,
+      time: scene.time.now,
     };
 
     const tween = this.scene.tweens.add({
@@ -72,6 +85,8 @@ export default class Animka {
           return;
         }
 
+        test.time = scene.time.now;
+
         holder.obj.changePosition(holder.x, holder.y);
       },
       props: {
@@ -79,8 +94,14 @@ export default class Animka {
         y: y
       }
     });
+    test.tween = tween;
 
-    data.set(moveKey, tween);
+    if (passedTime !== null) {
+      const p = scene.time.now - passedTime;
+      tween.update(p);
+    }
+
+    data.set(moveKey, test);
   }
 
   public flipCard(obj: CardObject) {
