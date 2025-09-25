@@ -12,11 +12,14 @@ import { findComponent, findComponentForSure, replaceDtoComponent } from "@/util
 import { removeItemFromCollection } from "@/utilities/MyCollections";
 import Hand from "./Hand";
 import type Seat from "../../Seat";
+import type MoveCardInHandMessage from "./messages/client/MoveCardInHandMessage";
+import type CardMovedInHandMessage from "./messages/server/CardMovedInHandMessage";
 
 type MessageEvents = {
   CardMovedToHand: (card: Card, component: InHandComponent) => void;
   CardRemovedFromHand: (card: Card, hand: Hand) => void;
   CardsSwapped: (card1: Card, card2: Card) => void;
+  CardMovedInHand: (card: Card, component: InHandComponent) => void;
 }
 
 export default class HandsSystem {
@@ -28,6 +31,8 @@ export default class HandsSystem {
 
   readonly events: TypedEmitter<MessageEvents> = new Phaser.Events.EventEmitter();
 
+  connection: Connection | null = null;
+
   constructor(table: Table, bench: Bench) {
     this.table = table;
     this.bench = bench;
@@ -37,9 +42,21 @@ export default class HandsSystem {
   }
 
   subscribeToConnection(connection: Connection) {
+    this.connection = connection;
     connection.registerForMessage<CardMovedToHandMessage>("CardMovedToHandMessage", msg => this.cardMovedToHand(msg));
     connection.registerForMessage<CardRemovedFromHandMessage>("CardRemovedFromHandMessage", msg => this.cardRemovedFromHand(msg));
-    connection.registerForMessage<CardsSwappedMessage>("CardsSwappedMessage", msg => this.cardsSwapped(msg))
+    connection.registerForMessage<CardsSwappedMessage>("CardsSwappedMessage", msg => this.cardsSwapped(msg));
+    connection.registerForMessage<CardMovedInHandMessage>("CardMovedInHandMessage", msg => this.cardMovedInHand(msg));
+  }
+
+  moveCard(card: Card, index: number) {
+    // TODO проверки наверное нужны?
+    const message: MoveCardInHandMessage = {
+      card: card.id,
+      index: index
+    };
+
+    this.connection?.sendMessage("MoveCardInHandMessage", message);
   }
 
   getHand(owner: Seat) {
@@ -60,11 +77,11 @@ export default class HandsSystem {
 
     const card = item as Card;
 
-    replaceDtoComponent(item, "InHandComponent", (dto: InHandComponentDto) => {
+    const component = replaceDtoComponent(item, "InHandComponent", (dto: InHandComponentDto) => {
 
       const owner = this.bench.seats.find(s => s.id === dto.owner);
       if (owner === undefined) {
-        console.warn(`itemAdded owner ${dto.owner}`);
+        console.error(`itemAdded owner ${dto.owner}`);
         return;
       }
 
@@ -76,9 +93,22 @@ export default class HandsSystem {
         hand: hand,
         index: dto.index,
       };
-      hand.cards.push(card);
 
       return component;
+    });
+
+    if (component === undefined) {
+      console.error(`itemAdded ${item.id}`);
+      return;
+    }
+
+    // TODO господь помоги мне
+    component.hand.cards.push(card);
+    component.hand.cards.sort((a, b) => {
+      const ca = findComponentForSure<InHandComponent>(a, "InHandComponent");
+      const cb = findComponentForSure<InHandComponent>(b, "InHandComponent");
+
+      return ca.index - cb.index;
     });
   }
 
@@ -109,7 +139,14 @@ export default class HandsSystem {
       index: msg.index,
     };
     card.components.push(component);
+    // TODO господь помоги мне
     hand.cards.push(card);
+    hand.cards.sort((a, b) => {
+      const ca = findComponentForSure<InHandComponent>(a, "InHandComponent");
+      const cb = findComponentForSure<InHandComponent>(b, "InHandComponent");
+
+      return ca.index - cb.index;
+    });
 
     this.updateIndexesLikeStupid(hand);
 
@@ -162,6 +199,28 @@ export default class HandsSystem {
     component2.index = a;
 
     this.events.emit("CardsSwapped", card1, card2);
+  }
+
+  private cardMovedInHand(msg: CardMovedInHandMessage): void {
+
+    const card = this.table.findItem<Card>(msg.card);
+    if (card === undefined) {
+      console.warn(`cardMovedInHand card ${msg.card}`)
+      return;
+    }
+
+    const component = findComponent<InHandComponent>(card, "InHandComponent");
+    if (component === undefined) {
+      console.warn(`cardMovedInHand component ${card}`);
+      return;
+    }
+
+    component.hand.cards.splice(component.index, 1);
+    component.hand.cards.splice(msg.index, 0, card);
+
+    this.updateIndexesLikeStupid(component.hand);
+
+    this.events.emit("CardMovedInHand", card, component);
   }
 
   // TODO нормально сделать

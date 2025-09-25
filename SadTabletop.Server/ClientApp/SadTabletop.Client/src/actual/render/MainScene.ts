@@ -14,11 +14,11 @@ import DeckCardRemovedData from "../things/concrete/Decks/DeckCardRemovedData";
 import { ContainerObjectDataKey } from "./SimpleRenderObjectRepresentation";
 import type RectShape from "../things/concrete/Shapes/RectShape";
 import RectShapeObject from "./objects/RectShapeObject";
-import SceneHand from "./SceneHand";
 import type CircleShape from "../things/concrete/Shapes/CircleShape";
 import CircleShapeObject from "./objects/CircleShapeObject";
 import CursorObject, { cursorTextureKey } from "./objects/CursorObject";
 import type Player from "../things/Player";
+import HandScene from "./HandScene";
 
 export const cursorMovedInTheWorldName = "CursorMovedInTheWorld";
 
@@ -26,11 +26,11 @@ export default class MainScene extends Phaser.Scene {
 
   leGame!: LeGame;
 
+  hander!: HandScene;
+
   readonly objects: RenderObjectRepresentation[] = [];
 
   readonly animka: Animka = new Animka(this);
-
-  hand: SceneHand = null!;
 
   init(game: LeGame) {
     this.leGame = game;
@@ -52,12 +52,10 @@ export default class MainScene extends Phaser.Scene {
 
   private create() {
 
-    this.hand = SceneHand.create(this);
-
     // я понятия нахуй не имею что происходит
     // в старом проекте реди шло когда сцена была ГОТОВА
     // ща оно вылетает ДО ПРЕЛОАДА БЛЯТЬ
-    this.events.emit("READY)))");
+    // this.events.emit("READY)))");
 
     // кликаем по хуйне. надо бы вынести отсюда TODO
     let heldObject: RenderObjectRepresentation | null = null;
@@ -88,19 +86,19 @@ export default class MainScene extends Phaser.Scene {
           }
         }
 
-        if (clickedDraggy.length === 1) {
-          clickTimeoutNum = setTimeout(() => {
-            const obj = clickedDraggy.splice(0)[0];
+        // if (clickedDraggy.length === 1) {
+        //   clickTimeoutNum = setTimeout(() => {
+        //     const obj = clickedDraggy.splice(0)[0];
 
-            if (!obj.isDraggable())
-              return;
+        //     if (!obj.isDraggable())
+        //       return;
 
-            const pos = pointer.positionToCamera(this.hand.handCamera) as Phaser.Math.Vector2;;
+        //     const pos = pointer.positionToCamera(this.hand.handCamera) as Phaser.Math.Vector2;;
 
-            heldObject = obj;
-            this.animka.moveObject2(heldObject, pos.x, pos.y);
-          }, 50);
-        }
+        //     heldObject = obj;
+        //     this.animka.moveObject2(heldObject, pos.x, pos.y);
+        //   }, 50);
+        // }
       });
       this.input.on("pointerup", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
 
@@ -123,15 +121,15 @@ export default class MainScene extends Phaser.Scene {
 
         this.events.emit("ClickyClicked", wereClicked[0]);
       });
-      this.input.on("pointermove", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
-        if (heldObject === null)
-          return;
+      // this.input.on("pointermove", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
+      //   if (heldObject === null)
+      //     return;
 
-        const pos = pointer.positionToCamera(this.hand.handCamera) as Phaser.Math.Vector2;;
+      //   const pos = pointer.positionToCamera(this.hand.handCamera) as Phaser.Math.Vector2;;
 
-        this.animka.moveObject2(heldObject, pos.x, pos.y);
-        // heldObject.followPoint = pointer.positionToCamera(this.hand.handCamera) as Phaser.Math.Vector2;
-      });
+      //   this.animka.moveObject2(heldObject, pos.x, pos.y);
+      //   // heldObject.followPoint = pointer.positionToCamera(this.hand.handCamera) as Phaser.Math.Vector2;
+      // });
     }
 
     // мувемент. надо бы вынести нахуй отсюда TODO
@@ -141,8 +139,11 @@ export default class MainScene extends Phaser.Scene {
       this.input.on("pointerdown", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
         holding = true;
         position = pointer.position;
+
+        this.hander.input.enabled = false;
       });
       this.input.on("pointermove", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
+        // console.log(`main move ${currentlyOver.length}`);
         if (!holding || heldObject !== null)
           return;
 
@@ -157,6 +158,7 @@ export default class MainScene extends Phaser.Scene {
       });
       this.input.on("pointerup", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
         holding = false;
+        this.hander.input.enabled = true;
       });
       this.input.on("wheel", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[], deltaX: number, deltaY: number, deltaZ: number) => {
 
@@ -183,20 +185,20 @@ export default class MainScene extends Phaser.Scene {
     {
       this.input.on("pointermove", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
 
-        if (this.hand.hoveredObject !== null && this.hand.relativePointerPosition !== null) {
+        // if (this.hand.hoveredObject !== null && this.hand.relativePointerPosition !== null) {
 
-          const cardObj = this.objects.find(o => o.gameObject === this.hand.hoveredObject?.gameObject && o instanceof CardObject) as CardObject | undefined;
+        //   const cardObj = this.objects.find(o => o.gameObject === this.hand.hoveredObject?.gameObject && o instanceof CardObject) as CardObject | undefined;
 
-          if (cardObj !== undefined) {
-            const pos = cardObj.getCurrentPosition().clone();
+        //   if (cardObj !== undefined) {
+        //     const pos = cardObj.getCurrentPosition().clone();
 
-            pos.x += cardObj.sprite.displayWidth * this.hand.relativePointerPosition.x;
-            pos.y += cardObj.sprite.displayHeight * this.hand.relativePointerPosition.y;
+        //     pos.x += cardObj.sprite.displayWidth * this.hand.relativePointerPosition.x;
+        //     pos.y += cardObj.sprite.displayHeight * this.hand.relativePointerPosition.y;
 
-            this.events.emit(cursorMovedInTheWorldName, pos);
-            return;
-          }
-        }
+        //     this.events.emit(cursorMovedInTheWorldName, pos);
+        //     return;
+        //   }
+        // }
 
         const pos = pointer.positionToCamera(this.cameras.main) as Phaser.Math.Vector2;
 
@@ -206,6 +208,12 @@ export default class MainScene extends Phaser.Scene {
         this.events.emit(cursorMovedInTheWorldName, pos);
       });
     }
+
+    this.hander = this.scene.add("Hand", HandScene, false) as HandScene;
+    this.hander.events.once("READY)))", () => {
+      this.events.emit("READY)))");
+    });
+    this.scene.launch(this.hander, this.leGame);
   }
 
   // override update(time: number, delta: number): void {

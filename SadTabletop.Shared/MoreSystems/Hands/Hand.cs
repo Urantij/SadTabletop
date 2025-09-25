@@ -8,6 +8,28 @@ public class Hand(Seat owner)
     public Seat Owner { get; } = owner;
     public List<Card> Cards { get; } = [];
 
+    public void MoveCard(Card card, int index)
+    {
+        InHandComponent inHand = card.GetComponent<InHandComponent>();
+
+        if (index > inHand.Index)
+        {
+            Cards.Insert(index, card);
+            Cards.RemoveAt(inHand.Index);
+        }
+        else
+        {
+            Cards.RemoveAt(inHand.Index);
+            Cards.Insert(index, card);
+        }
+
+        // TODO нормально сделай ептыть
+        for (int i = 0; i < Cards.Count; i++)
+        {
+            Cards[i].GetComponent<InHandComponent>().Index = i;
+        }
+    }
+
     /// <summary>
     /// Меняет местами карты в коллекции, свапает индексы.
     /// </summary>

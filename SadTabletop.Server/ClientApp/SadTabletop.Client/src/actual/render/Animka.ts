@@ -5,11 +5,11 @@ import CardObject from "./objects/CardObject";
 const moveKey = "AnimkaMove";
 
 export default class Animka {
-  private readonly scene: MainScene;
+  private readonly scene: Phaser.Scene;
 
   readonly speedPerUnit = 1.3;
 
-  constructor(scene: MainScene) {
+  constructor(scene: Phaser.Scene) {
     this.scene = scene;
   }
 
@@ -20,7 +20,7 @@ export default class Animka {
     this.moveObject2(obj, location.x, location.y, continuation);
   }
 
-  public moveObject2(obj: RenderObjectRepresentation, x: number, y: number, continuation: (() => void) | null = null): void {
+  public moveObject2(obj: RenderObjectRepresentation, x: number, y: number, continuation: (() => void) | null = null, speedPerUnit: number | null = null): void {
 
     // const start = obj.getCurrentPosition();
     // const end = start.clone().add({
@@ -34,7 +34,7 @@ export default class Animka {
 
     // TODO лишнее
     const distance = current.distance(new Phaser.Math.Vector2(x, y));
-    const time = distance / this.speedPerUnit;
+    const time = distance / (speedPerUnit ?? this.speedPerUnit);
 
     const data = obj.getDataManager();
     const moveData = data.get(moveKey);

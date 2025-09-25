@@ -19,8 +19,22 @@ public class GameResolver
 
         _entitiesSystems = _game.Systems.OfType<EntitiesSystem>().ToArray();
 
-        _entityTypeToSystem =
-            _entitiesSystems.ToDictionary(key => SeriHelper.GetEntityType(key.GetType()), value => value);
+        // _entityTypeToSystem =
+        //     _entitiesSystems.ToDictionary(key => SeriHelper.GetEntityType(key.GetType()), value => value);
+        _entityTypeToSystem = new Dictionary<Type, EntitiesSystem>();
+
+        // oof
+        foreach (EntitiesSystem system in _entitiesSystems)
+        {
+            Type entityType = SeriHelper.GetEntityType(system.GetType());
+            Type[] all = SeriHelper.FindRealEntities(entityType);
+
+            _entityTypeToSystem[entityType] = system;
+            foreach (Type one in all)
+            {
+                _entityTypeToSystem[one] = system;
+            }
+        }
     }
 
     public Type[] GetEntitiesTypesFromEntitiesSystem()

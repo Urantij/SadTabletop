@@ -51,6 +51,7 @@ export default class CardObject extends SimpleRenderObjectRepresentation<Card, P
     scene.leGame.hands.events.on("CardMovedToHand", obj.moveToHand, obj);
     scene.leGame.hands.events.on("CardRemovedFromHand", obj.removeFromHand, obj);
     scene.leGame.hands.events.on("CardsSwapped", obj.swapInHands, obj);
+    scene.leGame.hands.events.on("CardMovedInHand", obj.cardMovedInHand, obj);
 
     return obj;
   }
@@ -131,6 +132,17 @@ export default class CardObject extends SimpleRenderObjectRepresentation<Card, P
     this.scene.animka.moveObject2(this, position.x, position.y,);
   }
 
+  private cardMovedInHand(movingCard: Card, movingComponent: InHandComponent) {
+    // TODO господи помилуй
+    const component = findComponent<InHandComponent>(this.gameObject, "InHandComponent");
+
+    if (component?.hand !== movingComponent.hand)
+      return;
+
+    const position = CardObject.calculateCardPosition(this.scene.leGame.bench, component);
+    this.scene.animka.moveObject2(this, position.x, position.y,);
+  }
+
   private static getResultPosition(card: Card, scene: MainScene) {
 
     const component = findComponent<InHandComponent>(card, "InHandComponent");
@@ -152,7 +164,7 @@ export default class CardObject extends SimpleRenderObjectRepresentation<Card, P
 
   // мне впадлу сделать нормально унифицировано похуй.
 
-  static getCardSideTextureKey(num: number | null, fallback: string, scene: MainScene) {
+  static getCardSideTextureKey(num: number | null, fallback: string, scene: Phaser.Scene) {
     if (num === null) {
       return fallback;
     }
@@ -164,7 +176,7 @@ export default class CardObject extends SimpleRenderObjectRepresentation<Card, P
     return fallback;
   }
 
-  static getCardSideTexture(num: number | null, fallback: string, scene: MainScene) {
+  static getCardSideTexture(num: number | null, fallback: string, scene: Phaser.Scene) {
 
     if (num === null) {
       return scene.textures.get(fallback);

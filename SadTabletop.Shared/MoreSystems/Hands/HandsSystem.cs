@@ -1,7 +1,10 @@
 using SadTabletop.Shared.Mechanics;
 using SadTabletop.Shared.MoreSystems.Cards;
+using SadTabletop.Shared.MoreSystems.Hands.Messages.Client;
 using SadTabletop.Shared.MoreSystems.Hands.Messages.Server;
 using SadTabletop.Shared.Systems.Communication;
+using SadTabletop.Shared.Systems.Communication.Events;
+using SadTabletop.Shared.Systems.Events;
 using SadTabletop.Shared.Systems.Limit;
 using SadTabletop.Shared.Systems.Seats;
 using SadTabletop.Shared.Systems.Viewer;
@@ -25,6 +28,7 @@ public class HandsSystem : ComponentSystemBase
         base.GameLoaded();
 
         Game.GetSystem<ViewerSystem>().RegisterComponent<InHandComponent>(TransformInHand);
+        Game.GetSystem<EventsSystem>().Subscribe<ClientMessageReceivedEvent<MoveCardInHandMessage>>(EventPriority.Normal, this, CardMovedInHand);
     }
 
     public Hand GetHand(Seat seat)
@@ -120,6 +124,47 @@ public class HandsSystem : ComponentSystemBase
         CardsSwappedMessage message = new(card1, card2);
         // TODO ТУТ ДВЕ ЕНТИТИ))) НУ НАДО НАДО СДЕЛАТЬ НОРМАЛЬНО)))
         _communication.SendEntityRelated(message, card1);
+    }
+
+    private void CardMovedInHand(ClientMessageReceivedEvent<MoveCardInHandMessage> @event)
+    {
+        if (@event.Seat == null)
+        {
+            // TODO краш?
+            return;
+        }
+
+        Hand hand = GetHand(@event.Seat);
+
+        InHandComponent? inHand = @event.Message.Card.TryGetComponent<InHandComponent>();
+        if (inHand == null)
+        {
+            // TODO краш?
+            return;
+        }
+
+        if (inHand.Hand.Owner != @event.Seat)
+        {
+            // TODO краш?
+            return;
+        }
+
+        int index = @event.Message.Index;
+        if (index < 0)
+        {
+            // TODO лог
+            index = 0;
+        }
+        else if (index >= hand.Cards.Count)
+        {
+            // TODO лог
+            index = hand.Cards.Count - 1;
+        }
+
+        hand.MoveCard(@event.Message.Card, index);
+
+        CardMovedInHandMessage message = new(@event.Message.Card, index);
+        _communication.SendEntityRelated(message, @event.Message.Card);
     }
 
     private void RemoveInHandComponent(Card card, InHandComponent inHand)

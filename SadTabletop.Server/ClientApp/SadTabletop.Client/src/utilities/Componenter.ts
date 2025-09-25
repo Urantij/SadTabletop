@@ -45,4 +45,6 @@ export function replaceDtoComponent<DtoType extends EntityComponent, ResultType 
     return;
 
   entity.components.splice(index, 1, result);
+
+  return result;
 }
