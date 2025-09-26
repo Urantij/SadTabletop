@@ -13,6 +13,8 @@ const handPositionX = 0;
 const handPositionY = 0;
 const handWidth = 600;
 
+export const pointerOverHoveredName = "PointerOverHovered";
+
 export default class HandScene extends BaseScene {
 
   hand: SceneHand2 = null!;
@@ -189,6 +191,8 @@ export default class HandScene extends BaseScene {
     else {
       this.relativePointerPosition = this.getRelativePosition(pointer, closest.obj);
     }
+
+    this.events.emit(pointerOverHoveredName, this.hoveredObject, this.relativePointerPosition);
   }
 
   private cardDrag(obj: CardObject, pointer: Phaser.Input.Pointer, dragX: number, dragY: number) {

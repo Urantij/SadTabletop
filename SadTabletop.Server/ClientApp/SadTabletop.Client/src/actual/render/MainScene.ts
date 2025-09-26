@@ -16,7 +16,7 @@ import type CircleShape from "../things/concrete/Shapes/CircleShape";
 import CircleShapeObject from "./objects/CircleShapeObject";
 import CursorObject, { cursorTextureKey } from "./objects/CursorObject";
 import type Player from "../things/Player";
-import HandScene from "./HandScene";
+import HandScene, { pointerOverHoveredName } from "./HandScene";
 import BaseScene from "./BaseScene";
 import SceneHand2 from "./SceneHand2";
 import type Hand from "../things/concrete/Hands/Hand";
@@ -79,6 +79,11 @@ export default class MainScene extends BaseScene {
     // в старом проекте реди шло когда сцена была ГОТОВА
     // ща оно вылетает ДО ПРЕЛОАДА БЛЯТЬ
     // this.events.emit("READY)))");
+
+    this.hander = this.scene.add("Hand", HandScene, false) as HandScene;
+    this.hander.events.once("READY)))", () => {
+      this.events.emit("READY)))");
+    });
 
     // по классике, нахуй отсюда TODO
     {
@@ -238,15 +243,15 @@ export default class MainScene extends BaseScene {
     {
       this.input.on("pointermove", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
 
-        // if (this.hand.hoveredObject !== null && this.hand.relativePointerPosition !== null) {
+        // if (this.hander.hoveredObject !== null && this.hander.relativePointerPosition !== null) {
 
-        //   const cardObj = this.objects.find(o => o.gameObject === this.hand.hoveredObject?.gameObject && o instanceof CardObject) as CardObject | undefined;
+        //   const cardObj = this.objects.find(o => o.gameObject === this.hander.hoveredObject?.gameObject && o instanceof CardObject) as CardObject | undefined;
 
         //   if (cardObj !== undefined) {
         //     const pos = cardObj.getCurrentPosition().clone();
 
-        //     pos.x += cardObj.sprite.displayWidth * this.hand.relativePointerPosition.x;
-        //     pos.y += cardObj.sprite.displayHeight * this.hand.relativePointerPosition.y;
+        //     pos.x += cardObj.sprite.displayWidth * this.hander.relativePointerPosition.x;
+        //     pos.y += cardObj.sprite.displayHeight * this.hander.relativePointerPosition.y;
 
         //     this.events.emit(cursorMovedInTheWorldName, pos);
         //     return;
@@ -260,12 +265,21 @@ export default class MainScene extends BaseScene {
 
         this.events.emit(cursorMovedInTheWorldName, pos);
       });
+
+      this.hander.events.on(pointerOverHoveredName, (hoveredObj: CardObject, relative: Phaser.Math.Vector2) => {
+        const cardObj = this.objects.find(o => o.gameObject === hoveredObj.gameObject && o instanceof CardObject) as CardObject | undefined;
+
+        if (cardObj !== undefined) {
+          const pos = cardObj.getCurrentPosition().clone();
+
+          pos.x += cardObj.sprite.displayWidth * relative.x;
+          pos.y += cardObj.sprite.displayHeight * relative.y;
+
+          this.events.emit(cursorMovedInTheWorldName, pos);
+        }
+      });
     }
 
-    this.hander = this.scene.add("Hand", HandScene, false) as HandScene;
-    this.hander.events.once("READY)))", () => {
-      this.events.emit("READY)))");
-    });
     this.scene.launch(this.hander, this.leGame);
   }
 

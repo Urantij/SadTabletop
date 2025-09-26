@@ -4,6 +4,7 @@ import SimpleRenderObjectRepresentation from "../SimpleRenderObjectRepresentatio
 import { findComponent } from "@/utilities/Componenter";
 import type { InHandComponent } from "@/actual/things/concrete/Hands/InHandComponent";
 import type BaseScene from "../BaseScene";
+import { DepthChart } from "../Renderer";
 
 export const defaultBackSideKey = "defaultBackSide";
 export const defaultFrontSidekey = "defaultFrontSide";
@@ -28,6 +29,7 @@ export default class CardObject extends SimpleRenderObjectRepresentation<Card, P
     const inhand = findComponent<InHandComponent>(card, "InHandComponent");
 
     const cardSprite = new Phaser.GameObjects.Sprite(scene, x, y, sideTexture);
+    cardSprite.setDepth(DepthChart.Card);
     scene.add.existing(cardSprite);
     cardSprite.setDisplaySize(width, height);
     cardSprite.setScale(1, 1);

@@ -24,10 +24,9 @@ export class DepthChart {
 
   public static Text: 3;
 
-  public static Cursor = 5;
+  public static Card = 10;
 
-  public static CardStart = 10;
-  public static CardEnd = 100;
+  public static Cursor = 15;
 }
 
 export default class Renderer {
