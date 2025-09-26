@@ -94,7 +94,7 @@ export default class Renderer {
             this.scene?.destroyEntity(item);
           });
           this.leGame.table.events.on("ItemMoved", (item, oldX, oldY) => {
-            this.scene?.moveItem(item, oldX, oldY);
+            this.scene?.moveItem(item);
           });
           this.leGame.table.events.on("Clearing", () => {
             this.scene?.clearItems();

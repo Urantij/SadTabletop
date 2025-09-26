@@ -1,7 +1,7 @@
 import Flipness from "@/actual/things/Flipness";
 import type MainScene from "../MainScene";
 import type Deck from "@/actual/things/concrete/Decks/Deck";
-import CardObject, { cardHeight, cardWidth, defaultBackSideKey, defaultFrontSidekey } from "./CardObject";
+import CardObject, { defaultBackSideKey, defaultFrontSidekey } from "./CardObject";
 import SimpleRenderObjectRepresentation from "../SimpleRenderObjectRepresentation";
 
 export const deckSpotKey = "deckSpot";
@@ -17,7 +17,7 @@ export default class DeckObject extends SimpleRenderObjectRepresentation<Deck, P
     this.displayedSide = displayedSide;
 
     this.sprite.on("pointerover", (poiner: Phaser.Input.Pointer, localX: number, localY: number, event: Phaser.Types.Input.EventData) => {
-      this.tooltip = sprite.scene.add.text(sprite.x + cardWidth, sprite.y, `${gameObject.cardsCount}`);
+      this.tooltip = sprite.scene.add.text(sprite.x + sprite.displayWidth, sprite.y, `${gameObject.cardsCount}`);
       this.tooltip.depth = sprite.depth + 1;
     });
     this.sprite.on("pointerout", (poiner: Phaser.Input.Pointer, localX: number, localY: number, event: Phaser.Types.Input.EventData) => {
@@ -44,14 +44,14 @@ export default class DeckObject extends SimpleRenderObjectRepresentation<Deck, P
     this.displayedSide = newSide;
   }
 
-  static create(deck: Deck, scene: MainScene) {
+  static create(deck: Deck, scene: MainScene, width: number, height: number) {
 
     const textureKey = DeckObject.getCurrentTextureKey(deck, scene);
 
     const texture = scene.textures.get(textureKey);
 
     const sprite = new Phaser.GameObjects.Sprite(scene, deck.x, deck.y, texture);
-    sprite.setDisplaySize(cardWidth, cardHeight);
+    sprite.setDisplaySize(width, height);
     scene.add.existing(sprite);
 
     const side = deck.flipness === Flipness.Shown ? deck.frontSide : deck.backSide;

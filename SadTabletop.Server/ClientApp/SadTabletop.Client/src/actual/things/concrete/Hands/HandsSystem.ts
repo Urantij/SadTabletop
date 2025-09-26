@@ -97,10 +97,8 @@ export default class HandsSystem {
       return component;
     });
 
-    if (component === undefined) {
-      console.error(`itemAdded ${item.id}`);
+    if (component === undefined)
       return;
-    }
 
     // TODO господь помоги мне
     component.hand.cards.push(card);

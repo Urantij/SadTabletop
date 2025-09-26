@@ -1,10 +1,8 @@
 import Phaser from "phaser";
-import type LeGame from "../LeGame";
 import CardObject, { defaultBackSideKey, defaultFrontSidekey } from "./objects/CardObject";
 import type RenderObjectRepresentation from "@/actual/render/RenderObjectRepresentation.ts";
 import { removeFromCollection } from "@/utilities/MyCollections.ts";
 import type TableItem from "../things/TableItem";
-import Animka from "./Animka";
 import type TextItem from "../things/concrete/TextItem";
 import TextItemObject from "./objects/TextItemObject";
 import type Deck from "@/actual/things/concrete/Decks/Deck";
@@ -19,21 +17,46 @@ import CircleShapeObject from "./objects/CircleShapeObject";
 import CursorObject, { cursorTextureKey } from "./objects/CursorObject";
 import type Player from "../things/Player";
 import HandScene from "./HandScene";
+import BaseScene from "./BaseScene";
+import SceneHand2 from "./SceneHand2";
+import type Hand from "../things/concrete/Hands/Hand";
+import { findComponent } from "@/utilities/Componenter";
+import type HandOverrideComponent from "../things/concrete/Hands/HandOverrideComponent";
+import GameValues from "../GameValues";
+import type Entity from "../things/Entity";
 
 export const cursorMovedInTheWorldName = "CursorMovedInTheWorld";
 
-export default class MainScene extends Phaser.Scene {
+const cardWidth = 250;
+const cardHeight = 350;
 
-  leGame!: LeGame;
+export default class MainScene extends BaseScene {
 
   hander!: HandScene;
 
   readonly objects: RenderObjectRepresentation[] = [];
 
-  readonly animka: Animka = new Animka(this);
+  readonly hands: SceneHand2[] = [];
 
-  init(game: LeGame) {
-    this.leGame = game;
+  private getHand(hand: Hand) {
+    let obj = this.hands.find(h => h.hand === hand);
+
+    if (obj === undefined) {
+
+      const seatIndex = this.leGame.bench.seats.indexOf(hand.owner);
+
+      // я не буду обрабатывать -1
+
+      const handOverride = findComponent<HandOverrideComponent>(hand.owner, "HandOverrideComponent");
+
+      const handStartX = handOverride?.x ?? GameValues.HandsArrayStartX + seatIndex * (GameValues.HandsArrayWidth + GameValues.HandsArrayDistance);
+      const handStartY = handOverride?.y ?? GameValues.HandsArrayStartY
+
+      obj = SceneHand2.create(this, hand, handStartX, handStartY, GameValues.HandsArrayWidth, handOverride?.rotation ?? 0, cardWidth);
+      this.hands.push(obj);
+    }
+
+    return obj;
   }
 
   private preload() {
@@ -56,6 +79,36 @@ export default class MainScene extends Phaser.Scene {
     // в старом проекте реди шло когда сцена была ГОТОВА
     // ща оно вылетает ДО ПРЕЛОАДА БЛЯТЬ
     // this.events.emit("READY)))");
+
+    // по классике, нахуй отсюда TODO
+    {
+      this.leGame.hands.events.on("CardMovedToHand", (card, component) => {
+        const obj = this.objects.find(o => o.gameObject === card) as CardObject | undefined;
+        if (obj === undefined) {
+          console.warn(`нет обекта CardMovedToHand ${card.id}`);
+          return;
+        }
+
+        obj.inhand = component;
+
+        const hand = this.getHand(component.hand);
+
+        hand.addCardToHand(obj, true);
+      });
+      this.leGame.hands.events.on("CardRemovedFromHand", (card, hand) => {
+        const obj = this.objects.find(o => o.gameObject === card) as CardObject | undefined;
+        if (obj === undefined) {
+          console.warn(`нет обекта CardRemovedFromHand ${card.id}`);
+          return;
+        }
+
+        obj.inhand = null;
+
+        const sceneHand = this.getHand(hand);
+
+        sceneHand.removeCardFromHand(obj);
+      });
+    }
 
     // кликаем по хуйне. надо бы вынести отсюда TODO
     let heldObject: RenderObjectRepresentation | null = null;
@@ -260,24 +313,39 @@ export default class MainScene extends Phaser.Scene {
   //   }
   // }
 
-  destroyEntity(obj: object) {
+  destroyEntity(obj: Entity) {
     const rended = removeFromCollection(this.objects, o => o.gameObject === obj);
     if (rended === undefined) {
       console.warn(`unknown obj ${obj}`);
       return;
     }
 
-    rended.destroy();
+    this.destroy(rended);
   }
 
   clearItems() {
+    for (const hand of this.hands) {
+      hand.clear();
+    }
+    // TODO не уверен, но может быть
+    this.hands.splice(0);
+
     for (const obj of this.objects) {
+      // this.destroy(obj);
       obj.destroy();
     }
     this.objects.splice(0);
   }
 
-  moveItem(item: TableItem, oldX: number, oldY: number) {
+  private destroy(obj: RenderObjectRepresentation) {
+    if (obj instanceof CardObject && obj.inhand !== null) {
+      const sceneHand = this.getHand(obj.inhand.hand);
+      sceneHand.removeCardFromHand(obj);
+    }
+    obj.destroy();
+  }
+
+  moveItem(item: TableItem) {
 
     const obj = this.objects.find(o => o.gameObject.id === item.id);
     if (obj === undefined) {
@@ -285,17 +353,7 @@ export default class MainScene extends Phaser.Scene {
       return;
     }
 
-    // const xChange = item.x - oldX;
-    // const yChange = item.y - oldY;
-
-    // const targetPos = obj.getCurrentPosition().add({
-    //   x: xChange,
-    //   y: yChange
-    // });
-
-    const targetPos = new Phaser.Math.Vector2(item.x, item.y);
-
-    this.animka.moveObject2(obj, targetPos.x, targetPos.y);
+    this.animka.moveObject2(obj, item.x, item.y);
   }
 
   createCursor(player: Player) {
@@ -307,6 +365,7 @@ export default class MainScene extends Phaser.Scene {
   createCard(card: Card, data: object | null) {
     console.log(`создаём карту...`);
 
+    let obj: CardObject;
     if (data instanceof DeckCardRemovedData) {
 
       const deckObj = this.objects.find(o => o.gameObject.id === data.deck.id);
@@ -317,15 +376,17 @@ export default class MainScene extends Phaser.Scene {
 
       const deckPos = deckObj.getCurrentPosition();
 
-      const obj = CardObject.create(card, this, deckPos.x, deckPos.y);
+      obj = CardObject.create(card, this, deckPos.x, deckPos.y, cardWidth, cardHeight);
       this.objects.push(obj);
-
-      // тупо
-      this.moveItem(card, deckPos.x, deckPos.y);
     }
     else {
-      const obj = CardObject.create(card, this);
+      obj = CardObject.create(card, this, card.x, card.y, cardWidth, cardHeight);
       this.objects.push(obj);
+    }
+
+    if (obj.inhand !== null) {
+      const sceneHand = this.getHand(obj.inhand.hand);
+      sceneHand.addCardToHand(obj, true);
     }
   }
 
@@ -355,7 +416,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   createDeck(deck: Deck) {
-    const obj = DeckObject.create(deck, this);
+    const obj = DeckObject.create(deck, this, cardWidth, cardHeight);
 
     this.objects.push(obj);
   }
