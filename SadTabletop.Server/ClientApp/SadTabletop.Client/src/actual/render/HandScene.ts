@@ -2,7 +2,7 @@ import type Card from "../things/concrete/Cards/Card";
 import type { InHandComponent } from "../things/concrete/Hands/InHandComponent";
 import BaseScene from "./BaseScene";
 import CardObject, { defaultBackSideKey, defaultFrontSidekey } from "./objects/CardObject";
-import SceneHand2 from "./SceneHand2";
+import SceneHand from "./SceneHand";
 import { findComponent } from "@/utilities/Componenter";
 
 // почему тут? ну потому что ептыть
@@ -17,7 +17,7 @@ export const pointerOverHoveredName = "PointerOverHovered";
 
 export default class HandScene extends BaseScene {
 
-  hand: SceneHand2 = null!;
+  hand: SceneHand = null!;
 
   hoveredObject: CardObject | null = null;
   relativePointerPosition: Phaser.Math.Vector2 | null = null;
@@ -37,7 +37,7 @@ export default class HandScene extends BaseScene {
 
   private create() {
 
-    this.hand = SceneHand2.create(this, null, handPositionX, handPositionY, handWidth, 0, inhandCardWidth);
+    this.hand = SceneHand.create(this, null, handPositionX, handPositionY, handWidth, 0, inhandCardWidth);
 
     this.cameras.main.centerOn(handPositionX, handPositionY);
     this.cameras.main.scrollY -= this.cameras.main.height / 2;

@@ -7,7 +7,7 @@ import GameValues from "../GameValues";
 import CardObject from "./objects/CardObject";
 import type Hand from "../things/concrete/Hands/Hand";
 
-export default class SceneHand2 {
+export default class SceneHand {
   readonly scene: BaseScene;
 
   readonly objs: CardObject[] = [];
@@ -36,7 +36,7 @@ export default class SceneHand2 {
 
   static create(scene: BaseScene, hand: Hand | null, x: number, y: number, width: number, radians: number, cardWidth: number) {
 
-    const result = new SceneHand2(scene, hand, x, y, width, radians, cardWidth);
+    const result = new SceneHand(scene, hand, x, y, width, radians, cardWidth);
 
     scene.leGame.hands.events.on("CardsSwapped", result.cardsSwapped, result);
     scene.leGame.hands.events.on("CardMovedInHand", result.cardMovedInHand, result);
@@ -98,8 +98,14 @@ export default class SceneHand2 {
   private cardsSwapped(card1: Card, card2: Card) {
     const component1 = findComponentForSure<InHandComponent>(card1, "InHandComponent");
 
-    if (component1.hand.owner !== this.scene.leGame.ourPlayer?.seat)
-      return;
+    if (this.hand !== null) {
+      if (this.hand !== component1.hand)
+        return;
+    }
+    else {
+      if (component1.hand.owner !== this.scene.leGame.ourPlayer?.seat)
+        return;
+    }
 
     const component2 = findComponentForSure<InHandComponent>(card2, "InHandComponent");
 
@@ -115,8 +121,14 @@ export default class SceneHand2 {
   }
 
   private cardMovedInHand(card: Card, component: InHandComponent) {
-    if (component.hand.owner !== this.scene.leGame.ourPlayer?.seat)
-      return;
+    if (this.hand !== null) {
+      if (this.hand !== component.hand)
+        return;
+    }
+    else {
+      if (component.hand.owner !== this.scene.leGame.ourPlayer?.seat)
+        return;
+    }
 
     const oldIndex = this.objs.findIndex(o => o.gameObject === card);
     // я не буду обрабатывать -1

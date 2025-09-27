@@ -18,7 +18,7 @@ import CursorObject, { cursorTextureKey } from "./objects/CursorObject";
 import type Player from "../things/Player";
 import HandScene, { pointerOverHoveredName } from "./HandScene";
 import BaseScene from "./BaseScene";
-import SceneHand2 from "./SceneHand2";
+import SceneHand from "./SceneHand";
 import type Hand from "../things/concrete/Hands/Hand";
 import { findComponent } from "@/utilities/Componenter";
 import type HandOverrideComponent from "../things/concrete/Hands/HandOverrideComponent";
@@ -36,7 +36,7 @@ export default class MainScene extends BaseScene {
 
   readonly objects: RenderObjectRepresentation[] = [];
 
-  readonly hands: SceneHand2[] = [];
+  readonly hands: SceneHand[] = [];
 
   private getHand(hand: Hand) {
     let obj = this.hands.find(h => h.hand === hand);
@@ -52,7 +52,7 @@ export default class MainScene extends BaseScene {
       const handStartX = handOverride?.x ?? GameValues.HandsArrayStartX + seatIndex * (GameValues.HandsArrayWidth + GameValues.HandsArrayDistance);
       const handStartY = handOverride?.y ?? GameValues.HandsArrayStartY
 
-      obj = SceneHand2.create(this, hand, handStartX, handStartY, GameValues.HandsArrayWidth, handOverride?.rotation ?? 0, cardWidth);
+      obj = SceneHand.create(this, hand, handStartX, handStartY, GameValues.HandsArrayWidth, handOverride?.rotation ?? 0, cardWidth);
       this.hands.push(obj);
     }
 

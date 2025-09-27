@@ -27,6 +27,8 @@ export default class HandsSystem {
   readonly table: Table;
   readonly bench: Bench;
 
+  // TODO если так подумать, раз я стираю ситы, хенды тоже нужно стирать, но у меня хенды как референсы много где юзаются
+  // pizda)
   readonly hands: Hand[] = [];
 
   readonly events: TypedEmitter<MessageEvents> = new Phaser.Events.EventEmitter();
