@@ -2,9 +2,8 @@ import type TypedEmitter from "@/utilities/TypedEmiiter";
 import type Seat from "./things/Seat";
 import type Connection from "@/communication/Connection";
 
-type MessageEvents = {
+type BenchEvents = {
   SeatAdded: (seat: Seat) => void;
-  Clearing: () => void;
 }
 
 interface TakeSeatMessage {
@@ -19,7 +18,7 @@ export default class Bench {
 
   private connection: Connection | null = null;
 
-  readonly events: TypedEmitter<MessageEvents> = new Phaser.Events.EventEmitter();
+  readonly events: TypedEmitter<BenchEvents> = new Phaser.Events.EventEmitter();
 
   subscribeToConnection(connection: Connection) {
     this.connection = connection;
@@ -27,7 +26,6 @@ export default class Bench {
 
   clear() {
     this.seats.splice(0);
-    this.events.emit("Clearing");
   }
 
   sendTakeSeat(seat: Seat | null) {

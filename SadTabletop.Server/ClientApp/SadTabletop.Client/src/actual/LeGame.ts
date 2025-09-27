@@ -1,3 +1,4 @@
+import type TypedEmitter from "@/utilities/TypedEmiiter";
 import type Connection from "@/communication/Connection";
 import Table from "./Table";
 import type EntityAddedMessage from "@/communication/messages/server/EntityAddedMessage";
@@ -5,13 +6,17 @@ import type EntityRemovedMessage from "@/communication/messages/server/EntityRem
 import type JoinedMessage from "@/communication/messages/server/JoinedMessage";
 import type AssetInfo from "./things/AssetInfo";
 import type TableItem from "./things/TableItem";
-import type Entity from "./things/Entity";
 import type YouTookSeatMessage from "@/communication/messages/server/YouTookSeatMessage";
 import Bench from "./Bench";
 import type Seat from "./things/Seat";
 import PlayersContainer from "./PlayersContainer";
 import type Player from "./things/Player";
 import HandsSystem from "./things/concrete/Hands/HandsSystem";
+
+type LeGameEvents = {
+  Clearing: () => void;
+  DataSet: () => void;
+}
 
 /**
  * Хранит все данные игры.
@@ -27,6 +32,8 @@ export default class LeGame {
   public readonly assetsData: { name: string; url: string }[] = [];
 
   public readonly playersContainer: PlayersContainer = new PlayersContainer(this);
+
+  public readonly events: TypedEmitter<LeGameEvents> = new Phaser.Events.EventEmitter();
 
   public ourPlayer: Player | null = null;
 
@@ -73,6 +80,8 @@ export default class LeGame {
         this.table.addItem(entity as TableItem, null);
       }
     }
+
+    this.events.emit("DataSet");
   }
 
   private entityAdded(data: EntityAddedMessage): void {
@@ -88,6 +97,9 @@ export default class LeGame {
   }
 
   private youTookSeatMessage(msg: YouTookSeatMessage): void {
+
+    this.events.emit("Clearing");
+
     this.table.clear();
     this.bench.clear();
 
@@ -112,5 +124,7 @@ export default class LeGame {
         this.table.addItem(entity as TableItem, null);
       }
     }
+
+    this.events.emit("DataSet");
   }
 }

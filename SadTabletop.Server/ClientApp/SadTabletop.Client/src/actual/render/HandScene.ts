@@ -75,7 +75,7 @@ export default class HandScene extends BaseScene {
 
       obj.destroy();
     });
-    this.leGame.table.events.on("Clearing", () => {
+    this.leGame.events.on("Clearing", () => {
       for (const obj of this.hand.objs) {
         obj.destroy();
       }

@@ -95,7 +95,7 @@ export default class Renderer {
           this.leGame.table.events.on("ItemMoved", (item, oldX, oldY) => {
             this.scene?.moveItem(item);
           });
-          this.leGame.table.events.on("Clearing", () => {
+          this.leGame.events.on("Clearing", () => {
             this.scene?.clearItems();
           });
 
@@ -124,10 +124,20 @@ export default class Renderer {
             this.scene?.destroyEntity(player.cursor);
           });
 
+          this.leGame.events.on("DataSet", () => {
+            for (const player of this.leGame.playersContainer.players) {
+              if (player === this.leGame.ourPlayer)
+                continue;
+
+              this.scene?.createCursor(player);
+            }
+          });
+
           for (const entity of this.leGame.table.items) {
             this.createEntity(entity, null);
           }
 
+          // уэуэуэу
           for (const player of this.leGame.playersContainer.players) {
             if (player === this.leGame.ourPlayer)
               continue;

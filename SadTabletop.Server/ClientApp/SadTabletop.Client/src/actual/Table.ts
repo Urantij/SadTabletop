@@ -7,11 +7,10 @@ import CardsSystem from "./things/concrete/Cards/CardsSystem";
 import type ItemMovedMessage from "@/communication/messages/server/ItemMovedMessage";
 import ClicksSystem from "./things/concrete/Clicks/ClicksSystem";
 
-type MessageEvents = {
+type TableEvents = {
   ItemAdded: (item: TableItem, data: object | null) => void;
   ItemRemoved: (item: TableItem) => void;
   ItemMoved: (item: TableItem, oldX: number, oldY: number) => void;
-  Clearing: () => void;
 }
 
 /**
@@ -20,7 +19,7 @@ type MessageEvents = {
 export default class Table {
   readonly items: TableItem[] = [];
 
-  readonly events: TypedEmitter<MessageEvents> = new Phaser.Events.EventEmitter();
+  readonly events: TypedEmitter<TableEvents> = new Phaser.Events.EventEmitter();
 
   readonly cards: CardsSystem = new CardsSystem(this);
   readonly decks: DeckSystem = new DeckSystem(this);
@@ -37,7 +36,6 @@ export default class Table {
 
   clear() {
     this.items.splice(0);
-    this.events.emit("Clearing");
   }
 
   isTableEntityByType(type: string) {
