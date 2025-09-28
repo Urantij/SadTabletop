@@ -307,7 +307,9 @@ export default class HandScene extends BaseScene {
   private getRelativePosition2(pointer: Phaser.Input.Pointer, element: CardObject) {
     const cursorPos = pointer.positionToCamera(this.cameras.main) as Phaser.Math.Vector2;
 
-    const pos = this.hand.getCardPositionNoRotation(element.inhand!.index);
+    const pos = this.hand.getCardHandPositionNoRotation(element.inhand!.index);
+    pos.x += this.hand.handPositionX;
+    pos.y += this.hand.handPositionY;
 
     cursorPos.x -= pos.x;
     cursorPos.y -= pos.y;

@@ -63,10 +63,10 @@ export default class SceneHand {
     obj.sprite.setRotation(this.radians);
 
     if (!move) {
-      const pos = this.getCardPosition(obj.inhand!.index);
+      const pos = this.getCardHandPosition(obj.inhand!.index);
 
-      obj.sprite.x = pos.x;
-      obj.sprite.y = pos.y;
+      obj.sprite.x = this.handPositionX + pos.x;
+      obj.sprite.y = this.handPositionY + pos.y;
     }
 
     this.updateAll();
@@ -150,9 +150,9 @@ export default class SceneHand {
         this.scene.children.moveAbove(element.sprite, this.objs[index - 1].sprite);
 
       if (!this.ignoreMovement.includes(element)) {
-        const pos = this.getCardPosition(index);
+        const pos = this.getCardHandPosition(index);
 
-        this.scene.animka.moveObject2(element, pos.x, pos.y);
+        this.scene.animka.moveObject2(element, this.handPositionX + pos.x, this.handPositionY + pos.y);
       }
 
       if (element !== this.top)
@@ -181,21 +181,11 @@ export default class SceneHand {
     }
   }
 
-  public getCardPosition(index: number) {
-    const cardPos = GameValues.calculatePosition(index, this.objs.length, this.cardWidth, this.handWidth, this.radians);
-
-    cardPos.x += this.handPositionX;
-    cardPos.y += this.handPositionY;
-
-    return cardPos;
+  public getCardHandPosition(index: number) {
+    return GameValues.calculatePosition(index, this.objs.length, this.cardWidth, this.handWidth, this.radians);
   }
 
-  public getCardPositionNoRotation(index: number) {
-    const cardPos = GameValues.calculatePosition(index, this.objs.length, this.cardWidth, this.handWidth, 0);
-
-    cardPos.x += this.handPositionX;
-    cardPos.y += this.handPositionY;
-
-    return cardPos;
+  public getCardHandPositionNoRotation(index: number) {
+    return GameValues.calculatePosition(index, this.objs.length, this.cardWidth, this.handWidth, 0);
   }
 }

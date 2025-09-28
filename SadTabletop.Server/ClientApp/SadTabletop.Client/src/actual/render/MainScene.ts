@@ -376,13 +376,16 @@ export default class MainScene extends BaseScene {
           // тут 0.5 0.5
           relative.y += 0.5;
 
-          let pos = hand.getCardPositionNoRotation(cardObj.inhand?.index ?? 0);
+          let pos = hand.getCardHandPositionNoRotation(cardObj.inhand?.index ?? 0);
 
           pos.x += cardObj.sprite.displayWidth * relative.x;
           pos.y += cardObj.sprite.displayHeight * relative.y;
 
           if (hand.radians !== 0)
             pos = GameValues.rotatePosition(pos, hand.radians);
+
+          pos.x += hand.handPositionX;
+          pos.y += hand.handPositionY;
 
           this.events.emit(cursorMovedInTheWorldName, pos);
         }
