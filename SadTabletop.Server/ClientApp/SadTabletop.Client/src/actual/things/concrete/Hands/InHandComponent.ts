@@ -1,5 +1,4 @@
 import type EntityComponent from "../../EntityComponent";
-import type Seat from "../../Seat";
 import type Hand from "./Hand";
 
 export interface InHandComponentDto extends EntityComponent {

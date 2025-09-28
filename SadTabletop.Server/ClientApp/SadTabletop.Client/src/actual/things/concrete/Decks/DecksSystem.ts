@@ -10,7 +10,7 @@ import Flipness from "../../Flipness";
 import type DeckCardInfo from "./DeckCardInfo";
 import DeckCardRemovedData from "./DeckCardRemovedData";
 
-type MessageEvents = {
+type DeckEvents = {
   DeckUpdated: (deck: Deck) => void;
   CardInserted: (deck: Deck, card: Card) => void;
   CardRemoved: (deck: Deck, card: Card) => void;
@@ -20,7 +20,7 @@ export default class DecksSystem {
 
   readonly table: Table;
 
-  readonly events: TypedEmitter<MessageEvents> = new Phaser.Events.EventEmitter();
+  readonly events: TypedEmitter<DeckEvents> = new Phaser.Events.EventEmitter();
 
   constructor(table: Table) {
     this.table = table;

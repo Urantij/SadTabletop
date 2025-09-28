@@ -12,9 +12,11 @@ import type Seat from "./things/Seat";
 import PlayersContainer from "./PlayersContainer";
 import type Player from "./things/Player";
 import HandsSystem from "./things/concrete/Hands/HandsSystem";
+import DragSystem from "./things/concrete/Drag/DragSystem";
 
 type LeGameEvents = {
   Clearing: () => void;
+  PreDataSet: () => void;
   DataSet: () => void;
 }
 
@@ -27,6 +29,8 @@ export default class LeGame {
   public readonly bench: Bench = new Bench();
 
   public readonly hands: HandsSystem = new HandsSystem(this.table, this.bench);
+
+  public readonly drags: DragSystem = new DragSystem(this);
 
   public readonly sidesData: { num: number; path: string }[] = [];
   public readonly assetsData: { name: string; url: string }[] = [];
@@ -51,6 +55,7 @@ export default class LeGame {
     this.bench.subscribeToConnection(connection);
     this.playersContainer.subscribeToConnection(connection);
     this.hands.subscribeToConnection(connection);
+    this.drags.subscribeToConnection(connection);
   }
 
   private meJoined(data: JoinedMessage): void {
@@ -74,6 +79,8 @@ export default class LeGame {
     }
 
     this.ourPlayer = this.playersContainer.players.find(p => p.id === data.playerId) ?? null;
+
+    this.events.emit("PreDataSet");
 
     for (const entity of data.entities) {
       if (this.table.isTableEntityByType(entity.type)) {
@@ -118,6 +125,8 @@ export default class LeGame {
     }
 
     this.ourPlayer!.seat = this.bench.seats.find(s => s.id === msg.seatId) ?? null;
+
+    this.events.emit("PreDataSet");
 
     for (const entity of msg.entities) {
       if (this.table.isTableEntityByType(entity.type)) {

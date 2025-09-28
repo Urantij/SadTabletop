@@ -368,6 +368,8 @@ public class Connector
 
         client.GameContainer.Players.Remove(client.Player);
 
+        client.GameContainer.PlayerDisconnected(client.Player);
+
         if (client.GameContainer.Players.Count == 0)
             return;
 

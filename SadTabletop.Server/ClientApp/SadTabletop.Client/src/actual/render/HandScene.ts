@@ -1,4 +1,6 @@
+import GameValues from "../GameValues";
 import type Card from "../things/concrete/Cards/Card";
+import type HandOverrideComponent from "../things/concrete/Hands/HandOverrideComponent";
 import type { InHandComponent } from "../things/concrete/Hands/InHandComponent";
 import BaseScene from "./BaseScene";
 import CardObject, { defaultBackSideKey, defaultFrontSidekey } from "./objects/CardObject";
@@ -20,6 +22,10 @@ export default class HandScene extends BaseScene {
   hand: SceneHand = null!;
 
   hoveredObject: CardObject | null = null;
+  /**
+   * Когда нет тянутой карты, содержит позицию курсора относительно hovered объекта.
+   * Когда drag есть, содержит позицию курсора относительно изначальной позиции центра drag объекта.
+   */
   relativePointerPosition: Phaser.Math.Vector2 | null = null;
 
   dragObj: CardObject | null = null;
@@ -138,6 +144,9 @@ export default class HandScene extends BaseScene {
   private pointerMoved(pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) {
     // console.log(`hand move ${currentlyOver.length}`);
 
+    if (this.dragObj !== null)
+      return;
+
     if (currentlyOver.length === 0) {
       if (this.hoveredObject !== null) {
         this.hoveredObject.sprite.setScale(1, 1);
@@ -183,13 +192,13 @@ export default class HandScene extends BaseScene {
       }
 
       this.hoveredObject = closest.obj;
-      this.relativePointerPosition = this.getRelativePosition(pointer, closest.obj);
+      this.updateRelative(pointer);
 
       this.hoveredObject.sprite.setScale(1.2, 1.2);
       this.hand.setTop(this.hoveredObject);
     }
     else {
-      this.relativePointerPosition = this.getRelativePosition(pointer, closest.obj);
+      this.updateRelative(pointer);
     }
 
     this.events.emit(pointerOverHoveredName, this.hoveredObject, this.relativePointerPosition);
@@ -199,9 +208,12 @@ export default class HandScene extends BaseScene {
     if (this.dragObj === null) {
       this.dragObj = obj;
       this.hand.ignoreMove(obj);
+      this.leGame.drags.startDrag(obj.gameObject);
     }
 
     this.animka.moveObject2(obj, dragX, dragY, null, 3);
+    this.updateRelative(pointer);
+    this.events.emit(pointerOverHoveredName, this.hoveredObject, this.relativePointerPosition);
   }
 
   private cardDragEnd(obj: CardObject, pointer: Phaser.Input.Pointer, _dragX: number, _dragY: number) {
@@ -210,8 +222,9 @@ export default class HandScene extends BaseScene {
 
     // в драг енде драг аргументы какие то ёбаные. не знаю, что там лежит.
 
-    this.hand.unignoreMove(obj);
     this.dragObj = null;
+    this.hand.unignoreMove(obj);
+    this.leGame.drags.endDrag();
 
     let lefter: CardObject | null = null;
     let righter: CardObject | null = null;
@@ -250,6 +263,17 @@ export default class HandScene extends BaseScene {
     this.hand.refresh();
 
     this.leGame.hands.moveCard(obj.gameObject, index);
+    this.updateRelative(pointer);
+    this.events.emit(pointerOverHoveredName, this.hoveredObject, this.relativePointerPosition);
+  }
+
+  private updateRelative(pointer: Phaser.Input.Pointer) {
+    if (this.dragObj !== null) {
+      this.relativePointerPosition = this.getRelativePosition2(pointer, this.dragObj);
+    }
+    else if (this.hoveredObject !== null) {
+      this.relativePointerPosition = this.getRelativePosition(pointer, this.hoveredObject);
+    }
   }
 
   /**
@@ -267,6 +291,26 @@ export default class HandScene extends BaseScene {
 
     cursorPos.x -= spritePos.x;
     cursorPos.y -= spritePos.y;
+
+    cursorPos.x /= element.sprite.displayWidth;
+    cursorPos.y /= element.sprite.displayHeight;
+
+    return cursorPos;
+  }
+
+  /**
+   * уэуэуээуэуээу ))) йес йес
+   * @param pointer
+   * @param element
+   * @returns
+   */
+  private getRelativePosition2(pointer: Phaser.Input.Pointer, element: CardObject) {
+    const cursorPos = pointer.positionToCamera(this.cameras.main) as Phaser.Math.Vector2;
+
+    const pos = this.hand.getCardPositionNoRotation(element.inhand!.index);
+
+    cursorPos.x -= pos.x;
+    cursorPos.y -= pos.y;
 
     cursorPos.x /= element.sprite.displayWidth;
     cursorPos.y /= element.sprite.displayHeight;

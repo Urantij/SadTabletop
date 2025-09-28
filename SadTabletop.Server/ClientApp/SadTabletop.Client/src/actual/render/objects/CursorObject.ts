@@ -34,17 +34,9 @@ export default class CursorObject extends SimpleRenderObjectRepresentation<Curso
 
     // xdd
 
-    scene.leGame.playersContainer.events.on("CursorMoved", obj.cursorMoved, obj);
     scene.leGame.playersContainer.events.on("PlayerSeatChanged", obj.seatChanged, obj);
 
     return obj;
-  }
-
-  private cursorMoved(player: Player) {
-    if (player !== this.player)
-      return;
-
-    this.scene.animka.moveObject2(this, player.cursor.x, player.cursor.y);
   }
 
   private seatChanged(player: Player) {
@@ -57,7 +49,6 @@ export default class CursorObject extends SimpleRenderObjectRepresentation<Curso
   override destroy(): void {
     super.destroy();
 
-    this.scene.leGame.playersContainer.events.off("CursorMoved", this.cursorMoved, this);
     this.scene.leGame.playersContainer.events.off("PlayerSeatChanged", this.seatChanged, this);
   }
 

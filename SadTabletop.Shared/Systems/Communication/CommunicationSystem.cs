@@ -35,6 +35,17 @@ public class CommunicationSystem : SystemBase
         _events.Invoke(ev);
     }
 
+    /// <summary>
+    /// Отправляет всем
+    /// </summary>
+    /// <param name="message"></param>
+    public void Send(ServerMessageBase message)
+    {
+        IEnumerable<Seat?> targets = _seats.EnumerateAllSeats();
+
+        Send(message, targets);
+    }
+
     public void Send(ServerMessageBase message, Spisok<Seat?> spisok)
     {
         IEnumerable<Seat?> targets = _seats.EnumerateAllSeats().Where(spisok.Included);

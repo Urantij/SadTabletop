@@ -4,6 +4,15 @@ export default class GameValues {
   public static readonly HandsArrayWidth = 600;
   public static readonly HandsArrayDistance = 100;
 
+  public static rotatePosition(pos: Phaser.Math.Vector2, radians: number) {
+    const length = pos.length();
+    const normi = pos.normalize();
+
+    const angle = normi.rotate(radians);
+
+    return angle.setLength(length);
+  }
+
   /**
    * Возвращает позицию карты внутри руки. 0 это центр руки. С ориджином 0.5 по иксу у карты
    * @param index
@@ -18,7 +27,7 @@ export default class GameValues {
       return new Phaser.Math.Vector2(0, 0);
     }
 
-    let wholeDisplayWidth = cardsCount * cardWidth;
+    const wholeDisplayWidth = cardsCount * cardWidth;
 
     let x = 0;
     let y = 0;
@@ -35,14 +44,10 @@ export default class GameValues {
 
     const pos = new Phaser.Math.Vector2(x, y);
 
-    const length = pos.length();
-    const normi = pos.normalize();
+    if (radians !== 0)
+      return this.rotatePosition(pos, radians);
 
-    const angle = normi.rotate(radians);
-
-    const resulted = angle.setLength(length);
-
-    return resulted;
+    return pos;
 
     // let wholeDisplayWidth = cardsCount * cardWidth;
     // let cardDisplayWidth = cardWidth;

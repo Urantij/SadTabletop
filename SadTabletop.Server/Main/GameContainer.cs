@@ -2,6 +2,7 @@ using SadTabletop.Server.Coordination;
 using SadTabletop.Server.Coordination.Data;
 using SadTabletop.Server.Coordination.Messages.Server;
 using SadTabletop.Shared;
+using SadTabletop.Shared.EvenMoreSystems.Drag;
 using SadTabletop.Shared.Systems.Communication;
 using SadTabletop.Shared.Systems.Entities;
 using SadTabletop.Shared.Systems.Seats;
@@ -39,6 +40,14 @@ public class GameContainer
         Task.Run(() => CursorUpdateLoopAsync(default));
 
         GameCreator.TriggerSetupedGame(Game);
+    }
+
+    public void PlayerDisconnected(Player player)
+    {
+        if (player.Seat != null)
+        {
+            Game.GetSystem<DragSystem>().EndDrag(player.Seat, notify: false);
+        }
     }
 
     private async Task CursorUpdateLoopAsync(CancellationToken cancellationToken)

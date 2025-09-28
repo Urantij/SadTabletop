@@ -1,3 +1,4 @@
+import type TypedEmitter from "@/utilities/TypedEmiiter";
 import Phaser from "phaser";
 import CardObject, { defaultBackSideKey, defaultFrontSidekey } from "./objects/CardObject";
 import type RenderObjectRepresentation from "@/actual/render/RenderObjectRepresentation.ts";
@@ -25,10 +26,19 @@ import type HandOverrideComponent from "../things/concrete/Hands/HandOverrideCom
 import GameValues from "../GameValues";
 import type Entity from "../things/Entity";
 
+type MainSceneEvents = {
+  ObjectCreated: (obj: RenderObjectRepresentation) => void;
+}
+
 export const cursorMovedInTheWorldName = "CursorMovedInTheWorld";
 
 const cardWidth = 250;
 const cardHeight = 350;
+
+interface DragHolder {
+  item: RenderObjectRepresentation;
+  cursor: CursorObject;
+}
 
 export default class MainScene extends BaseScene {
 
@@ -37,6 +47,10 @@ export default class MainScene extends BaseScene {
   readonly objects: RenderObjectRepresentation[] = [];
 
   readonly hands: SceneHand[] = [];
+
+  readonly drags: DragHolder[] = [];
+
+  public readonly myEvents: TypedEmitter<MainSceneEvents> = new Phaser.Events.EventEmitter();
 
   private getHand(hand: Hand) {
     let obj = this.hands.find(h => h.hand === hand);
@@ -84,6 +98,82 @@ export default class MainScene extends BaseScene {
     this.hander.events.once("READY)))", () => {
       this.events.emit("READY)))");
     });
+
+    // как всегда, нахуй отсюда TODO
+    {
+      this.leGame.drags.events.on("DragStarted", (player, item) => {
+        const cursor = this.objects.find(o => o instanceof CursorObject && o.player === player) as CursorObject | undefined;
+
+        if (cursor === undefined) {
+          console.warn(`DragStarted no palyer ${player.id}`);
+          return;
+        }
+
+        const obj = this.objects.find(o => o.gameObject === item);
+
+        if (obj === undefined) {
+          console.warn(`DragStarted no item ${player.id} ${item.id}`);
+          return;
+        }
+
+        this.drags.push({
+          cursor: cursor,
+          item: obj
+        });
+        this.animka.moveObjectToObject(obj, cursor);
+      });
+      this.leGame.drags.events.on("DragEnded", (player, item) => {
+        const drag = removeFromCollection(this.drags, d => d.cursor.player === player);
+
+        if (drag === undefined) {
+          console.warn(`DragEnded не нашёлс ${player.id} ${item.id}`);
+          return;
+        }
+
+        this.animka.moveObject2(drag.item, drag.item.gameObject.x, drag.item.gameObject.y);
+      });
+      this.leGame.events.on("Clearing", () => {
+        this.drags.splice(0);
+      });
+      this.myEvents.on("ObjectCreated", (obj) => {
+        const dragged = this.leGame.drags.draggedItems.find(d => d.item === obj.gameObject);
+
+        if (dragged === undefined)
+          return;
+
+        const cursor = this.objects.find(o => o instanceof CursorObject && o.player === dragged.player) as CursorObject | undefined;
+
+        if (cursor === undefined) {
+          console.warn(`ObjectCreated no palyer ${dragged.player.id}`);
+          return;
+        }
+
+        this.drags.push({
+          cursor: cursor,
+          item: obj
+        });
+        this.animka.moveObjectToObject(obj, cursor);
+      });
+
+      // не тут?
+      this.leGame.playersContainer.events.on("CursorMoved", (player) => {
+        const cursor = this.objects.find(o => o instanceof CursorObject && o.player === player) as CursorObject | undefined;
+
+        if (cursor === undefined) {
+          console.warn(`CursorMoved no cursor ${player.id}`);
+          return;
+        }
+
+        this.animka.moveObject2(cursor, player.cursor.x, player.cursor.y);
+
+        // как то засплитать надо.
+
+        const drag = this.drags.find(d => d.cursor === cursor);
+        if (drag !== undefined) {
+          this.animka.moveObject2(drag.item, player.cursor.x, player.cursor.y);
+        }
+      });
+    }
 
     // по классике, нахуй отсюда TODO
     {
@@ -269,7 +359,34 @@ export default class MainScene extends BaseScene {
       this.hander.events.on(pointerOverHoveredName, (hoveredObj: CardObject, relative: Phaser.Math.Vector2) => {
         const cardObj = this.objects.find(o => o.gameObject === hoveredObj.gameObject && o instanceof CardObject) as CardObject | undefined;
 
-        if (cardObj !== undefined) {
+        if (cardObj === undefined) {
+          console.warn(`карты нет ${pointerOverHoveredName} ${hoveredObj.gameObject.id}`);
+          return;
+        }
+
+        if (this.hander.dragObj !== null) {
+          const hand = this.hands.find(h => h.hand?.owner === this.leGame.ourPlayer?.seat);
+
+          if (hand === undefined) {
+            console.warn(`${pointerOverHoveredName} hand не нашлась`);
+            return;
+          }
+
+          // в хенд сцене у карт ориджин 0.5 1
+          // тут 0.5 0.5
+          relative.y += 0.5;
+
+          let pos = hand.getCardPositionNoRotation(cardObj.inhand?.index ?? 0);
+
+          pos.x += cardObj.sprite.displayWidth * relative.x;
+          pos.y += cardObj.sprite.displayHeight * relative.y;
+
+          if (hand.radians !== 0)
+            pos = GameValues.rotatePosition(pos, hand.radians);
+
+          this.events.emit(cursorMovedInTheWorldName, pos);
+        }
+        else {
           const pos = cardObj.getCurrentPosition().clone();
 
           pos.x += cardObj.sprite.displayWidth * relative.x;
@@ -283,49 +400,49 @@ export default class MainScene extends BaseScene {
     this.scene.launch(this.hander, this.leGame);
   }
 
-  // override update(time: number, delta: number): void {
-  //   super.update(time, delta);
+  override update(time: number, delta: number): void {
+    super.update(time, delta);
 
-  //   // я поспрашивал людей, трое сказали, что объект сам должен себя двигать
-  //   // я офк сделал по своему, но осадочек остался
-  //   for (const obj of this.objects) {
-  //     const current = obj.getCurrentPosition();
+    // // я поспрашивал людей, трое сказали, что объект сам должен себя двигать
+    // // я офк сделал по своему, но осадочек остался
+    // for (const obj of this.objects) {
+    //   const current = obj.getCurrentPosition();
 
-  //     if (current.equals(obj.targetPosition))
-  //       continue;
+    //   if (current.equals(obj.targetPosition))
+    //     continue;
 
-  //     const difference = obj.targetPosition.clone().subtract(current);
-  //     const change = difference.normalize();
-  //     change.x *= obj.speed * delta;
-  //     change.y *= obj.speed * delta;
+    //   const difference = obj.targetPosition.clone().subtract(current);
+    //   const change = difference.normalize();
+    //   change.x *= obj.speed * delta;
+    //   change.y *= obj.speed * delta;
 
-  //     const newPosition = current.clone().add(change);
+    //   const newPosition = current.clone().add(change);
 
-  //     // TODO как это сделать нормально?
-  //     if (difference.x < 0) {
-  //       if (newPosition.x < obj.targetPosition.x) {
-  //         newPosition.x = obj.targetPosition.x;
-  //       }
-  //     }
-  //     else {
-  //       if (newPosition.x > obj.targetPosition.x) {
-  //         newPosition.x = obj.targetPosition.x;
-  //       }
-  //     }
-  //     if (difference.y < 0) {
-  //       if (newPosition.y < obj.targetPosition.y) {
-  //         newPosition.y = obj.targetPosition.y;
-  //       }
-  //     }
-  //     else {
-  //       if (newPosition.y > obj.targetPosition.y) {
-  //         newPosition.y = obj.targetPosition.y;
-  //       }
-  //     }
+    //   // TODO как это сделать нормально?
+    //   if (difference.x < 0) {
+    //     if (newPosition.x < obj.targetPosition.x) {
+    //       newPosition.x = obj.targetPosition.x;
+    //     }
+    //   }
+    //   else {
+    //     if (newPosition.x > obj.targetPosition.x) {
+    //       newPosition.x = obj.targetPosition.x;
+    //     }
+    //   }
+    //   if (difference.y < 0) {
+    //     if (newPosition.y < obj.targetPosition.y) {
+    //       newPosition.y = obj.targetPosition.y;
+    //     }
+    //   }
+    //   else {
+    //     if (newPosition.y > obj.targetPosition.y) {
+    //       newPosition.y = obj.targetPosition.y;
+    //     }
+    //   }
 
-  //     obj.changePosition2(newPosition.x, newPosition.y);
-  //   }
-  // }
+    //   obj.changePosition2(newPosition.x, newPosition.y);
+    // }
+  }
 
   destroyEntity(obj: Entity) {
     const rended = removeFromCollection(this.objects, o => o.gameObject === obj);
@@ -372,8 +489,8 @@ export default class MainScene extends BaseScene {
 
   createCursor(player: Player) {
     const cursor = CursorObject.create(player, this);
-
     this.objects.push(cursor);
+    this.myEvents.emit("ObjectCreated", cursor);
   }
 
   createCard(card: Card, data: object | null) {
@@ -402,6 +519,8 @@ export default class MainScene extends BaseScene {
       const sceneHand = this.getHand(obj.inhand.hand);
       sceneHand.addCardToHand(obj, true);
     }
+
+    this.myEvents.emit("ObjectCreated", obj);
   }
 
   flipCard(card: Card) {
@@ -417,22 +536,25 @@ export default class MainScene extends BaseScene {
   createText(textItem: TextItem) {
     const obj = TextItemObject.create(textItem, this);
     this.objects.push(obj);
+    this.myEvents.emit("ObjectCreated", obj);
   }
 
   createRectShape(shape: RectShape) {
     const obj = RectShapeObject.create(shape, this);
     this.objects.push(obj);
+    this.myEvents.emit("ObjectCreated", obj);
   }
 
   createCircleShape(shape: CircleShape) {
     const obj = CircleShapeObject.create(shape, this);
     this.objects.push(obj);
+    this.myEvents.emit("ObjectCreated", obj);
   }
 
   createDeck(deck: Deck) {
     const obj = DeckObject.create(deck, this, cardWidth, cardHeight);
-
     this.objects.push(obj);
+    this.myEvents.emit("ObjectCreated", obj);
   }
 
   updateDeck(deck: Deck) {

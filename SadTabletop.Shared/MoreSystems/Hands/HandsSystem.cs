@@ -23,12 +23,18 @@ public class HandsSystem : ComponentSystemBase
     {
     }
 
+    protected internal override void GameCreated()
+    {
+        base.GameCreated();
+
+        Game.GetSystem<EventsSystem>().Subscribe<ClientMessageReceivedEvent<MoveCardInHandMessage>>(EventPriority.Normal, this, CardMovedInHand);
+    }
+
     protected internal override void GameLoaded()
     {
         base.GameLoaded();
 
         Game.GetSystem<ViewerSystem>().RegisterComponent<InHandComponent>(TransformInHand);
-        Game.GetSystem<EventsSystem>().Subscribe<ClientMessageReceivedEvent<MoveCardInHandMessage>>(EventPriority.Normal, this, CardMovedInHand);
     }
 
     public Hand GetHand(Seat seat)

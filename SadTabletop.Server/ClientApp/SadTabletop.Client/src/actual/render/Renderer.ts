@@ -124,7 +124,7 @@ export default class Renderer {
             this.scene?.destroyEntity(player.cursor);
           });
 
-          this.leGame.events.on("DataSet", () => {
+          this.leGame.events.on("PreDataSet", () => {
             for (const player of this.leGame.playersContainer.players) {
               if (player === this.leGame.ourPlayer)
                 continue;
@@ -133,16 +133,16 @@ export default class Renderer {
             }
           });
 
-          for (const entity of this.leGame.table.items) {
-            this.createEntity(entity, null);
-          }
-
           // уэуэуэу
           for (const player of this.leGame.playersContainer.players) {
             if (player === this.leGame.ourPlayer)
               continue;
 
             this.scene?.createCursor(player);
+          }
+
+          for (const entity of this.leGame.table.items) {
+            this.createEntity(entity, null);
           }
 
           resolve(null);
