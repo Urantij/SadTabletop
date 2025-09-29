@@ -129,6 +129,15 @@ export default class HandScene extends BaseScene {
       obj.destroy();
     });
 
+    this.leGame.table.cards.events.on("CardFlipped", (card) => {
+      const obj = this.hand.objs.find(o => o.gameObject === card);
+
+      if (obj === undefined)
+        return;
+
+      this.animka.flipCard(obj);
+    });
+
     this.input.on("pointermove", this.pointerMoved, this);
 
     // я понятия нахуй не имею что происходит
