@@ -11,7 +11,7 @@ import type TableItem from "../things/TableItem";
 import type RectShape from "../things/concrete/Shapes/RectShape";
 import type CircleShape from "../things/concrete/Shapes/CircleShape";
 
-type MessageEvents = {
+type RendererEvents = {
   ClickyClicked: (entity: TableItem) => void;
   CursorMoved: (pos: Phaser.Math.Vector2) => void;
 }
@@ -35,7 +35,7 @@ export default class Renderer {
 
   readonly config: Phaser.Types.Core.GameConfig;
 
-  readonly events: TypedEmitter<MessageEvents> = new Phaser.Events.EventEmitter();
+  readonly events: TypedEmitter<RendererEvents> = new Phaser.Events.EventEmitter();
 
   game: Phaser.Game | null = null;
   scene: MainScene | null = null;
@@ -49,6 +49,9 @@ export default class Renderer {
       type: Phaser.AUTO,
       width: width,
       height: height,
+      input: {
+        keyboard: true
+      }
       // plugins: {
       //     global: [
       //     ]

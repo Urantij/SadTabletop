@@ -1,6 +1,9 @@
 using SadTabletop.Shared.Mechanics;
-using SadTabletop.Shared.MoreSystems.Cards.Messages;
+using SadTabletop.Shared.MoreSystems.Cards.Messages.Client;
+using SadTabletop.Shared.MoreSystems.Cards.Messages.Server;
+using SadTabletop.Shared.MoreSystems.Hands;
 using SadTabletop.Shared.Systems.Communication;
+using SadTabletop.Shared.Systems.Communication.Events;
 using SadTabletop.Shared.Systems.Events;
 using SadTabletop.Shared.Systems.Limit;
 using SadTabletop.Shared.Systems.Limit.Events;
@@ -33,6 +36,7 @@ public class CardsSystem : SystemBase
         base.GameCreated();
 
         _events.Subscribe<LimitedEvent>(EventPriority.Normal, this, OnLimited);
+        _events.Subscribe<ClientMessageReceivedEvent<FlipCardMessage>>(EventPriority.Normal, this, CardFlipRequested);
     }
 
     protected internal override void GameLoaded()
@@ -70,13 +74,49 @@ public class CardsSystem : SystemBase
             {
                 int? front = _limit.IsLimitedFor(card, seat) ? null : card.FrontSide;
 
-                _communication.SendEntityRelated(new CardFlippedMessage(card, front), card);
+                _communication.SendEntityRelated(new CardFlippedMessage(card, front), card, target: seat);
             }
         }
         else
         {
             _communication.SendEntityRelated(new CardFlippedMessage(card, null), card);
         }
+    }
+
+    public bool CanFlip(Seat seat, Card card)
+    {
+        {
+            CardFlipPermissionComponent? component = card.TryGetComponent<CardFlipPermissionComponent>();
+
+            if (component != null)
+            {
+                if (component.TheyCan.Included(seat))
+                    return true;
+            }
+        }
+
+        {
+            InHandComponent? component = card.TryGetComponent<InHandComponent>();
+
+            if (component != null)
+            {
+                if (component.Hand.Owner == seat)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void CardFlipRequested(ClientMessageReceivedEvent<FlipCardMessage> @event)
+    {
+        if (@event.Seat == null || !CanFlip(@event.Seat, @event.Message.Card))
+        {
+            // TODO ошибка лог хызы
+            return;
+        }
+
+        Flip(@event.Message.Card);
     }
 
     private void OnLimited(LimitedEvent obj)

@@ -26,6 +26,7 @@ import type HandOverrideComponent from "../things/concrete/Hands/HandOverrideCom
 import GameValues from "../GameValues";
 import type Entity from "../things/Entity";
 import Sizes from "./Sizes";
+import Control from "./Control";
 
 type MainSceneEvents = {
   ObjectCreated: (obj: RenderObjectRepresentation) => void;
@@ -49,6 +50,8 @@ export default class MainScene extends BaseScene {
   readonly drags: DragHolder[] = [];
 
   public readonly myEvents: TypedEmitter<MainSceneEvents> = new Phaser.Events.EventEmitter();
+
+  fkey: Phaser.Input.Keyboard.Key | undefined;
 
   private getHand(hand: Hand) {
     let obj = this.hands.find(h => h.hand === hand);
@@ -91,6 +94,14 @@ export default class MainScene extends BaseScene {
     // в старом проекте реди шло когда сцена была ГОТОВА
     // ща оно вылетает ДО ПРЕЛОАДА БЛЯТЬ
     // this.events.emit("READY)))");
+
+    if (this.input.keyboard !== null) {
+      this.fkey = this.input.keyboard.addKey(Control.flipKey);
+
+      Control.events.on("HandsFocus", (taken) => {
+        this.input.keyboard!.enabled = !taken;
+      });
+    }
 
     this.hander = this.scene.add("Hand", HandScene, false) as HandScene;
     this.hander.events.once("READY)))", () => {

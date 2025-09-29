@@ -1,6 +1,6 @@
 using SadTabletop.Shared.Systems.Communication;
 
-namespace SadTabletop.Shared.MoreSystems.Cards.Messages;
+namespace SadTabletop.Shared.MoreSystems.Cards.Messages.Server;
 
 /// <summary>
 /// Сообщение, что карта перевернулась.

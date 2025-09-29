@@ -5,6 +5,7 @@ import CardObject, { defaultBackSideKey, defaultFrontSidekey } from "./objects/C
 import SceneHand from "./SceneHand";
 import { findComponent } from "@/utilities/Componenter";
 import Sizes from "./Sizes";
+import Control from "./Control";
 
 // почему тут? ну потому что ептыть;
 const inhandCardWidth = 150;
@@ -31,6 +32,8 @@ export default class HandScene extends BaseScene {
 
   dragObj: CardObject | null = null;
 
+  fkey: Phaser.Input.Keyboard.Key | undefined;
+
   private preload() {
     console.log("preload");
 
@@ -45,6 +48,18 @@ export default class HandScene extends BaseScene {
   private create() {
 
     this.hand = SceneHand.create(this, null, handPositionX, handPositionY, handWidth, 0, inhandCardWidth, inhandCardHeight * 0.3);
+
+    if (this.input.keyboard !== null) {
+      this.fkey = this.input.keyboard.addKey(Control.flipKey);
+      this.input.keyboard.enabled = false;
+
+      this.fkey.on("up", () => {
+        if (this.hoveredObject === null)
+          return;
+
+        this.leGame.table.cards.flip(this.hoveredObject.gameObject);
+      });
+    }
 
     this.cameras.main.centerOn(handPositionX, handPositionY);
     this.cameras.main.scrollY -= this.cameras.main.height / 2;
@@ -142,6 +157,20 @@ export default class HandScene extends BaseScene {
     return obj;
   }
 
+  private unhover() {
+    if (this.hoveredObject === null)
+      return;
+
+    this.hoveredObject.setFunnyScale(1);
+    this.hoveredObject = null;
+    this.hand.setTop(null);
+
+    if (this.fkey !== undefined) {
+      this.fkey.plugin.enabled = false;
+      Control.takeHands(false);
+    }
+  }
+
   private pointerMoved(pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) {
     // console.log(`hand move ${currentlyOver.length}`);
 
@@ -149,11 +178,7 @@ export default class HandScene extends BaseScene {
       return;
 
     if (currentlyOver.length === 0) {
-      if (this.hoveredObject !== null) {
-        this.hoveredObject.setFunnyScale(1);
-        this.hoveredObject = null;
-        this.hand.setTop(null);
-      }
+      this.unhover();
       return;
     }
 
@@ -161,11 +186,7 @@ export default class HandScene extends BaseScene {
     const overedObj = this.hand.objs.find(o => o.sprite === overedSprite);
 
     if (overedObj === undefined) {
-      if (this.hoveredObject !== null) {
-        this.hoveredObject.setFunnyScale(1);
-        this.hoveredObject = null;
-        this.hand.setTop(null);
-      }
+      this.unhover();
       return;
     }
 
@@ -190,6 +211,11 @@ export default class HandScene extends BaseScene {
 
       if (this.hoveredObject !== null) {
         this.hoveredObject.setFunnyScale(1);
+      }
+
+      if (this.fkey !== undefined && this.fkey.plugin.enabled === false) {
+        this.fkey.plugin.enabled = true;
+        Control.takeHands(true);
       }
 
       this.hoveredObject = closest.obj;

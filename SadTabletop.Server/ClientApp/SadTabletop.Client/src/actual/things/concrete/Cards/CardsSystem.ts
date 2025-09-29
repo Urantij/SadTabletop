@@ -5,6 +5,7 @@ import { FlipFlipness } from "../../Flipness";
 import type Connection from "@/communication/Connection";
 import type CardFlippedMessage from "@/actual/things/concrete/Cards/messages/server/CardFlippedMessage";
 import type CardInfoMessage from "./messages/server/CardInfoMessage";
+import type FlipCardMessage from "./messages/client/FlipCardMessage";
 
 type MessageEvents = {
   CardFlipped: (card: Card) => void;
@@ -17,16 +18,27 @@ export default class CardsSystem {
 
   readonly events: TypedEmitter<MessageEvents> = new Phaser.Events.EventEmitter();
 
+  connection: Connection | undefined;
+
   constructor(table: Table) {
     this.table = table;
   }
 
   subscribeToConnection(connection: Connection) {
+    this.connection = connection;
     connection.registerForMessage<CardFlippedMessage>("CardFlippedMessage", msg => this.cardFlipped(msg));
     connection.registerForMessage<CardInfoMessage>("CardInfoMessage", msg => this.cardInfoChanged(msg));
   }
 
-  flipCard(cardId: number, frontSide: number | null): void {
+  flip(card: Card) {
+    const message: FlipCardMessage = {
+      card: card.id
+    };
+
+    this.connection?.sendMessage("FlipCardMessage", message);
+  }
+
+  private flipCard(cardId: number, frontSide: number | null): void {
     const card = this.table.items.find(i => i.id === cardId) as Card;
 
     if (card === undefined) {
