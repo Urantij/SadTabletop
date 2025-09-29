@@ -1,19 +1,20 @@
-import GameValues from "../GameValues";
 import type Card from "../things/concrete/Cards/Card";
-import type HandOverrideComponent from "../things/concrete/Hands/HandOverrideComponent";
 import type { InHandComponent } from "../things/concrete/Hands/InHandComponent";
 import BaseScene from "./BaseScene";
 import CardObject, { defaultBackSideKey, defaultFrontSidekey } from "./objects/CardObject";
 import SceneHand from "./SceneHand";
 import { findComponent } from "@/utilities/Componenter";
+import Sizes from "./Sizes";
 
-// почему тут? ну потому что ептыть
-const inhandCardWidth = 250 * 0.8;
-const inhandCardHeight = 350 * 0.8;
+// почему тут? ну потому что ептыть;
+const inhandCardWidth = 150;
+const inhandCardHeight = inhandCardWidth * (Sizes.cardHeight / Sizes.cardWidth);
 
 const handPositionX = 0;
 const handPositionY = 0;
 const handWidth = 600;
+
+const hoverScale = 1.3;
 
 export const pointerOverHoveredName = "PointerOverHovered";
 
@@ -43,7 +44,7 @@ export default class HandScene extends BaseScene {
 
   private create() {
 
-    this.hand = SceneHand.create(this, null, handPositionX, handPositionY, handWidth, 0, inhandCardWidth);
+    this.hand = SceneHand.create(this, null, handPositionX, handPositionY, handWidth, 0, inhandCardWidth, inhandCardHeight * 0.3);
 
     this.cameras.main.centerOn(handPositionX, handPositionY);
     this.cameras.main.scrollY -= this.cameras.main.height / 2;
@@ -149,7 +150,7 @@ export default class HandScene extends BaseScene {
 
     if (currentlyOver.length === 0) {
       if (this.hoveredObject !== null) {
-        this.hoveredObject.sprite.setScale(1, 1);
+        this.hoveredObject.setFunnyScale(1);
         this.hoveredObject = null;
         this.hand.setTop(null);
       }
@@ -161,7 +162,7 @@ export default class HandScene extends BaseScene {
 
     if (overedObj === undefined) {
       if (this.hoveredObject !== null) {
-        this.hoveredObject.sprite.setScale(1, 1);
+        this.hoveredObject.setFunnyScale(1);
         this.hoveredObject = null;
         this.hand.setTop(null);
       }
@@ -188,13 +189,13 @@ export default class HandScene extends BaseScene {
     if (closest.obj !== this.hoveredObject) {
 
       if (this.hoveredObject !== null) {
-        this.hoveredObject.sprite.setScale(1, 1);
+        this.hoveredObject.setFunnyScale(1);
       }
 
       this.hoveredObject = closest.obj;
       this.updateRelative(pointer);
 
-      this.hoveredObject.sprite.setScale(1.2, 1.2);
+      this.hoveredObject.setFunnyScale(hoverScale);
       this.hand.setTop(this.hoveredObject);
     }
     else {
@@ -307,7 +308,7 @@ export default class HandScene extends BaseScene {
   private getRelativePosition2(pointer: Phaser.Input.Pointer, element: CardObject) {
     const cursorPos = pointer.positionToCamera(this.cameras.main) as Phaser.Math.Vector2;
 
-    const pos = this.hand.getCardHandPositionNoRotation(element.inhand!.index);
+    const pos = this.hand.getCardHandBasePosition(element.inhand!.index);
     pos.x += this.hand.handPositionX;
     pos.y += this.hand.handPositionY;
 

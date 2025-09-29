@@ -30,9 +30,8 @@ export default class CardObject extends SimpleRenderObjectRepresentation<Card, P
 
     const cardSprite = new Phaser.GameObjects.Sprite(scene, x, y, sideTexture);
     cardSprite.setDepth(DepthChart.Card);
-    scene.add.existing(cardSprite);
     cardSprite.setDisplaySize(width, height);
-    cardSprite.setScale(1, 1);
+    scene.add.existing(cardSprite);
 
     const obj = new CardObject(card, scene, cardSprite);
     obj.inhand = inhand ?? null;

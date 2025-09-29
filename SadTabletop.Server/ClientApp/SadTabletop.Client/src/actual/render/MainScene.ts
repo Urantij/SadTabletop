@@ -25,15 +25,13 @@ import { findComponent } from "@/utilities/Componenter";
 import type HandOverrideComponent from "../things/concrete/Hands/HandOverrideComponent";
 import GameValues from "../GameValues";
 import type Entity from "../things/Entity";
+import Sizes from "./Sizes";
 
 type MainSceneEvents = {
   ObjectCreated: (obj: RenderObjectRepresentation) => void;
 }
 
 export const cursorMovedInTheWorldName = "CursorMovedInTheWorld";
-
-const cardWidth = 250;
-const cardHeight = 350;
 
 interface DragHolder {
   item: RenderObjectRepresentation;
@@ -66,7 +64,7 @@ export default class MainScene extends BaseScene {
       const handStartX = handOverride?.x ?? GameValues.HandsArrayStartX + seatIndex * (GameValues.HandsArrayWidth + GameValues.HandsArrayDistance);
       const handStartY = handOverride?.y ?? GameValues.HandsArrayStartY
 
-      obj = SceneHand.create(this, hand, handStartX, handStartY, GameValues.HandsArrayWidth, handOverride?.rotation ?? 0, cardWidth);
+      obj = SceneHand.create(this, hand, handStartX, handStartY, GameValues.HandsArrayWidth, handOverride?.rotation ?? 0, Sizes.cardWidth, 0);
       this.hands.push(obj);
     }
 
@@ -376,7 +374,7 @@ export default class MainScene extends BaseScene {
           // тут 0.5 0.5
           relative.y += 0.5;
 
-          let pos = hand.getCardHandPositionNoRotation(cardObj.inhand?.index ?? 0);
+          let pos = hand.getCardHandBasePosition(cardObj.inhand?.index ?? 0);
 
           pos.x += cardObj.sprite.displayWidth * relative.x;
           pos.y += cardObj.sprite.displayHeight * relative.y;
@@ -510,11 +508,11 @@ export default class MainScene extends BaseScene {
 
       const deckPos = deckObj.getCurrentPosition();
 
-      obj = CardObject.create(card, this, deckPos.x, deckPos.y, cardWidth, cardHeight);
+      obj = CardObject.create(card, this, deckPos.x, deckPos.y, Sizes.cardWidth, Sizes.cardHeight);
       this.objects.push(obj);
     }
     else {
-      obj = CardObject.create(card, this, card.x, card.y, cardWidth, cardHeight);
+      obj = CardObject.create(card, this, card.x, card.y, Sizes.cardWidth, Sizes.cardHeight);
       this.objects.push(obj);
     }
 
@@ -555,7 +553,7 @@ export default class MainScene extends BaseScene {
   }
 
   createDeck(deck: Deck) {
-    const obj = DeckObject.create(deck, this, cardWidth, cardHeight);
+    const obj = DeckObject.create(deck, this, Sizes.cardWidth, Sizes.cardHeight);
     this.objects.push(obj);
     this.myEvents.emit("ObjectCreated", obj);
   }

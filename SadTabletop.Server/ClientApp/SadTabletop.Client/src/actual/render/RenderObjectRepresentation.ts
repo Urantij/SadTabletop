@@ -13,6 +13,8 @@ export default interface RenderObjectRepresentation {
 
   changePosition(x: number, y: number): void;
 
+  setFunnyScale(scale: number): void;
+
   updateClicky(clicky: boolean): void;
 
   isDraggable(): boolean;

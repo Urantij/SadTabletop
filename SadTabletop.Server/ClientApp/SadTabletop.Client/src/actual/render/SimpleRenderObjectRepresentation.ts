@@ -17,9 +17,12 @@ export default class SimpleRenderObjectRepresentation<TGameObj extends TableItem
 
   destroyed: boolean = false;
 
+  readonly baseScale: number;
+
   constructor(gameObject: TGameObj, sprite: TRender, needInteraction: boolean) {
     this.gameObject = gameObject;
     this.sprite = sprite;
+    this.baseScale = sprite.scale;
     this.needInteraction = needInteraction;
 
     this.clicky = isClicky(gameObject);
@@ -41,6 +44,10 @@ export default class SimpleRenderObjectRepresentation<TGameObj extends TableItem
 
   changePosition(x: number, y: number): void {
     this.sprite.setPosition(x, y);
+  }
+
+  setFunnyScale(scale: number): void {
+    this.sprite.setScale(this.baseScale * scale, this.baseScale * scale);
   }
 
   updateClicky(clicky: boolean): void {
