@@ -24,22 +24,22 @@ public class AnotherTestSystem : SystemBase
     {
         base.GameCreated();
 
-        deck = _decks.Create(-200, 400, Flipness.Shown, [
-            new DeckCardInfo(77, 4),
-            new DeckCardInfo(77, 7),
-            new DeckCardInfo(77, 4),
-            new DeckCardInfo(77, 7),
-            new DeckCardInfo(77, 4),
-            new DeckCardInfo(77, 7),
-            new DeckCardInfo(77, 4),
-            new DeckCardInfo(77, 7),
-            new DeckCardInfo(77, 4),
-            new DeckCardInfo(77, 7),
-            new DeckCardInfo(77, 4),
-            new DeckCardInfo(77, 7),
-        ]);
-
-        Game.GetSystem<ClicksSystem>().AddClick(deck, Game.GetSystem<SeatsSystem>().GetEntity(1), DeckClicked, false);
+        // deck = _decks.Create(-200, 400, Flipness.Shown, [
+        //     new DeckCardInfo(77, 4),
+        //     new DeckCardInfo(77, 7),
+        //     new DeckCardInfo(77, 4),
+        //     new DeckCardInfo(77, 7),
+        //     new DeckCardInfo(77, 4),
+        //     new DeckCardInfo(77, 7),
+        //     new DeckCardInfo(77, 4),
+        //     new DeckCardInfo(77, 7),
+        //     new DeckCardInfo(77, 4),
+        //     new DeckCardInfo(77, 7),
+        //     new DeckCardInfo(77, 4),
+        //     new DeckCardInfo(77, 7),
+        // ]);
+        //
+        // Game.GetSystem<ClicksSystem>().AddClick(deck, Game.GetSystem<SeatsSystem>().GetEntity(1), DeckClicked, false);
 
         // _times.RequestDelayedExecution(FirstEx, TimeSpan.FromSeconds(5));
     }

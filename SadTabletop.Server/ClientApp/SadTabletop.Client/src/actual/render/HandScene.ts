@@ -17,7 +17,11 @@ const handWidth = 600;
 
 const hoverScale = 1.3;
 
+const glowStrLow = 2;
+const glowStrHigh = 8;
+
 export const pointerOverHoveredName = "PointerOverHovered";
+export const cardPlayedOnName = "CardPlayedOn";
 
 export default class HandScene extends BaseScene {
 
@@ -31,6 +35,18 @@ export default class HandScene extends BaseScene {
   relativePointerPosition: Phaser.Math.Vector2 | null = null;
 
   dragObj: CardObject | null = null;
+  dragPointer: Phaser.Input.Pointer | null = null;
+
+  // TODO вот бы обновлять если экран меняется
+  /**
+   * Если отпустить плей карту на этой высоте, она сыграется
+   */
+  playNoTargetY: number = 0;
+  /**
+   * Не выпускать карту дальше этой высоты и рисовать стрелочку
+   */
+  playWithTargetY: number = 0;
+  playLine: Phaser.GameObjects.Line | null = null;
 
   fkey: Phaser.Input.Keyboard.Key | undefined;
 
@@ -63,6 +79,9 @@ export default class HandScene extends BaseScene {
 
     this.cameras.main.centerOn(handPositionX, handPositionY);
     this.cameras.main.scrollY -= this.cameras.main.height / 2;
+
+    this.playNoTargetY = handPositionY - inhandCardHeight;
+    this.playWithTargetY = handPositionY - inhandCardHeight * 0.3;
 
     this.leGame.table.events.on("ItemAdded", (item) => {
       if (item.type !== "Card")
@@ -129,6 +148,29 @@ export default class HandScene extends BaseScene {
       obj.destroy();
     });
 
+    this.leGame.playable.events.on("Playable", (card, component) => {
+      const obj = this.hand.objs.find(o => o.gameObject === card);
+
+      if (obj === undefined)
+        return;
+
+      obj.playable = component;
+      this.startGlow(obj);
+
+      this.forceEndDrag(obj);
+    });
+
+    this.leGame.playable.events.on("UnPlayable", (card) => {
+      const obj = this.hand.objs.find(o => o.gameObject === card);
+
+      if (obj === undefined)
+        return;
+
+      this.endGlow(obj);
+
+      this.forceEndDrag(obj);
+    });
+
     this.leGame.table.cards.events.on("CardFlipped", (card) => {
       const obj = this.hand.objs.find(o => o.gameObject === card);
 
@@ -163,7 +205,31 @@ export default class HandScene extends BaseScene {
     obj.sprite.on("drag", (pointer: Phaser.Input.Pointer, dragX: number, dragY: number) => this.cardDrag(obj, pointer, dragX, dragY), this);
     obj.sprite.on("dragend", (pointer: Phaser.Input.Pointer, dragX: number, dragY: number) => this.cardDragEnd(obj, pointer, dragX, dragY), this);
 
+    if (obj.playable !== null) {
+      this.startGlow(obj);
+    }
+
     return obj;
+  }
+
+  /**
+   * Если подаваемый объект это драг объект, заканчивает его драгать.
+   * @param obj
+   */
+  private forceEndDrag(obj: CardObject) {
+    if (this.dragObj !== obj)
+      return;
+
+    this.input.setDragState(this.dragPointer!, 5);
+  }
+
+  private startGlow(obj: CardObject) {
+    obj.playableGlow = obj.sprite.preFX?.addGlow(0xff00ff, glowStrLow);
+  }
+
+  private endGlow(obj: CardObject) {
+    obj.playableGlow?.destroy();
+    obj.playableGlow = undefined;
   }
 
   private unhover() {
@@ -243,11 +309,47 @@ export default class HandScene extends BaseScene {
   private cardDrag(obj: CardObject, pointer: Phaser.Input.Pointer, dragX: number, dragY: number) {
     if (this.dragObj === null) {
       this.dragObj = obj;
+      this.dragPointer = pointer;
       this.hand.ignoreMove(obj);
       this.leGame.drags.startDrag(obj.gameObject);
     }
 
-    this.animka.moveObject2(obj, dragX, dragY, null, 3);
+    let x = dragX;
+    let y = dragY;
+
+    if (this.dragObj.playable !== null) {
+      if (this.dragObj.playable.targets !== null) {
+
+        if (y < this.playWithTargetY) {
+          y = this.playWithTargetY;
+
+          // this.add.arc  не умею но вроде бы это надо
+          if (this.playLine !== null) {
+            this.playLine.destroy();
+          }
+
+          this.playLine = this.add.line(this.dragObj.sprite.x, this.dragObj.sprite.y,
+            this.dragObj.sprite.x, this.dragObj.sprite.y,
+            dragX, dragY,
+            0xff2222);
+          this.playLine.setLineWidth(5);
+        }
+      }
+      else {
+        if (y < this.playNoTargetY) {
+          if (this.dragObj.playableGlow?.outerStrength === glowStrLow) {
+            this.dragObj.playableGlow.outerStrength = glowStrHigh;
+          }
+        }
+        else {
+          if (this.dragObj.playableGlow?.outerStrength === glowStrHigh) {
+            this.dragObj.playableGlow.outerStrength = glowStrLow;
+          }
+        }
+      }
+    }
+
+    this.animka.moveObject2(obj, x, y, null, 3);
     this.updateRelative(pointer);
     this.events.emit(pointerOverHoveredName, this.hoveredObject, this.relativePointerPosition);
   }
@@ -258,7 +360,28 @@ export default class HandScene extends BaseScene {
 
     // в драг енде драг аргументы какие то ёбаные. не знаю, что там лежит.
 
+    // TODO тупо што плей тут и там разделены хызы
+    if (this.dragObj.playable !== null) {
+      if (this.dragObj.playable.targets !== null) {
+        this.playLine?.destroy();
+
+        this.playLine?.pathData
+        this.playLine = null;
+
+        this.events.emit(cardPlayedOnName, obj, pointer.x, pointer.y);
+      }
+      else {
+        if (this.dragObj.playableGlow !== undefined)
+          this.dragObj.playableGlow.outerStrength = glowStrLow;
+
+        if (this.dragObj.sprite.y < this.playNoTargetY) {
+          this.leGame.playable.play(this.dragObj.gameObject, undefined);
+        }
+      }
+    }
+
     this.dragObj = null;
+    this.dragPointer = null;
     this.hand.unignoreMove(obj);
     this.leGame.drags.endDrag();
 

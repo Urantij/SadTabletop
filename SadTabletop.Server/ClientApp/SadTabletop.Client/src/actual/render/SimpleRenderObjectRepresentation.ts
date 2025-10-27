@@ -46,6 +46,11 @@ export default class SimpleRenderObjectRepresentation<TGameObj extends TableItem
     this.sprite.setPosition(x, y);
   }
 
+  /**
+   * Для отображения спрайтов не их заданной длины, фазер юзает скейл.
+   * Я тоже хочу скейлить, но в фазере тока 1 поле скейла.
+   * @param scale
+   */
   setFunnyScale(scale: number): void {
     this.sprite.setScale(this.baseScale * scale, this.baseScale * scale);
   }

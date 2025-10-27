@@ -1,5 +1,6 @@
 using System.Reflection;
 using SadTabletop.Shared.EvenMoreSystems.Drag;
+using SadTabletop.Shared.EvenMoreSystems.Playable;
 using SadTabletop.Shared.Mechanics;
 using SadTabletop.Shared.MoreSystems.Cards;
 using SadTabletop.Shared.MoreSystems.Decks;
@@ -42,6 +43,8 @@ public static class GameCreator
         game.Systems.Add(new TimesSystem(game));
 
         game.Systems.Add(new ClicksSystem(game));
+
+        game.Systems.Add(new PlayableSystem(game));
 
         game.Systems.Add(new CardsSystem(game));
         game.Systems.Add(new DecksSystem(game));

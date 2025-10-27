@@ -5,6 +5,7 @@ import { findComponent } from "@/utilities/Componenter";
 import type { InHandComponent } from "@/actual/things/concrete/Hands/InHandComponent";
 import type BaseScene from "../BaseScene";
 import { DepthChart } from "../Renderer";
+import type { PlayableComponent } from "@/actual/things/concrete/Playable/PlayableComponent";
 
 export const defaultBackSideKey = "defaultBackSide";
 export const defaultFrontSidekey = "defaultFrontSide";
@@ -14,6 +15,10 @@ export default class CardObject extends SimpleRenderObjectRepresentation<Card, P
   readonly scene: BaseScene;
 
   inhand: InHandComponent | null = null;
+  playable: PlayableComponent | null = null;
+
+  // я че то уже устал и не могу
+  playableGlow: Phaser.FX.Glow | undefined;
 
   constructor(card: Card, scene: BaseScene, sprite: Phaser.GameObjects.Sprite) {
     super(card, sprite, false);
@@ -26,15 +31,14 @@ export default class CardObject extends SimpleRenderObjectRepresentation<Card, P
     const sideTexture = card.flipness === Flipness.Shown ? CardObject.getCardSideTexture(card.frontSide, fallback, scene)
       : CardObject.getCardSideTexture(card.backSide, fallback, scene);
 
-    const inhand = findComponent<InHandComponent>(card, "InHandComponent");
-
     const cardSprite = new Phaser.GameObjects.Sprite(scene, x, y, sideTexture);
     cardSprite.setDepth(DepthChart.Card);
     cardSprite.setDisplaySize(width, height);
     scene.add.existing(cardSprite);
 
     const obj = new CardObject(card, scene, cardSprite);
-    obj.inhand = inhand ?? null;
+    obj.inhand = findComponent<InHandComponent>(card, "InHandComponent") ?? null;
+    obj.playable = findComponent<PlayableComponent>(card, "PlayableComponent") ?? null;
 
     // TODO какой урод должен за это отвечать?
 

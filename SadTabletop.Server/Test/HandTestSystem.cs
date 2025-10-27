@@ -28,13 +28,15 @@ public class HandTestSystem : SystemBase
         // this.Game.GetSystem<ShapesSystem>().AddRect(GameValues.HandsArrayStartX, GameValues.HandsArrayStartY,
         //     GameValues.HandsArrayWidth, 200, 0x776600);
 
-        var cards = Game.GetSystem<CardsSystem>();
+        //
 
-        handyCard = cards.Create(0, -100, 4, 77, Flipness.Shown);
-
-        Seat seat = Game.GetSystem<SeatsSystem>().GetEntity(1);
-
-        Game.GetSystem<ClicksSystem>().AddClick(handyCard, seat, HandyClicked, false);
+        // var cards = Game.GetSystem<CardsSystem>();
+        //
+        // handyCard = cards.Create(0, -100, 4, 77, Flipness.Shown);
+        //
+        // Seat seat = Game.GetSystem<SeatsSystem>().GetEntity(1);
+        //
+        // Game.GetSystem<ClicksSystem>().AddClick(handyCard, seat, HandyClicked, false);
     }
 
     private void HandyClicked(Click click)

@@ -17,7 +17,7 @@ import type CircleShape from "../things/concrete/Shapes/CircleShape";
 import CircleShapeObject from "./objects/CircleShapeObject";
 import CursorObject, { cursorTextureKey } from "./objects/CursorObject";
 import type Player from "../things/Player";
-import HandScene, { pointerOverHoveredName } from "./HandScene";
+import HandScene, { cardPlayedOnName, pointerOverHoveredName } from "./HandScene";
 import BaseScene from "./BaseScene";
 import SceneHand from "./SceneHand";
 import type Hand from "../things/concrete/Hands/Hand";
@@ -406,6 +406,45 @@ export default class MainScene extends BaseScene {
 
           this.events.emit(cursorMovedInTheWorldName, pos);
         }
+      });
+
+      this.hander.events.on(cardPlayedOnName, (cardObj: CardObject, screenX: number, screenY: number) => {
+
+        if (cardObj.playable === null) {
+          console.warn(`не плейбл в плей кард он`);
+          return;
+        }
+        if (cardObj.playable.targets === null) {
+          console.warn(`плейбл без таргетов в плей кард он`);
+          return;
+        }
+
+        const hitTested = this.input.hitTestPointer(this.input.activePointer);
+
+        let ourBoy: TableItem | undefined = undefined;
+        for (const element of hitTested) {
+          const container = element.getData(ContainerObjectDataKey) as RenderObjectRepresentation | undefined;
+
+          if (container === undefined)
+            continue;
+
+          if (cardObj.playable.targets.includes(container.gameObject)) {
+
+            if (ourBoy === undefined) {
+              ourBoy = container.gameObject;
+            }
+            else {
+              ourBoy = undefined;
+              break;
+            }
+          }
+        }
+
+        if (ourBoy === undefined) {
+          return;
+        }
+
+        this.leGame.playable.play(cardObj.gameObject, ourBoy);
       });
     }
 

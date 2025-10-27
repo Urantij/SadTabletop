@@ -78,6 +78,15 @@ export default class Table {
     this.events.emit("ItemMoved", item, oldX, oldY)
   }
 
+  getItem<T extends TableItem>(id: number) {
+    const res = this.items.find(i => i.id === id);
+
+    if (res === undefined)
+      throw new Error(`Не удалось найти предмет ${id}`);
+
+    return res as T;
+  }
+
   findItem<T extends TableItem>(id: number) {
     const res = this.items.find(i => i.id === id);
 
