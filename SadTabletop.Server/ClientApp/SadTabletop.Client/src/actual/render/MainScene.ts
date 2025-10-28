@@ -419,32 +419,57 @@ export default class MainScene extends BaseScene {
           return;
         }
 
-        const hitTested = this.input.hitTestPointer(this.input.activePointer);
+        let ourBoy: RenderObjectRepresentation | undefined = undefined;
+        for (const element of cardObj.playable.targets) {
 
-        let ourBoy: TableItem | undefined = undefined;
-        for (const element of hitTested) {
-          const container = element.getData(ContainerObjectDataKey) as RenderObjectRepresentation | undefined;
+          const targetObj = this.objects.find(o => o.gameObject === element);
+          if (targetObj === undefined) {
+            console.warn(`${cardPlayedOnName} не удалось найти объект-таргет ${element.type}:${element.id}`);
+            continue;
+          }
 
-          if (container === undefined)
+          const point = this.cameras.main.getWorldPoint(this.input.activePointer.x, this.input.activePointer.y);
+          const inside = targetObj.positionTest(point.x, point.y);
+          // this.input.activePointer.updateWorldPoint(this.cameras.main);
+          // const inside = targetObj.positionTest(this.input.activePointer.worldX, this.input.activePointer.worldY);
+
+          if (!inside)
             continue;
 
-          if (cardObj.playable.targets.includes(container.gameObject)) {
-
-            if (ourBoy === undefined) {
-              ourBoy = container.gameObject;
-            }
-            else {
-              ourBoy = undefined;
-              break;
-            }
+          if (ourBoy === undefined) {
+            ourBoy = targetObj;
+          }
+          else {
+            ourBoy = undefined;
+            break;
           }
         }
+
+        // const hitTested = this.input.hitTestPointer(this.input.activePointer);
+        // let ourBoy: TableItem | undefined = undefined;
+        // for (const element of hitTested) {
+        //   const container = element.getData(ContainerObjectDataKey) as RenderObjectRepresentation | undefined;
+
+        //   if (container === undefined)
+        //     continue;
+
+        //   if (cardObj.playable.targets.includes(container.gameObject)) {
+
+        //     if (ourBoy === undefined) {
+        //       ourBoy = container.gameObject;
+        //     }
+        //     else {
+        //       ourBoy = undefined;
+        //       break;
+        //     }
+        //   }
+        // }
 
         if (ourBoy === undefined) {
           return;
         }
 
-        this.leGame.playable.play(cardObj.gameObject, ourBoy);
+        this.leGame.playable.play(cardObj.gameObject, ourBoy.gameObject);
       });
     }
 

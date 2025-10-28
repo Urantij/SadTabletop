@@ -4,7 +4,7 @@ import type TableItem from "../things/TableItem";
 
 export const ContainerObjectDataKey = "gameObject";
 
-type RenderMinimum = Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform;
+type RenderMinimum = Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform & Phaser.GameObjects.Components.GetBounds;
 
 export default class SimpleRenderObjectRepresentation<TGameObj extends TableItem, TRender extends RenderMinimum> implements RenderObjectRepresentation {
   readonly gameObject: TGameObj;
@@ -68,6 +68,12 @@ export default class SimpleRenderObjectRepresentation<TGameObj extends TableItem
     else {
       this.sprite.disableInteractive();
     }
+  }
+
+  positionTest(x: number, y: number): boolean {
+    console.log(this.sprite.getBounds());
+    console.log(`${x}:${y}`);
+    return this.sprite.getBounds().contains(x, y);
   }
 
   isDraggable(): boolean {

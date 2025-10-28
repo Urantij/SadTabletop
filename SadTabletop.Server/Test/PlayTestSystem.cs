@@ -24,7 +24,7 @@ public class PlayTestSystem : SystemBase
 
         Seat seat = _seats.EnumerateRealSeats().First();
 
-        Card cardToFlip = _cards.Create(-500, 200, 4, 22, Flipness.Shown);
+        Card cardToFlip = _cards.Create(-500, 500, 4, 22, Flipness.Shown);
 
         Card selfClipCard = _cards.Create(0, 0, 4, 22, Flipness.Shown, false);
         _hands.AddToHand(selfClipCard, seat);
@@ -32,6 +32,6 @@ public class PlayTestSystem : SystemBase
 
         Card clipCard = _cards.Create(0, 0, 7, 22, Flipness.Shown, false);
         _hands.AddToHand(clipCard, seat);
-        // _play.MakePlayable(clipCard, seat, item => { _cards.Flip((Card)item); }, cardToFlip);
+        _play.MakePlayable(clipCard, seat, item => { _cards.Flip((Card)item); }, cardToFlip);
     }
 }

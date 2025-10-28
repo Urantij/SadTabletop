@@ -328,11 +328,14 @@ export default class HandScene extends BaseScene {
             this.playLine.destroy();
           }
 
-          this.playLine = this.add.line(this.dragObj.sprite.x, this.dragObj.sprite.y,
+          // const point = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+
+          this.playLine = this.add.line(0, 0,
             this.dragObj.sprite.x, this.dragObj.sprite.y,
             dragX, dragY,
+            // point.x, point.y,
             0xff2222);
-          this.playLine.setLineWidth(5);
+          this.playLine.setLineWidth(4);
         }
       }
       else {
