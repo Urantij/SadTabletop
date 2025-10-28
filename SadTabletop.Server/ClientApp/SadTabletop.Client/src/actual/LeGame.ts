@@ -63,9 +63,13 @@ export default class LeGame {
 
   private meJoined(data: JoinedMessage): void {
 
+    const seatsToAnnounce: Seat[] = [];
+    const itemsToAnnounce: TableItem[] = [];
+
     for (const entity of data.entities) {
       if (this.bench.isBenchEntityByType(entity.type)) {
-        this.bench.addSeat(entity as Seat);
+        this.bench.preAddSeat(entity as Seat);
+        seatsToAnnounce.push(entity as Seat);
       }
       else if (entity.type === "AssetInfo") {
 
@@ -74,6 +78,10 @@ export default class LeGame {
           name: info.name,
           url: info.url
         });
+      }
+      else if (this.table.isTableEntityByType(entity.type)) {
+        this.table.preAddItem(entity as TableItem);
+        itemsToAnnounce.push(entity as TableItem);
       }
     }
 
@@ -85,10 +93,13 @@ export default class LeGame {
 
     this.events.emit("PreDataSet");
 
-    for (const entity of data.entities) {
-      if (this.table.isTableEntityByType(entity.type)) {
-        this.table.addItem(entity as TableItem, null);
-      }
+    // разделение сделано тому шо компоненты могут ссылаться на ещё несозданные объекты так что объекты нужно создать йес йес
+
+    for (const seat of seatsToAnnounce) {
+      this.bench.announceSeat(seat);
+    }
+    for (const item of itemsToAnnounce) {
+      this.table.announceItem(item, null);
     }
 
     this.events.emit("DataSet");

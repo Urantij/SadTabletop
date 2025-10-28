@@ -365,7 +365,6 @@ export default class HandScene extends BaseScene {
       if (this.dragObj.playable.targets !== null) {
         this.playLine?.destroy();
 
-        this.playLine?.pathData
         this.playLine = null;
 
         this.events.emit(cardPlayedOnName, obj, pointer.x, pointer.y);

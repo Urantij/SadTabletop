@@ -42,6 +42,19 @@ export default class Table {
     return ["Card", "Dice", "Deck", "TextItem", "RectShape", "CircleShape"].includes(type);
   }
 
+  /**
+   * Добавить предмет без ивента
+   * @param item
+   */
+  preAddItem(item: TableItem) {
+    this.items.push(item);
+  }
+
+  announceItem(item: TableItem, data: object | null) {
+    console.log(`в стол добавлена ентити ${item.type} ${item.id}`);
+    this.events.emit("ItemAdded", item, data);
+  }
+
   addItem(item: TableItem, data: object | null) {
 
     console.log(`в стол добавлена ентити ${item.type} ${item.id}`);

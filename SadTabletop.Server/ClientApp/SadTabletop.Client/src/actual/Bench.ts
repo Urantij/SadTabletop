@@ -40,6 +40,18 @@ export default class Bench {
     return ["Seat"].includes(type);
   }
 
+  /**
+   * Добавить ентити без ивента
+   * @param seat
+   */
+  preAddSeat(seat: Seat) {
+    this.seats.push(seat);
+  }
+
+  announceSeat(seat: Seat) {
+    this.events.emit("SeatAdded", seat);
+  }
+
   addSeat(seat: Seat) {
     this.seats.push(seat);
     this.events.emit("SeatAdded", seat);
