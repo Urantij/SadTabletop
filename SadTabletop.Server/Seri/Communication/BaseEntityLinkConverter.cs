@@ -69,6 +69,33 @@ public class EntityLinkConverter : JsonConverter<EntityBase>
     }
 }
 
+// как же впадлу дышать
+public class EntityArrayLinkConverter : JsonConverter<EntityBase[]>
+{
+    private readonly GameResolver _resolver;
+
+    public EntityArrayLinkConverter(GameResolver resolver)
+    {
+        _resolver = resolver;
+    }
+
+    public override EntityBase[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        Type elementType = typeToConvert.GetElementType();
+
+        EntitiesSystem system = _resolver.FindEntitySystemByEntityType(elementType);
+
+        int[] ids = JsonSerializer.Deserialize<int[]>(ref reader, options);
+
+        return ids.Select(id => system.GetRawEntity(id)).ToArray();
+    }
+
+    public override void Write(Utf8JsonWriter writer, EntityBase[] value, JsonSerializerOptions options)
+    {
+        JsonSerializer.Serialize(writer, value.Select(v => v.Id).ToArray(), options);
+    }
+}
+
 // /// <summary>
 // /// Конвертирует ентити в просто айди, так как тип ентити известен, и по нему можно найти систему.
 // /// </summary>

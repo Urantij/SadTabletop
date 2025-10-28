@@ -12,6 +12,7 @@ public class CommunicationModifer
     private readonly EntityLinkConverter _entityLinkConverter;
     private readonly BaseEntityLinkConverter _baseEntityLinkConverter;
     private readonly ComponentLinkConverter _componentLinkConverter;
+    private readonly EntityArrayLinkConverter _arrayLinkConverter;
 
     public CommunicationModifer(GameResolver gameResolver)
     {
@@ -20,6 +21,7 @@ public class CommunicationModifer
         _entityLinkConverter = new EntityLinkConverter(gameResolver);
         _baseEntityLinkConverter = new BaseEntityLinkConverter(gameResolver);
         _componentLinkConverter = new ComponentLinkConverter();
+        _arrayLinkConverter = new EntityArrayLinkConverter(gameResolver);
     }
 
     public void Do(JsonTypeInfo info)
@@ -39,6 +41,30 @@ public class CommunicationModifer
             {
                 propertyInfo.CustomConverter = _componentLinkConverter;
             }
+            else if (propertyInfo.PropertyType.IsArray &&
+                     propertyInfo.PropertyType.GetElementType().IsAssignableTo(typeof(EntityBase)))
+            {
+                // TODO тут одинаковые и ентитибейс и наследники сериализуютс
+
+                propertyInfo.CustomConverter = _arrayLinkConverter;
+            }
+            // else
+            // {
+            //     // TODO это очень смешно но это очень страшно
+            //     Type compareType = typeof(IEnumerable<>);
+            //
+            //     Type? enumIn = propertyInfo.PropertyType.GetInterfaces()
+            //         .FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == compareType);
+            //
+            //     if (enumIn != null)
+            //     {
+            //         Type type = enumIn.GenericTypeArguments[0];
+            //
+            //         if (type.IsAssignableTo(typeof(EntityBase)))
+            //         {
+            //         }
+            //     }
+            // }
         }
     }
 }
