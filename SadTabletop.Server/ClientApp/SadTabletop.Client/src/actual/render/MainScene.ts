@@ -27,6 +27,7 @@ import GameValues from "../GameValues";
 import type Entity from "../things/Entity";
 import Sizes from "./Sizes";
 import Control from "./Control";
+import { applyDropTargetGlow, dropDropTargetGlow, highDropTargetGlow, lowDropTargetGlow } from "./effects/DropGlow";
 
 type MainSceneEvents = {
   ObjectCreated: (obj: RenderObjectRepresentation) => void;
@@ -431,7 +432,7 @@ export default class MainScene extends BaseScene {
 
           targets.push(targetObj);
 
-          this.applyDropTargetGlow(targetObj);
+          applyDropTargetGlow(targetObj);
         }
 
         dragInfo = {
@@ -449,13 +450,13 @@ export default class MainScene extends BaseScene {
         for (const target of dragInfo.targets) {
           if (target.positionTest(point.x, point.y)) {
             if (!dragInfo.strong.includes(target)) {
-              this.highDropTargetGlow(target);
+              highDropTargetGlow(target);
               dragInfo.strong.push(target);
             }
           }
           else {
             if (removeItemFromCollection(dragInfo.strong, target)) {
-              this.lowDropTargetGlow(target);
+              lowDropTargetGlow(target);
             }
           }
         }
@@ -465,7 +466,7 @@ export default class MainScene extends BaseScene {
           return;
 
         for (const target of dragInfo.targets) {
-          this.dropDropTargetGlow(target);
+          dropDropTargetGlow(target);
         }
 
         dragInfo = null;
@@ -581,39 +582,6 @@ export default class MainScene extends BaseScene {
 
     //   obj.changePosition2(newPosition.x, newPosition.y);
     // }
-  }
-
-  private applyDropTargetGlow(obj: RenderObjectRepresentation) {
-    const preFX = obj.getPreFx();
-    if (preFX === null)
-      return;
-
-    const glow = preFX.addGlow(0x775577, 2);
-    // :)
-    obj.cashbackNaVse["droptargetglow"] = glow;
-  }
-  private highDropTargetGlow(obj: RenderObjectRepresentation) {
-    const glow = obj.cashbackNaVse["droptargetglow"] as Phaser.FX.Glow | undefined;
-    if (glow === undefined)
-      return;
-
-    glow.outerStrength = 8;
-  }
-  private lowDropTargetGlow(obj: RenderObjectRepresentation) {
-    const glow = obj.cashbackNaVse["droptargetglow"] as Phaser.FX.Glow | undefined;
-    if (glow === undefined)
-      return;
-
-    glow.outerStrength = 2;
-  }
-  private dropDropTargetGlow(obj: RenderObjectRepresentation) {
-    const glow = obj.cashbackNaVse["droptargetglow"] as Phaser.FX.Glow | undefined;
-    if (glow === undefined)
-      return;
-
-    delete obj.cashbackNaVse["droptargetglow"];
-
-    glow.destroy();
   }
 
   destroyEntity(obj: Entity) {
