@@ -7,6 +7,11 @@ export default interface RenderObjectRepresentation {
 
   destroyed: boolean;
 
+  // :)
+  readonly cashbackNaVse: {
+    [key: string]: object;
+  };
+
   getDataManager(): Phaser.Data.DataManager;
 
   getCurrentPosition(): Phaser.Math.Vector2;
@@ -18,6 +23,9 @@ export default interface RenderObjectRepresentation {
   updateClicky(clicky: boolean): void;
 
   positionTest(x: number, y: number): boolean;
+
+  // я устау xd
+  getPreFx(): Phaser.GameObjects.Components.FX | null;
 
   isDraggable(): boolean;
 

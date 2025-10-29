@@ -2,7 +2,7 @@ import type TypedEmitter from "@/utilities/TypedEmiiter";
 import Phaser from "phaser";
 import CardObject, { defaultBackSideKey, defaultFrontSidekey } from "./objects/CardObject";
 import type RenderObjectRepresentation from "@/actual/render/RenderObjectRepresentation.ts";
-import { removeFromCollection } from "@/utilities/MyCollections.ts";
+import { removeFromCollection, removeItemFromCollection } from "@/utilities/MyCollections.ts";
 import type TableItem from "../things/TableItem";
 import type TextItem from "../things/concrete/TextItem";
 import TextItemObject from "./objects/TextItemObject";
@@ -17,7 +17,7 @@ import type CircleShape from "../things/concrete/Shapes/CircleShape";
 import CircleShapeObject from "./objects/CircleShapeObject";
 import CursorObject, { cursorTextureKey } from "./objects/CursorObject";
 import type Player from "../things/Player";
-import HandScene, { cardPlayedOnName, pointerOverHoveredName } from "./HandScene";
+import HandScene, { cardDragEndedName, cardDragName, cardDragStartedName, cardPlayedOnName, pointerOverHoveredName } from "./HandScene";
 import BaseScene from "./BaseScene";
 import SceneHand from "./SceneHand";
 import type Hand from "../things/concrete/Hands/Hand";
@@ -407,6 +407,69 @@ export default class MainScene extends BaseScene {
           this.events.emit(cursorMovedInTheWorldName, pos);
         }
       });
+    }
+
+    // Обработка юзаний карты из рук
+    {
+      let dragInfo: {
+        targets: RenderObjectRepresentation[],
+        draggedCard: CardObject,
+        strong: RenderObjectRepresentation[],
+      } | null = null;
+      this.hander.events.on(cardDragStartedName, (cardObj: CardObject) => {
+        if (cardObj.playable?.targets == null)
+          return;
+
+        const targets: RenderObjectRepresentation[] = [];
+        for (const element of cardObj.playable.targets) {
+
+          const targetObj = this.objects.find(o => o.gameObject === element);
+          if (targetObj === undefined) {
+            console.warn(`${cardDragStartedName} не удалось найти объект-таргет ${element.type}:${element.id}`);
+            continue;
+          }
+
+          targets.push(targetObj);
+
+          this.applyDropTargetGlow(targetObj);
+        }
+
+        dragInfo = {
+          targets: targets,
+          draggedCard: cardObj,
+          strong: []
+        };
+      });
+      this.hander.events.on(cardDragName, (cardObj: CardObject) => {
+        if (dragInfo === null)
+          return;
+
+        const point = this.cameras.main.getWorldPoint(this.input.activePointer.x, this.input.activePointer.y);
+
+        for (const target of dragInfo.targets) {
+          if (target.positionTest(point.x, point.y)) {
+            if (!dragInfo.strong.includes(target)) {
+              this.highDropTargetGlow(target);
+              dragInfo.strong.push(target);
+            }
+          }
+          else {
+            if (removeItemFromCollection(dragInfo.strong, target)) {
+              this.lowDropTargetGlow(target);
+            }
+          }
+        }
+      });
+      this.hander.events.on(cardDragEndedName, (cardObj: CardObject) => {
+        if (dragInfo === null)
+          return;
+
+        for (const target of dragInfo.targets) {
+          this.dropDropTargetGlow(target);
+        }
+
+        dragInfo = null;
+      });
 
       this.hander.events.on(cardPlayedOnName, (cardObj: CardObject, screenX: number, screenY: number) => {
 
@@ -518,6 +581,39 @@ export default class MainScene extends BaseScene {
 
     //   obj.changePosition2(newPosition.x, newPosition.y);
     // }
+  }
+
+  private applyDropTargetGlow(obj: RenderObjectRepresentation) {
+    const preFX = obj.getPreFx();
+    if (preFX === null)
+      return;
+
+    const glow = preFX.addGlow(0x775577, 2);
+    // :)
+    obj.cashbackNaVse["droptargetglow"] = glow;
+  }
+  private highDropTargetGlow(obj: RenderObjectRepresentation) {
+    const glow = obj.cashbackNaVse["droptargetglow"] as Phaser.FX.Glow | undefined;
+    if (glow === undefined)
+      return;
+
+    glow.outerStrength = 8;
+  }
+  private lowDropTargetGlow(obj: RenderObjectRepresentation) {
+    const glow = obj.cashbackNaVse["droptargetglow"] as Phaser.FX.Glow | undefined;
+    if (glow === undefined)
+      return;
+
+    glow.outerStrength = 2;
+  }
+  private dropDropTargetGlow(obj: RenderObjectRepresentation) {
+    const glow = obj.cashbackNaVse["droptargetglow"] as Phaser.FX.Glow | undefined;
+    if (glow === undefined)
+      return;
+
+    delete obj.cashbackNaVse["droptargetglow"];
+
+    glow.destroy();
   }
 
   destroyEntity(obj: Entity) {

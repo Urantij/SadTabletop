@@ -21,6 +21,9 @@ const glowStrLow = 2;
 const glowStrHigh = 8;
 
 export const pointerOverHoveredName = "PointerOverHovered";
+export const cardDragStartedName = "CardDragStarted";
+export const cardDragName = "CardDrag";
+export const cardDragEndedName = "CardDragEnded";
 export const cardPlayedOnName = "CardPlayedOn";
 
 export default class HandScene extends BaseScene {
@@ -312,6 +315,7 @@ export default class HandScene extends BaseScene {
       this.dragPointer = pointer;
       this.hand.ignoreMove(obj);
       this.leGame.drags.startDrag(obj.gameObject);
+      this.events.emit(cardDragStartedName, obj);
     }
 
     let x = dragX;
@@ -351,6 +355,8 @@ export default class HandScene extends BaseScene {
         }
       }
     }
+
+    this.events.emit(cardDragName, obj);
 
     this.animka.moveObject2(obj, x, y, null, 3);
     this.updateRelative(pointer);
@@ -434,6 +440,8 @@ export default class HandScene extends BaseScene {
         this.leGame.hands.moveCard(obj.gameObject, index);
       }
     }
+
+    this.events.emit(cardDragEndedName, obj);
 
     this.updateRelative(pointer);
     this.events.emit(pointerOverHoveredName, this.hoveredObject, this.relativePointerPosition);

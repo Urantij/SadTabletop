@@ -4,7 +4,10 @@ import type TableItem from "../things/TableItem";
 
 export const ContainerObjectDataKey = "gameObject";
 
-type RenderMinimum = Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Transform & Phaser.GameObjects.Components.GetBounds;
+type RenderMinimum = Phaser.GameObjects.GameObject &
+  Phaser.GameObjects.Components.Transform &
+  Phaser.GameObjects.Components.GetBounds &
+  Phaser.GameObjects.Components.PostPipeline;
 
 export default class SimpleRenderObjectRepresentation<TGameObj extends TableItem, TRender extends RenderMinimum> implements RenderObjectRepresentation {
   readonly gameObject: TGameObj;
@@ -19,6 +22,8 @@ export default class SimpleRenderObjectRepresentation<TGameObj extends TableItem
 
   readonly baseScale: number;
 
+  readonly cashbackNaVse: { [key: string]: object; } = {};
+
   constructor(gameObject: TGameObj, sprite: TRender, needInteraction: boolean) {
     this.gameObject = gameObject;
     this.sprite = sprite;
@@ -32,6 +37,10 @@ export default class SimpleRenderObjectRepresentation<TGameObj extends TableItem
     }
 
     this.sprite.setData(ContainerObjectDataKey, this);
+  }
+
+  getPreFx(): Phaser.GameObjects.Components.FX | null {
+    return this.sprite.preFX;
   }
 
   getDataManager() {
@@ -71,8 +80,6 @@ export default class SimpleRenderObjectRepresentation<TGameObj extends TableItem
   }
 
   positionTest(x: number, y: number): boolean {
-    console.log(this.sprite.getBounds());
-    console.log(`${x}:${y}`);
     return this.sprite.getBounds().contains(x, y);
   }
 
