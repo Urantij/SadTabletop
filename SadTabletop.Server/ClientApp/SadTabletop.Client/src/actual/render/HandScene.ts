@@ -364,6 +364,7 @@ export default class HandScene extends BaseScene {
     // в драг енде драг аргументы какие то ёбаные. не знаю, что там лежит.
 
     // TODO тупо што плей тут и там разделены хызы
+    let played = false;
     if (this.dragObj.playable !== null) {
       if (this.dragObj.playable.targets !== null) {
         this.playLine?.destroy();
@@ -371,6 +372,7 @@ export default class HandScene extends BaseScene {
         this.playLine = null;
 
         this.events.emit(cardPlayedOnName, obj, pointer.x, pointer.y);
+        played = true;
       }
       else {
         if (this.dragObj.playableGlow !== undefined)
@@ -378,6 +380,7 @@ export default class HandScene extends BaseScene {
 
         if (this.dragObj.sprite.y < this.playNoTargetY) {
           this.leGame.playable.play(this.dragObj.gameObject, undefined);
+          played = true;
         }
       }
     }
@@ -423,7 +426,15 @@ export default class HandScene extends BaseScene {
     // TODO можно чето получше придумать)
     this.hand.refresh();
 
-    this.leGame.hands.moveCard(obj.gameObject, index);
+    if (!played) {
+      const currentIndex = this.hand.objs.indexOf(obj);
+
+      if (currentIndex !== index) {
+
+        this.leGame.hands.moveCard(obj.gameObject, index);
+      }
+    }
+
     this.updateRelative(pointer);
     this.events.emit(pointerOverHoveredName, this.hoveredObject, this.relativePointerPosition);
   }
