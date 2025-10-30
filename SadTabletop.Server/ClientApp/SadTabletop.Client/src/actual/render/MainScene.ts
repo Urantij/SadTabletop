@@ -27,7 +27,8 @@ import GameValues from "../GameValues";
 import type Entity from "../things/Entity";
 import Sizes from "./Sizes";
 import Control from "./Control";
-import { applyDropTargetGlow, dropDropTargetGlow, highDropTargetGlow, lowDropTargetGlow } from "./effects/DropGlow";
+import SelectionGlowManager from "./SelectionGlowManager";
+import type ClickComponent from "../things/concrete/Clicks/ClickComponent";
 
 type MainSceneEvents = {
   ObjectCreated: (obj: RenderObjectRepresentation) => void;
@@ -49,6 +50,8 @@ export default class MainScene extends BaseScene {
   readonly hands: SceneHand[] = [];
 
   readonly drags: DragHolder[] = [];
+
+  readonly glowManager: SelectionGlowManager = new SelectionGlowManager();
 
   public readonly myEvents: TypedEmitter<MainSceneEvents> = new Phaser.Events.EventEmitter();
 
@@ -412,11 +415,35 @@ export default class MainScene extends BaseScene {
 
     // Обработка юзаний карты из рук
     {
-      let dragInfo: {
-        targets: RenderObjectRepresentation[],
-        draggedCard: CardObject,
-        strong: RenderObjectRepresentation[],
-      } | null = null;
+      this.leGame.table.clicks.events.on("ItemClickyChanged", (item, isClicky) => {
+        // TODO я каждый раз ищу. Моооожет быть как то всё таки стоило связать их?
+        const obj = this.objects.find(o => o.gameObject === item);
+
+        if (obj === undefined)
+          return;
+
+        if (isClicky)
+          this.glowManager.addClicky(obj);
+        else
+          this.glowManager.removeClicky(obj);
+      });
+      this.myEvents.on("ObjectCreated", obj => {
+        const clicky = findComponent<ClickComponent>(obj.gameObject, "ClickComponent");
+        if (clicky === undefined)
+          return;
+
+        this.glowManager.addClicky(obj);
+      });
+      this.leGame.table.events.on("ItemRemoved", (item) => {
+        const obj = this.objects.find(o => o.gameObject === item);
+        if (obj === undefined)
+          return;
+
+        this.glowManager.removeObject(obj);
+      });
+      this.leGame.events.on("Clearing", () => {
+        this.glowManager.clear();
+      });
       this.hander.events.on(cardDragStartedName, (cardObj: CardObject) => {
         if (cardObj.playable?.targets == null)
           return;
@@ -431,45 +458,25 @@ export default class MainScene extends BaseScene {
           }
 
           targets.push(targetObj);
-
-          applyDropTargetGlow(targetObj);
         }
 
-        dragInfo = {
-          targets: targets,
-          draggedCard: cardObj,
-          strong: []
-        };
+        this.glowManager.cardDragStarted(targets);
       });
       this.hander.events.on(cardDragName, (cardObj: CardObject) => {
-        if (dragInfo === null)
+        if (!this.glowManager.drag)
           return;
 
         const point = this.cameras.main.getWorldPoint(this.input.activePointer.x, this.input.activePointer.y);
 
-        for (const target of dragInfo.targets) {
-          if (target.positionTest(point.x, point.y)) {
-            if (!dragInfo.strong.includes(target)) {
-              highDropTargetGlow(target);
-              dragInfo.strong.push(target);
-            }
-          }
-          else {
-            if (removeItemFromCollection(dragInfo.strong, target)) {
-              lowDropTargetGlow(target);
-            }
-          }
-        }
+        this.glowManager.cardDragMoved(point.x, point.y);
       });
       this.hander.events.on(cardDragEndedName, (cardObj: CardObject) => {
-        if (dragInfo === null)
+        if (!this.glowManager.drag)
           return;
 
-        for (const target of dragInfo.targets) {
-          dropDropTargetGlow(target);
-        }
+        console.log("asd");
 
-        dragInfo = null;
+        this.glowManager.cardDragEnded();
       });
 
       this.hander.events.on(cardPlayedOnName, (cardObj: CardObject, screenX: number, screenY: number) => {
