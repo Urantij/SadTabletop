@@ -5,7 +5,7 @@ namespace SadTabletop.Shared.Systems.Viewer;
 
 public delegate IEntity EntityViewerTransform<in T>(T thing, Seat? target);
 
-public delegate IClientComponent ComponentViewerTransform<in T>(T thing, Seat? target);
+public delegate IClientComponent? ComponentViewerTransform<in T>(T thing, Seat? target);
 
 public class PointOfView(Type type, Delegate @delegate)
 {
@@ -39,7 +39,7 @@ public class ViewerSystem : SystemBase
         return (IEntity)transform.Delegate.DynamicInvoke(entity, seat);
     }
 
-    public IClientComponent View(IClientComponent clientComponent, Seat? seat)
+    public IClientComponent? View(IClientComponent clientComponent, Seat? seat)
     {
         // Если есть трансформ, применить вернуть. Иначе просто вернуть
 
@@ -48,7 +48,7 @@ public class ViewerSystem : SystemBase
         if (transform == null)
             return clientComponent;
 
-        return (IClientComponent)transform.Delegate.DynamicInvoke(clientComponent, seat);
+        return transform.Delegate.DynamicInvoke(clientComponent, seat) as IClientComponent;
     }
 
     public void RegisterEntity<T>(EntityViewerTransform<T> transform) where T : EntityBase

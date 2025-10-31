@@ -79,6 +79,7 @@ public class SynchroSystem : SystemBase
             _viewer.View(entity, target),
             entity.ReadClientComponents()
                 .Select(c => _viewer.View(c, target))
+                .Where(c => c != null)
                 .ToArray()
         );
     }
