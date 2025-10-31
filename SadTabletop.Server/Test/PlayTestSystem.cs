@@ -3,6 +3,7 @@ using SadTabletop.Shared.EvenMoreSystems.Playable;
 using SadTabletop.Shared.Mechanics;
 using SadTabletop.Shared.MoreSystems.Cards;
 using SadTabletop.Shared.MoreSystems.Hands;
+using SadTabletop.Shared.MoreSystems.Hints;
 using SadTabletop.Shared.Systems.Clicks;
 using SadTabletop.Shared.Systems.Seats;
 
@@ -15,6 +16,10 @@ public class PlayTestSystem : SystemBase
     private readonly CardsSystem _cards;
     private readonly HandsSystem _hands;
     private readonly PlayableSystem _play;
+    private readonly HintsSystem _hints;
+
+    private string? hint = null;
+    private int counter = 0;
 
     public PlayTestSystem(Game game) : base(game)
     {
@@ -37,6 +42,21 @@ public class PlayTestSystem : SystemBase
         _play.MakePlayable(clipCard, seat, item => { _cards.Flip((Card)item); }, cardToFlip);
 
         Card clickCard = _cards.Create(500, 500, 4, 22, Flipness.Shown);
-        _clicks.AddClick(clickCard, seat, click => { _cards.Flip(clickCard); }, false);
+        _clicks.AddClick(clickCard, seat, click =>
+        {
+            _cards.Flip(clickCard);
+
+            counter++;
+            if (hint != null)
+            {
+                hint = null;
+            }
+            else
+            {
+                hint = $"ЗДАРОВА {counter}";
+            }
+
+            _hints.GiveHint(seat, hint);
+        }, false);
     }
 }

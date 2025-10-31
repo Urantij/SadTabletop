@@ -29,7 +29,7 @@ public class HintsSystem : ComponentSystemBase
     /// </summary>
     /// <param name="seat"></param>
     /// <param name="hint"></param>
-    public void GiveHint(Seat seat, string hint)
+    public void GiveHint(Seat seat, string? hint)
     {
         HintComponent? component = seat.TryGetComponent<HintComponent>();
 

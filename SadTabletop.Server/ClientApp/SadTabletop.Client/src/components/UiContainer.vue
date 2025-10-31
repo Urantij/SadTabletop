@@ -7,6 +7,7 @@ import type PopitOption from './PopitOption';
 import Popit from './Popit.vue';
 import type PopitData from './PopitData';
 import { usePopitStore } from '@/stores/PopitStore';
+import Hint from './Hint.vue';
 
 const uicontainer = useTemplateRef("uicontainer");
 
@@ -117,6 +118,9 @@ function popitButtonClicked() {
   <div ref="uicontainer" id="uicontainer" class="uicontainer" :style="[
     style
   ]">
+    <div style="width: 500px; height: 50px; justify-self: center;">
+      <Hint :game="game"></Hint>
+    </div>
     <div style="width: 200px; height: 600px;" v-if="props.draw">
       <PlayerPanel :game="game"></PlayerPanel>
     </div>

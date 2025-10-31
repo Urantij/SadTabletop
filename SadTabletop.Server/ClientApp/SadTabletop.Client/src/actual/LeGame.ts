@@ -14,6 +14,7 @@ import type Player from "./things/Player";
 import HandsSystem from "./things/concrete/Hands/HandsSystem";
 import DragSystem from "./things/concrete/Drag/DragSystem";
 import PlayableSystem from "./things/concrete/Playable/PlayableSystem";
+import HintsSystem from "./things/concrete/Hints/HintsSystem";
 
 type LeGameEvents = {
   Clearing: () => void;
@@ -31,6 +32,8 @@ export default class LeGame {
 
   public readonly hands: HandsSystem = new HandsSystem(this.table, this.bench);
   public readonly playable: PlayableSystem = new PlayableSystem(this.table, this.bench);
+
+  public readonly hints: HintsSystem = new HintsSystem(this);
 
   public readonly drags: DragSystem = new DragSystem(this);
 
@@ -58,6 +61,7 @@ export default class LeGame {
     this.playersContainer.subscribeToConnection(connection);
     this.hands.subscribeToConnection(connection);
     this.playable.subscribeToConnection(connection);
+    this.hints.subscribeToConnection(connection);
     this.drags.subscribeToConnection(connection);
   }
 
