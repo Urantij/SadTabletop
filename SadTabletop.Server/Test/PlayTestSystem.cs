@@ -6,6 +6,7 @@ using SadTabletop.Shared.MoreSystems.Hands;
 using SadTabletop.Shared.MoreSystems.Hints;
 using SadTabletop.Shared.Systems.Clicks;
 using SadTabletop.Shared.Systems.Seats;
+using SadTabletop.Shared.Systems.Table;
 
 namespace SadTabletop.Server.Test;
 
@@ -42,6 +43,7 @@ public class PlayTestSystem : SystemBase
         _play.MakePlayable(clipCard, seat, item => { _cards.Flip((Card)item); }, cardToFlip);
 
         Card clickCard = _cards.Create(500, 500, 4, 22, Flipness.Shown);
+        Game.GetSystem<TableSystem>().ChangeDescription(clickCard, "НАЖМИ МЕНЯ ПЖ");
         _clicks.AddClick(clickCard, seat, click =>
         {
             _cards.Flip(clickCard);

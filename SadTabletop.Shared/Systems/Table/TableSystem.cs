@@ -1,6 +1,7 @@
 using SadTabletop.Shared.Systems.Communication;
 using SadTabletop.Shared.Systems.Entities;
 using SadTabletop.Shared.Systems.Table.Messages;
+using SadTabletop.Shared.Systems.Table.Messages.Server;
 
 namespace SadTabletop.Shared.Systems.Table;
 
@@ -10,6 +11,14 @@ public class TableSystem : EntitiesSystem<TableItem>
 
     public TableSystem(Game game) : base(game)
     {
+    }
+
+    public void ChangeDescription(TableItem item, string? newDescription)
+    {
+        item.Description = newDescription;
+
+        DescriptionChangedMessage message = new(item, newDescription);
+        _communication.SendEntityRelated(message, item);
     }
 
     public void MoveItem(TableItem item, float x, float y)

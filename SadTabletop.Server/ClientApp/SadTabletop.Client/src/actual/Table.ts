@@ -6,11 +6,13 @@ import DeckSystem from "./things/concrete/Decks/DecksSystem";
 import CardsSystem from "./things/concrete/Cards/CardsSystem";
 import type ItemMovedMessage from "@/communication/messages/server/ItemMovedMessage";
 import ClicksSystem from "./things/concrete/Clicks/ClicksSystem";
+import type DescriptionChangedMessage from "@/communication/messages/server/DescriptionChangedMessage";
 
 type TableEvents = {
   ItemAdded: (item: TableItem, data: object | null) => void;
   ItemRemoved: (item: TableItem) => void;
   ItemMoved: (item: TableItem, oldX: number, oldY: number) => void;
+  DescriptionChanged: (item: TableItem, old: string | null) => void;
 }
 
 /**
@@ -28,6 +30,7 @@ export default class Table {
 
   subscribeToConnection(connection: Connection) {
     connection.registerForMessage<ItemMovedMessage>("ItemMovedMessage", msg => this.itemMoved(msg));
+    connection.registerForMessage<DescriptionChangedMessage>("DescriptionChangedMessage", msg => this.descriptionChanged(msg));
 
     this.cards.subscribeToConnection(connection);
     this.decks.subscribeToConnection(connection);
@@ -111,5 +114,20 @@ export default class Table {
 
   private itemMoved(msg: ItemMovedMessage): void {
     this.moveItem(msg.item, msg.x, msg.y);
+  }
+
+  private descriptionChanged(msg: DescriptionChangedMessage): void {
+    const item = this.items.find(i => i.id === msg.item);
+
+    if (item === undefined) {
+      console.warn(`descriptionChanged ентити не был найден. ${msg.item}`);
+      return;
+    }
+
+    const old = item.description;
+
+    item.description = msg.description;
+
+    this.events.emit("DescriptionChanged", item, old);
   }
 }

@@ -4,13 +4,16 @@ import Renderer from '@/actual/render/Renderer';
 import connectionInstance from '@/communication/ConnectionDva';
 import type ChangeNameMessage from '@/communication/messages/client/ChangeNameMessage';
 import type MoveCursorMessage from '@/communication/messages/client/MoveCursorMessage';
+import type HintData from '@/components/HintData';
 import UiContainer from '@/components/UiContainer.vue';
+import { usePopitStore } from '@/stores/PopitStore';
 import { useUserStore } from '@/stores/UserStore';
-import { onMounted, ref, useTemplateRef } from 'vue';
+import { onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
 
 const uicontainer = useTemplateRef("uicontainer");
 
 const userStore = useUserStore();
+const popitStore = usePopitStore();
 
 const divId = "taskete";
 
@@ -53,6 +56,7 @@ renderer.events.on("CursorMoved", (pos) => {
   lastCursorPos = new Phaser.Math.Vector2(Math.round(pos.x), Math.round(pos.y));
 });
 
+let hoverHint: HintData | null = null;
 onMounted(async () => {
 
   {
@@ -64,7 +68,23 @@ onMounted(async () => {
 
   connection.events.once("MeJoined", () => {
     draw.value = true;
-    renderer.initAsync();
+    renderer.initAsync().then(() => {
+      renderer.scene!.myEvents.on("DescriptionRequired", (obj) => {
+        if (hoverHint !== null) {
+          popitStore.removeHint(hoverHint);
+          hoverHint = null; // просто так
+        }
+
+        hoverHint = popitStore.addHint(obj.gameObject.description!);
+      });
+      renderer.scene!.myEvents.on("DescriptionNotNeeded", (obj) => {
+        if (hoverHint === null)
+          return;
+
+        popitStore.removeHint(hoverHint);
+        hoverHint = null;
+      });
+    });
 
     // TODO кабуиабы моджно найти место получше
     setInterval(() => {
@@ -87,7 +107,33 @@ onMounted(async () => {
 
   console.log(`стартуем конекшен...`);
   connection.start();
+
+  leGame.hints.events.on("NewHint", hintChanged, this);
+  leGame.events.on("Clearing", clearing, this);
 });
+
+onUnmounted(() => {
+  leGame.hints.events.off("NewHint", hintChanged, this);
+  leGame.events.off("Clearing", clearing, this);
+});
+
+let seatHint: HintData | null = null;
+function hintChanged(hint: string | null) {
+  let newHintData: HintData | null = null;
+  if (hint !== null) {
+    newHintData = popitStore.addHint(hint);
+  }
+
+  if (seatHint !== null) {
+    popitStore.removeHint(seatHint);
+  }
+
+  seatHint = newHintData;
+}
+
+function clearing() {
+  popitStore.hints.splice(0);
+}
 
 </script>
 

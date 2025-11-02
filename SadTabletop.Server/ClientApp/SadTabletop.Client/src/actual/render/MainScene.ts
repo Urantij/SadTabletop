@@ -32,6 +32,8 @@ import type ClickComponent from "../things/concrete/Clicks/ClickComponent";
 
 type MainSceneEvents = {
   ObjectCreated: (obj: RenderObjectRepresentation) => void;
+  DescriptionRequired: (obj: RenderObjectRepresentation) => void;
+  DescriptionNotNeeded: (obj: RenderObjectRepresentation) => void;
 }
 
 export const cursorMovedInTheWorldName = "CursorMovedInTheWorld";
@@ -543,6 +545,63 @@ export default class MainScene extends BaseScene {
         this.leGame.playable.play(cardObj.gameObject, ourBoy.gameObject);
       });
     }
+
+    {
+      let currentDescriptionObject: RenderObjectRepresentation | null = null;
+
+      this.input.on("pointermove", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
+
+        const targets = currentlyOver.map(co => co.getData(ContainerObjectDataKey) as RenderObjectRepresentation | undefined)
+          .filter(co => co !== undefined && co.gameObject.description !== null);
+
+        if (currentDescriptionObject !== null) {
+          if (targets.includes(currentDescriptionObject))
+            return;
+
+          this.myEvents.emit("DescriptionNotNeeded", currentDescriptionObject);
+          currentDescriptionObject = null;
+        }
+
+        if (targets.length !== 1)
+          return;
+
+        currentDescriptionObject = targets[0] as RenderObjectRepresentation;
+
+        this.myEvents.emit("DescriptionRequired", currentDescriptionObject);
+      });
+    }
+    // Таймер описаний
+    // это если выводить на экране после задержки. пока передумау так делать (впадлу)
+    // {
+    //   const timerWaitTime = 200;
+    //   let currentTimer: number | null = null;
+    //   let currentDescriptionObject: RenderObjectRepresentation | null = null;
+
+    //   this.input.on("pointermove", (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
+
+    //     if (currentTimer !== null) {
+    //       clearTimeout(currentTimer);
+    //     }
+
+    //     if (currentDescriptionObject !== null) {
+    //       this.myEvents.emit("DescriptionNotNeeded", currentDescriptionObject);
+    //       currentDescriptionObject = null;
+    //     }
+
+    //     currentTimer = setTimeout(() => {
+
+    //       const targets = currentlyOver.map(co => co.getData(ContainerObjectDataKey) as RenderObjectRepresentation | undefined)
+    //         .filter(co => co !== undefined && co.gameObject.description !== null);
+
+    //       if (targets.length !== 1)
+    //         return;
+
+    //       currentDescriptionObject = targets[0] as RenderObjectRepresentation;
+
+    //       this.myEvents.emit("DescriptionRequired", currentDescriptionObject);
+    //     }, timerWaitTime);
+    //   });
+    // }
 
     this.scene.launch(this.hander, this.leGame);
   }

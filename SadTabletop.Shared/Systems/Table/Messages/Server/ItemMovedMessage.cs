@@ -1,6 +1,6 @@
 using SadTabletop.Shared.Systems.Communication;
 
-namespace SadTabletop.Shared.Systems.Table.Messages;
+namespace SadTabletop.Shared.Systems.Table.Messages.Server;
 
 public class ItemMovedMessage(TableItem item, float x, float y) : ServerMessageBase
 {

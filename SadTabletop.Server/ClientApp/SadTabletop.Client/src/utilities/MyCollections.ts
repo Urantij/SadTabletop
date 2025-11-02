@@ -11,7 +11,6 @@ export function removeItemFromCollection<T>(array: Array<T>, item: T): boolean {
   return true;
 }
 
-
 export function removeFromCollection<T>(array: Array<T>, predicate: (t: T) => boolean): T | undefined {
 
   const index = array.findIndex(predicate);
