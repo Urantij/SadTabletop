@@ -29,6 +29,10 @@ import Sizes from "./Sizes";
 import Control from "./Control";
 import SelectionGlowManager from "./SelectionGlowManager";
 import type ClickComponent from "../things/concrete/Clicks/ClickComponent";
+import type MySprite from "../things/concrete/Sprites/MySprite";
+import MySpriteObject from "./objects/MySpriteObject";
+import type MyTileSprite from "../things/concrete/Sprites/MyTileSprite";
+import MyTileSpriteObject from "./objects/MyTileSpriteObject";
 
 type MainSceneEvents = {
   ObjectCreated: (obj: RenderObjectRepresentation) => void;
@@ -753,6 +757,18 @@ export default class MainScene extends BaseScene {
 
   createCircleShape(shape: CircleShape) {
     const obj = CircleShapeObject.create(shape, this);
+    this.objects.push(obj);
+    this.myEvents.emit("ObjectCreated", obj);
+  }
+
+  createMySprite(data: MySprite) {
+    const obj = MySpriteObject.create(data, this);
+    this.objects.push(obj);
+    this.myEvents.emit("ObjectCreated", obj);
+  }
+
+  createMyTileSprite(data: MyTileSprite) {
+    const obj = MyTileSpriteObject.create(data, this);
     this.objects.push(obj);
     this.myEvents.emit("ObjectCreated", obj);
   }

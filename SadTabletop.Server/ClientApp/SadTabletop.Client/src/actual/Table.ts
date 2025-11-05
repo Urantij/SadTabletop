@@ -42,7 +42,7 @@ export default class Table {
   }
 
   isTableEntityByType(type: string) {
-    return ["Card", "Dice", "Deck", "TextItem", "RectShape", "CircleShape"].includes(type);
+    return ["Card", "Dice", "Deck", "TextItem", "RectShape", "CircleShape", "MySprite", "MyTileSprite"].includes(type);
   }
 
   /**

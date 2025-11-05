@@ -8,13 +8,21 @@ public class AssetsSystem : EntitiesSystem<AssetInfo>
     {
     }
 
-    public void AddCardAsset(int num, string url)
+    public AssetInfo AddCardAsset(int num, string url)
     {
-        this.AddEntity(new AssetInfo($"card{num}", url));
+        AssetInfo assetInfo = new AssetInfo($"card{num}", url);
+
+        this.AddEntity(assetInfo);
+
+        return assetInfo;
     }
 
-    public void AddAsset(string name, string url)
+    public AssetInfo AddAsset(string name, string url)
     {
-        this.AddEntity(new AssetInfo(name, url));
+        AssetInfo assetInfo = new AssetInfo(name, url);
+
+        this.AddEntity(assetInfo);
+
+        return assetInfo;
     }
 }

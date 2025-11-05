@@ -4,6 +4,7 @@ using SadTabletop.Shared.Mechanics;
 using SadTabletop.Shared.MoreSystems.Cards;
 using SadTabletop.Shared.MoreSystems.Hands;
 using SadTabletop.Shared.MoreSystems.Shapes;
+using SadTabletop.Shared.MoreSystems.Sprites;
 using SadTabletop.Shared.MoreSystems.Texts;
 using SadTabletop.Shared.Systems.Assets;
 using SadTabletop.Shared.Systems.Clicks;
@@ -43,12 +44,16 @@ public class TestSystem : SystemBase
         // seats.AddSeat();
         // seats.AddSeat();
 
-        this.Game.GetSystem<ShapesSystem>().AddCircle(0, 0, 500, 0x000033);
+        // this.Game.GetSystem<ShapesSystem>().AddCircle(0, 0, 500, 0x000033);
         seats.CreateRoundSeats(3, 0, 0, 500);
 
         var assets = this.Game.GetSystem<AssetsSystem>();
         assets.AddCardAsset(4, "card4.png");
         assets.AddCardAsset(7, "card7.png");
+
+        var wood = assets.AddAsset("wood", "wood.png");
+
+        this.Game.GetSystem<SpritesSystem>().CreateTileSprite(wood, 0, 0, 1000, 1000);
 
         var cards = Game.GetSystem<CardsSystem>();
 

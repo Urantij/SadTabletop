@@ -10,6 +10,8 @@ import type RenderObjectRepresentation from "./RenderObjectRepresentation";
 import type TableItem from "../things/TableItem";
 import type RectShape from "../things/concrete/Shapes/RectShape";
 import type CircleShape from "../things/concrete/Shapes/CircleShape";
+import type MySprite from "../things/concrete/Sprites/MySprite";
+import type MyTileSprite from "../things/concrete/Sprites/MyTileSprite";
 
 type RendererEvents = {
   ClickyClicked: (entity: TableItem) => void;
@@ -179,6 +181,12 @@ export default class Renderer {
     }
     else if (entity.type === "CircleShape") {
       this.scene.createCircleShape(entity as CircleShape)
+    }
+    else if (entity.type === "MySprite") {
+      this.scene.createMySprite(entity as MySprite)
+    }
+    else if (entity.type === "MyTileSprite") {
+      this.scene.createMyTileSprite(entity as MyTileSprite)
     }
     else {
       console.log(`Непонятная ентити в мире ${entity.type}`);
