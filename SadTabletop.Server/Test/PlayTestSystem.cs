@@ -4,6 +4,8 @@ using SadTabletop.Shared.Mechanics;
 using SadTabletop.Shared.MoreSystems.Cards;
 using SadTabletop.Shared.MoreSystems.Hands;
 using SadTabletop.Shared.MoreSystems.Hints;
+using SadTabletop.Shared.MoreSystems.Settings;
+using SadTabletop.Shared.MoreSystems.Settings.Variants;
 using SadTabletop.Shared.Systems.Clicks;
 using SadTabletop.Shared.Systems.Seats;
 using SadTabletop.Shared.Systems.Table;
@@ -42,6 +44,8 @@ public class PlayTestSystem : SystemBase
         _hands.AddToHand(clipCard, seat);
         _play.MakePlayable(clipCard, seat, item => { _cards.Flip((Card)item); }, cardToFlip);
 
+        CameraBoundSetting? setting = null;
+
         Card clickCard = _cards.Create(500, 500, 4, 22, Flipness.Shown);
         Game.GetSystem<TableSystem>().ChangeDescription(clickCard, "НАЖМИ МЕНЯ ПЖ");
         _clicks.AddClick(clickCard, seat, click =>
@@ -59,6 +63,16 @@ public class PlayTestSystem : SystemBase
             }
 
             _hints.GiveHint(seat, hint);
+
+            if (setting == null)
+            {
+                setting = Game.GetSystem<SettingsSystem>().SetCameraBounds(0, 0, 2000, 1000);
+            }
+            else
+            {
+                Game.GetSystem<SettingsSystem>().RemoveCameraBounds();
+                setting = null;
+            }
         }, false);
     }
 }

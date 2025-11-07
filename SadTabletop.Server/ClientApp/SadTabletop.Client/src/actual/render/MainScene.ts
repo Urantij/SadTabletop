@@ -33,6 +33,7 @@ import type MySprite from "../things/concrete/Sprites/MySprite";
 import MySpriteObject from "./objects/MySpriteObject";
 import type MyTileSprite from "../things/concrete/Sprites/MyTileSprite";
 import MyTileSpriteObject from "./objects/MyTileSpriteObject";
+import type CameraBoundSetting from "../things/concrete/Settings/Variants/CameraBoundSetting";
 
 type MainSceneEvents = {
   ObjectCreated: (obj: RenderObjectRepresentation) => void;
@@ -117,6 +118,26 @@ export default class MainScene extends BaseScene {
     this.hander.events.once("READY)))", () => {
       this.events.emit("READY)))");
     });
+
+    // даже не знаю, нахуй или нет
+    {
+      const cameraBound = this.leGame.settings.findSetting<CameraBoundSetting>("CameraBoundSetting");
+      setBounds(this, cameraBound);
+      this.leGame.settings.events.on("CameraBoundChanged", (setting) => {
+        setBounds(this, setting);
+      });
+
+      function setBounds(scene: MainScene, setting: CameraBoundSetting | undefined) {
+        if (setting === undefined) {
+          scene.cameras.main.removeBounds();
+          console.log("Убираем баунды");
+        }
+        else {
+          scene.cameras.main.setBounds(setting.x, setting.y, setting.width, setting.height);
+          console.log("Ставим баунды");
+        }
+      }
+    }
 
     // как всегда, нахуй отсюда TODO
     {

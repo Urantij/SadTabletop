@@ -15,6 +15,7 @@ import HandsSystem from "./things/concrete/Hands/HandsSystem";
 import DragSystem from "./things/concrete/Drag/DragSystem";
 import PlayableSystem from "./things/concrete/Playable/PlayableSystem";
 import HintsSystem from "./things/concrete/Hints/HintsSystem";
+import SettingsSystem from "./things/concrete/Settings/SettingsSystem";
 
 type LeGameEvents = {
   Clearing: () => void;
@@ -29,6 +30,7 @@ export default class LeGame {
 
   public readonly table: Table = new Table();
   public readonly bench: Bench = new Bench();
+  public readonly settings: SettingsSystem = new SettingsSystem();
 
   public readonly hands: HandsSystem = new HandsSystem(this.table, this.bench);
   public readonly playable: PlayableSystem = new PlayableSystem(this.table, this.bench);
@@ -87,6 +89,9 @@ export default class LeGame {
         this.table.preAddItem(entity as TableItem);
         itemsToAnnounce.push(entity as TableItem);
       }
+      else if (this.settings.isSetting(entity.type)) {
+        this.settings.addSetting(entity);
+      }
     }
 
     for (const player of data.players) {
@@ -113,11 +118,17 @@ export default class LeGame {
     if (this.table.isTableEntityByType(data.entity.type)) {
       this.table.addItem(data.entity as TableItem, null);
     }
+    else if (this.settings.isSetting(data.entity.type)) {
+      this.settings.addSetting(data.entity);
+    }
   }
 
   private entityRemoved(data: EntityRemovedMessage): void {
     if (this.table.isTableEntityByType(data.entity.type)) {
       this.table.removeItem(data.entity.id);
+    }
+    else if (this.settings.isSetting(data.entity.type)) {
+      this.settings.removeSetting(data.entity.id, data.entity.type);
     }
   }
 
