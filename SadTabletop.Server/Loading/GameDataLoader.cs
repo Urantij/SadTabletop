@@ -29,6 +29,6 @@ public class GameDataLoader
             .Append(game => new PlayTestSystem(game))
             .ToArray();
 
-        return GameCreator.CreateBaseGame(systemsFactories);
+        return GameCreator.CreateBaseGame(new GameSetup(3, []), systemsFactories);
     }
 }

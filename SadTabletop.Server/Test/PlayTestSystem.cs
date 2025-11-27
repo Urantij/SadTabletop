@@ -66,7 +66,7 @@ public class PlayTestSystem : SystemBase
 
             if (setting == null)
             {
-                setting = Game.GetSystem<SettingsSystem>().SetCameraBounds(0, 0, 2000, 1000);
+                setting = Game.GetSystem<SettingsSystem>().SetCameraBounds(-1000, -500, 2000, 1000);
             }
             else
             {

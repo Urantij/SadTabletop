@@ -29,9 +29,9 @@ namespace SadTabletop.Shared;
 
 public static class GameCreator
 {
-    public static Game CreateBaseGame(IEnumerable<Func<Game, SystemBase>> factories)
+    public static Game CreateBaseGame(GameSetup setup, IEnumerable<Func<Game, SystemBase>> factories)
     {
-        Game game = new();
+        Game game = new(setup);
 
         game.Systems.Add(new CommunicationSystem(game));
         game.Systems.Add(new EventsSystem(game));

@@ -5,8 +5,10 @@ namespace SadTabletop.Shared;
 /// <summary>
 /// Основной класс игры, содержит в себе ссылки на все системы
 /// </summary>
-public class Game
+public class Game(GameSetup setup)
 {
+    public GameSetup Setup { get; } = setup;
+
     public List<SystemBase> Systems { get; } = [];
 
     // TODO сериализовать
