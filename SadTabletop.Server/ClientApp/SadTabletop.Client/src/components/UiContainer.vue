@@ -127,12 +127,17 @@ function popitButtonClicked() {
     <button style="pointer-events: auto; width: 100px; height: 100px;" @click="(ev) => settingsClicked()">O</button>
     <button v-if="showPopitButton" style="pointer-events: auto; width: 100px; height: 100px;"
       @click="(ev) => popitButtonClicked()">P</button>
-    <Popit v-if="currentPopit !== null" style="position: absolute; top: 300px; left: 300px" :width="500" :height="300"
-      :data="currentPopit" @close-me="popitWantsClose()" @hide-me="popitWantsHide()"
+    <Popit v-if="currentPopit !== null" :style="[
+      {
+        position: 'absolute', top: '300px', left: '500px', width: '500px', height: '500px'
+      }]" :data="currentPopit" @close-me="popitWantsClose()" @hide-me="popitWantsHide()"
       @option-clicked="(option) => popitChoseOption(option)">
     </Popit>
-    <SettingsPanel style="position: absolute; top: 100px; left: 100px;" v-if="showSettings" :width="500" :height="400"
-      @close-me="() => showSettings = false">
+    <SettingsPanel :style="[
+      {
+        position: 'absolute', top: '100px', left: '100px', width: '500px', height: '400px'
+      }
+    ]" v-if="showSettings" @close-me="() => showSettings = false">
     </SettingsPanel>
   </div>
 </template>

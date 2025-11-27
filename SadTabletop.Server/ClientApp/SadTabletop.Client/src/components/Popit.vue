@@ -1,10 +1,9 @@
 <script setup lang="ts">
+import DumbWindow from './DumbWindow.vue';
 import type PopitData from './PopitData';
 import type PopitOption from './PopitOption';
 
 const props = defineProps<{
-  width: number,
-  height: number,
   data: PopitData
 }>();
 
@@ -29,25 +28,10 @@ function optionClicked(option: PopitOption) {
 </script>
 
 <template>
-
-  <div :style="[
-    {
-      width: `${props.width}px`,
-      height: `${props.height}px`,
-      pointerEvents: 'auto',
-      backgroundColor: 'darkcyan'
-    }
-  ]">
-    <div>
-      <span>{{ props.data.title }}</span>
-      <button @click="hideClicked()" v-if="props.data.canHide">_</button>
-      <button @click="closeClicked()" v-if="props.data.canClose">X</button>
-    </div>
-
+  <DumbWindow :can-hide="props.data.canHide" :can-close="props.data.canClose" :title="props.data.title"
+    v-on:close-me="closeClicked()" v-on:hide-me="hideClicked()">
     <div v-for="option in props.data.options">
       <button @click="() => optionClicked(option)">{{ option.title }}</button>
     </div>
-
-  </div>
-
+  </DumbWindow>
 </template>

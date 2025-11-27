@@ -1,17 +1,13 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores/UserStore';
 import { ref, useTemplateRef } from 'vue';
+import DumbWindow from './DumbWindow.vue';
 
 const userStore = useUserStore();
 
 const name = ref(userStore.name);
 
 const nameInput = useTemplateRef("nameInput");
-
-const props = defineProps<{
-  width: number,
-  height: number,
-}>();
 
 const emits = defineEmits<{
   "CloseMe": []
@@ -31,15 +27,11 @@ function changeNameClicked() {
 </script>
 
 <template>
-  <div :style="[
+  <DumbWindow :style="[
     {
-      width: `${props.width}px`,
-      height: `${props.height}px`,
-      pointerEvents: 'auto',
       backgroundColor: 'darkgray'
     }
-  ]">
-    <span>Настройки</span>
+  ]" :title="'Настройки'" :can-hide="false" :can-close="true" v-on:close-me="closeClicked()">
     <button style="pointer-events: auto;" v-on:click="() => closeClicked()">X</button>
     <div>
       <span>Name:</span>
@@ -50,5 +42,5 @@ function changeNameClicked() {
       <span>лангуае</span>
       <input>рофлан ебало</input>
     </div>
-  </div>
+  </DumbWindow>
 </template>
