@@ -51,7 +51,8 @@ JsonSerializerOptions options = new()
         new AppServerMessageConverter(),
         new GameServerMessageConverter(),
         new SystemConverter(gr),
-        new EntityConverter(gr)
+        new EntityConverter(gr),
+        new CardFaceConverter(),
     }
 };
 

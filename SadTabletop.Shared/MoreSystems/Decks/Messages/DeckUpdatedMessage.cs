@@ -1,21 +1,20 @@
+using SadTabletop.Shared.MoreSystems.Cards;
 using SadTabletop.Shared.Systems.Communication;
 
 namespace SadTabletop.Shared.MoreSystems.Decks.Messages;
 
 public class DeckUpdatedMessage(
     Deck deck,
-    int? backSide,
-    int? frontSide,
+    CardFaceComplicated? side,
     int cardsCount,
     IReadOnlyCollection<DeckCardInfo>? cards,
     bool? orderKnown) : ServerMessageBase
 {
     public Deck Deck { get; } = deck;
 
-    public int? BackSide { get; } = backSide;
-    public int? FrontSide { get; } = frontSide;
+    public CardFaceComplicated? Side { get; } = side;
 
-    // В теории можно не отправлять, если есть коллекция, но фиг с ним.
+    // TODO В теории можно не отправлять, если есть коллекция, но фиг с ним.
     public int CardsCount { get; } = cardsCount;
 
     /// <summary>

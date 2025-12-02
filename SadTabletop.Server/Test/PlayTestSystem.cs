@@ -34,19 +34,23 @@ public class PlayTestSystem : SystemBase
 
         Seat seat = _seats.EnumerateRealSeats().First();
 
-        Card cardToFlip = _cards.Create(-500, 500, 4, 22, Flipness.Shown);
+        Card cardToFlip = _cards.Create(-500, 500, CardFaceComplicated.CreateSimple(4),
+            CardFaceComplicated.CreateSimple(22), Flipness.Shown);
 
-        Card selfClipCard = _cards.Create(0, 0, 4, 22, Flipness.Shown, false);
+        Card selfClipCard = _cards.Create(0, 0, CardFaceComplicated.CreateSimple(4),
+            CardFaceComplicated.CreateSimple(22), Flipness.Shown, sendRelatedMessage: false);
         _hands.AddToHand(selfClipCard, seat);
         _play.MakePlayable(selfClipCard, seat, item => { _cards.Flip(selfClipCard); });
 
-        Card clipCard = _cards.Create(0, 0, 7, 22, Flipness.Shown, false);
+        Card clipCard = _cards.Create(0, 0, CardFaceComplicated.CreateSimple(7), CardFaceComplicated.CreateSimple(22),
+            Flipness.Shown, sendRelatedMessage: false);
         _hands.AddToHand(clipCard, seat);
         _play.MakePlayable(clipCard, seat, item => { _cards.Flip((Card)item); }, cardToFlip);
 
         CameraBoundSetting? setting = null;
 
-        Card clickCard = _cards.Create(500, 500, 4, 22, Flipness.Shown);
+        Card clickCard = _cards.Create(500, 500, CardFaceComplicated.CreateSimple(4),
+            CardFaceComplicated.CreateSimple(22), Flipness.Shown);
         Game.GetSystem<TableSystem>().ChangeDescription(clickCard, "НАЖМИ МЕНЯ ПЖ");
         _clicks.AddClick(clickCard, seat, click =>
         {

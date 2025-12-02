@@ -74,6 +74,15 @@ public abstract class EntitiesSystem<T> : EntitiesSystem
         return List.FirstOrDefault(e => e.Id == id);
     }
 
+    /// <summary>
+    /// Мы не несём ответственности за возможный рассинхрон в случае наличия модели этого объекта на клиенте.
+    /// </summary>
+    /// <param name="entity"></param>
+    internal void ChangeEntityId(T entity)
+    {
+        entity.SetId(GenerateId());
+    }
+
     public override IEnumerable<EntityBase> EnumerateRawEntities()
     {
         return List;

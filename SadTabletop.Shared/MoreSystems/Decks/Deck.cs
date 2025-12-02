@@ -13,19 +13,16 @@ namespace SadTabletop.Shared.MoreSystems.Decks;
 /// Так что когда карта кладётся в колоду, её ентити уничтожается. И когда достаётся из колоды, создаётся.
 /// </summary>
 public class Deck(
-    List<DeckCardInfo> cards,
+    List<Card> cards,
     Spisok<Seat?>? orderedContentViewers = null,
     Spisok<Seat?>? contentViewers = null) : TableItem, ILimitable
 {
-    public int? BackSide { get; internal set; }
-    public int? FrontSide { get; internal set; }
-
     public Flipness Flipness { get; internal set; }
 
     /// <summary>
     /// В коллекции карты лежат так, что 0 показывает лицо, а последняя рубашку
     /// </summary>
-    public List<DeckCardInfo> Cards { get; } = cards;
+    public List<Card> Cards { get; } = cards;
 
     /// <summary>
     /// Те, кто могут видеть все карты в колоде в правильном порядке.
@@ -38,26 +35,56 @@ public class Deck(
     public Spisok<Seat?>? ContentViewers { get; } = contentViewers;
 
     /// <summary>
-    /// Возвращает рубашку и лицо колоды, основываясь на текущем наборе карт.
+    /// Карта, которую сейчас видно в деке
     /// </summary>
     /// <returns></returns>
-    public (int back, int front)? CalculateSides()
+    public Card? GetDisplayedCard()
     {
         if (Cards.Count == 0)
             return null;
 
-        return (Cards.Last().BackSide, Cards.First().FrontSide);
+        if (Flipness == Flipness.Shown)
+        {
+            return Cards.First();
+        }
+        else if (Flipness == Flipness.Hidden)
+        {
+            return Cards.Last();
+        }
+        else
+        {
+            throw new Exception($"че блять {nameof(GetDisplayedCard)}");
+        }
     }
+
+    // /// <summary>
+    // /// Возвращает рубашку и лицо колоды, основываясь на текущем наборе карт.
+    // /// </summary>
+    // /// <returns></returns>
+    // public (CardFaceComplicated back, CardFaceComplicated front)? CalculateSides()
+    // {
+    //     if (Cards.Count == 0)
+    //         return null;
+    //
+    //     return (Cards.Last().BackSide, Cards.First().FrontSide);
+    // }
 }
 
-public class DeckDto(Deck deck, int? frontSide, int cardsCount, IReadOnlyCollection<DeckCardInfo>? cards) : TableItemDto(deck)
+public class DeckDto(
+    Deck deck,
+    CardFaceComplicated? side,
+    IReadOnlyCollection<DeckCardInfo>? cards)
+    : TableItemDto(deck)
 {
-    public int? BackSide { get; } = deck.BackSide;
-    public int? FrontSide { get; } = frontSide;
+    /// <summary>
+    /// Если ты знаешь лицо деки, это не значит, что ты знаешь её рубашку. Поэтому даём информацию только о том, что мы видим.
+    /// У карты же если ты знаешь лицо, то ты знаешь и рубашку.
+    /// </summary>
+    public CardFaceComplicated? Side { get; } = side;
 
     public Flipness Flipness { get; } = deck.Flipness;
 
-    public int CardsCount { get; } = cardsCount;
+    public int CardsCount { get; } = deck.Cards.Count;
     public IReadOnlyCollection<DeckCardInfo>? Cards { get; } = cards;
 
     public override Type WhatIsMyType() => typeof(Deck);

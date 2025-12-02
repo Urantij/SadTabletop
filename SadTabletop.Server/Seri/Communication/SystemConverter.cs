@@ -21,7 +21,7 @@ public class SystemConverter : JsonConverter<SystemBase>
 
     public override void Write(Utf8JsonWriter writer, SystemBase value, JsonSerializerOptions options)
     {
-        string writeValue = JsonSerializer.Serialize(_resolver.GetSystemName(value));
+        string writeValue = JsonSerializer.Serialize(_resolver.GetSystemName(value), options);
 
         writer.WriteRawValue(writeValue, true);
     }

@@ -59,8 +59,12 @@ public class TestSystem : SystemBase
 
         foreach (Seat seat in seats.EnumerateRealSeats().Skip(1))
         {
-            hands.AddToHand(cards.Create(0, 0, 4, 22, Flipness.Shown, false), seat);
-            hands.AddToHand(cards.Create(0, 0, 7, 22, Flipness.Shown, false), seat);
+            hands.AddToHand(
+                cards.Create(0, 0, CardFaceComplicated.CreateSimple(4), CardFaceComplicated.CreateSimple(22),
+                    Flipness.Shown, sendRelatedMessage: false), seat);
+            hands.AddToHand(
+                cards.Create(0, 0, CardFaceComplicated.CreateSimple(7), CardFaceComplicated.CreateSimple(22),
+                    Flipness.Shown, sendRelatedMessage: false), seat);
         }
 
         // movingCard = cards.Create(-200, -70, 4, 77, Flipness.Shown);
@@ -90,7 +94,8 @@ public class TestSystem : SystemBase
     {
         var cards = Game.GetSystem<CardsSystem>();
 
-        return cards.Create(x, y, side, 77, Flipness.Shown);
+        return cards.Create(x, y, CardFaceComplicated.CreateSimple(side), CardFaceComplicated.CreateSimple(77),
+            Flipness.Shown);
     }
 
     private void MoveExecution()
@@ -101,7 +106,7 @@ public class TestSystem : SystemBase
             movedTimes = 0;
         }
 
-        if (movingCard.X == -200)
+        if ((int)movingCard.X == -200)
         {
             _table.MoveItem(movingCard, 200, -70);
         }

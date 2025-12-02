@@ -46,7 +46,8 @@ public class CardsSystem : SystemBase
         _viewer.RegisterEntity<Card>(TransformCard);
     }
 
-    public Card Create(float x, float y, int frontSide, int backSide, Flipness flipness, bool sendRelatedMessage = true)
+    public Card Create(float x, float y, CardFaceComplicated frontSide, CardFaceComplicated backSide,
+        Flipness flipness, bool sendRelatedMessage = true)
     {
         Card card = new(backSide, frontSide)
         {
@@ -72,7 +73,7 @@ public class CardsSystem : SystemBase
         {
             foreach (Seat? seat in _seats.EnumerateAllSeats())
             {
-                int? front = _limit.IsLimitedFor(card, seat) ? null : card.FrontSide;
+                CardFaceComplicated? front = _limit.IsLimitedFor(card, seat) ? null : card.FrontSide;
 
                 _communication.SendEntityRelated(new CardFlippedMessage(card, front), card, target: seat);
             }
@@ -140,17 +141,8 @@ public class CardsSystem : SystemBase
 
     private CardDto TransformCard(Card card, Seat? seat)
     {
-        int? front;
+        bool revealFront = card.Flipness != Flipness.Hidden && !_limit.IsLimitedFor(card, seat);
 
-        if (card.Flipness == Flipness.Hidden || _limit.IsLimitedFor(card, seat))
-        {
-            front = null;
-        }
-        else
-        {
-            front = card.FrontSide;
-        }
-
-        return new CardDto(card, front);
+        return new CardDto(card, revealFront);
     }
 }

@@ -5,7 +5,7 @@ namespace SadTabletop.Shared.MoreSystems.Cards.Messages.Server;
 /// <summary>
 /// Сообщение, что карта перевернулась.
 /// </summary>
-public class CardFlippedMessage(Card card, int? frontSide) : ServerMessageBase
+public class CardFlippedMessage(Card card, CardFaceComplicated? front) : ServerMessageBase
 {
     /// <summary>
     /// Ентити, которую перевернули.
@@ -15,5 +15,5 @@ public class CardFlippedMessage(Card card, int? frontSide) : ServerMessageBase
     /// <summary>
     /// Информация о лицевой стороне карты, если не была известна.
     /// </summary>
-    public int? FrontSide { get; } = frontSide;
+    public CardFaceComplicated? FrontSide { get; } = front;
 }

@@ -1,7 +1,14 @@
+using SadTabletop.Shared.MoreSystems.Cards;
+
 namespace SadTabletop.Shared.MoreSystems.Decks;
 
-public class DeckCardInfo(int backSide, int frontSide)
+/// <summary>
+/// Представление о карте в деке для клиента.
+/// </summary>
+/// <param name="back"></param>
+/// <param name="front"></param>
+public class DeckCardInfo(CardFaceComplicated back, CardFaceComplicated front)
 {
-    public int BackSide { get; } = backSide;
-    public int FrontSide { get; } = frontSide;
+    public CardFaceComplicated Back { get; } = back;
+    public CardFaceComplicated Front { get; } = front;
 }

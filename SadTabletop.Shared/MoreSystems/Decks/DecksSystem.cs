@@ -49,17 +49,26 @@ public class DecksSystem : SystemBase
         _viewer.RegisterEntity<Deck>(TransformDeck);
     }
 
-    public Deck Create(float x, float y, Flipness flipness, List<DeckCardInfo> cards)
+    /// <summary>
+    /// Создаёт колоду с картами внутри. Принимает инфу о картах, создаёт ентити кард без сообщений, и кладёт их в колоду.
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="flipness"></param>
+    /// <param name="infos"></param>
+    /// <returns></returns>
+    public Deck Create(float x, float y, Flipness flipness, List<DeckCardInfo> infos)
     {
+        List<Card> cards = infos
+            .Select(info => _cards.Create(x, y, info.Front, info.Back, flipness, sendRelatedMessage: false))
+            .ToList();
+
         Deck deck = new(cards)
         {
             Flipness = flipness,
             X = x,
             Y = y,
         };
-        (int back, int front)? sides = deck.CalculateSides();
-        deck.FrontSide = sides?.front;
-        deck.BackSide = sides?.back;
 
         _table.AddEntity(deck);
 
@@ -67,23 +76,19 @@ public class DecksSystem : SystemBase
     }
 
     /// <summary>
-    /// "Кладёт" карту в колоду. Ентити карты при этом уничтожается.
+    /// "Кладёт" карту в колоду. Ентити карты при этом убирается со стола.
     /// </summary>
     /// <param name="deck"></param>
     /// <param name="card"></param>
     /// <param name="way"></param>
     public void PutCard(Deck deck, Card card, DeckWay way)
     {
-        int back = card.BackSide;
-        int front = card.FrontSide;
-
-        int? pastDeckFront = deck.FrontSide;
-        int? pastDeckBack = deck.BackSide;
+        Card? pastDisplayedCard = deck.GetDisplayedCard();
 
         _table.RemoveEntity(card, sendRelatedMessage: false);
-        DeckCardInfo deckCardInfo = AddCardToDeckLocally(deck, front, back, way);
+        int cardDeckIndex = AddCardToDeckLocally(deck, card, way);
 
-        int deckIndex = deck.Cards.IndexOf(deckCardInfo);
+        Card displayedCard = deck.GetDisplayedCard()!;
 
         // TODO много оптимизаций придумать можно
 
@@ -102,6 +107,7 @@ public class DecksSystem : SystemBase
 
             if (!cardVisible && deckVisible)
             {
+                // TODO тут можно поумнее чето придумать
                 DeckUpdatedMessage message = FormUpdateMessage(deck, seat);
 
                 _communication.Send(message, seat);
@@ -116,32 +122,27 @@ public class DecksSystem : SystemBase
             {
                 // все видны
 
-                int? side = null;
-                if (deck.Flipness == Flipness.Shown)
+                // TODO можно сравнивать не сами карты а их рубашки, если не изменилось
+                CardFaceComplicated? side = null;
+                if (pastDisplayedCard != displayedCard)
                 {
-                    if (deck.FrontSide != pastDeckFront && !_limit.IsLimitedFor(deck, seat))
-                    {
-                        side = deck.FrontSide;
-                    }
-                }
-                else
-                {
-                    if (deck.BackSide != pastDeckBack)
-                    {
-                        side = deck.BackSide;
-                    }
+                    side = deck.Flipness == Flipness.Shown ? displayedCard.FrontSide : displayedCard.BackSide;
                 }
 
-                int? cardFront = null;
-                if (card.Flipness == Flipness.Hidden || _limit.IsLimitedFor(card, seat))
+                // Если клиент знает, какие карты в колоде, но не знает, какую карту положили, ему нужно рассказать
+                CardFaceComplicated? cardFront = null;
+                if (deck.ContentViewers?.Included(seat) == true || deck.OrderedContentViewers?.Included(seat) == true)
                 {
-                    cardFront = card.FrontSide;
+                    if (card.Flipness == Flipness.Hidden || _limit.IsLimitedFor(card, seat))
+                    {
+                        cardFront = card.FrontSide;
+                    }
                 }
 
                 int? index = null;
                 if (deck.OrderedContentViewers?.Included(seat) == true)
                 {
-                    index = deckIndex;
+                    index = cardDeckIndex;
                 }
 
                 DeckCardInsertedMessage message = new(deck, card, side, cardFront, index);
@@ -151,29 +152,40 @@ public class DecksSystem : SystemBase
         }
     }
 
-    /// <summary>
-    /// Добавляет карту в колоду без создания ентити карты
-    /// </summary>
-    /// <param name="deck"></param>
-    /// <param name="front"></param>
-    /// <param name="back"></param>
-    /// <param name="way"></param>
-    public void PutNewCard(Deck deck, int front, int back, DeckWay way)
-    {
-        AddCardToDeckLocally(deck, front, back, way);
-
-        foreach (Seat? seat in _seats.EnumerateAllSeats())
-        {
-            DeckUpdatedMessage message = FormUpdateMessage(deck, seat);
-
-            _communication.SendEntityRelated(message, deck);
-        }
-    }
+    // /// <summary>
+    // /// Добавляет карту в колоду без создания ентити карты
+    // /// </summary>
+    // /// <param name="deck"></param>
+    // /// <param name="front"></param>
+    // /// <param name="back"></param>
+    // /// <param name="way"></param>
+    // public void PutNewCard(Deck deck, int front, int back, DeckWay way)
+    // {
+    //     AddCardToDeckLocally(deck, front, back, way);
+    //
+    //     foreach (Seat? seat in _seats.EnumerateAllSeats())
+    //     {
+    //         DeckUpdatedMessage message = FormUpdateMessage(deck, seat);
+    //
+    //         _communication.SendEntityRelated(message, deck);
+    //     }
+    // }
 
     /// <summary>
     /// Достаёт карту с верха колоды.
     /// Если колода пустая, кидает ексепшн.
-    /// Фактически создаёт ентити карты.
+    /// Флипнес карты будет равен флипнесу деки.
+    /// </summary>
+    /// <param name="deck"></param>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <returns></returns>
+    public Card GetCard(Deck deck, float x, float y)
+        => GetCard(deck, x, y, deck.Flipness);
+
+    /// <summary>
+    /// Достаёт карту с верха колоды.
+    /// Если колода пустая, кидает ексепшн.
     /// </summary>
     /// <param name="deck"></param>
     /// <param name="x"></param>
@@ -194,18 +206,17 @@ public class DecksSystem : SystemBase
             deckIndex = deck.Cards.Count - 1;
         }
 
-        int? pastDeckFront = deck.FrontSide;
-        int? pastDeckBack = deck.BackSide;
-
-        DeckCardInfo cardInfo = deck.Cards[deckIndex];
+        Card card = deck.Cards[deckIndex];
         deck.Cards.RemoveAt(deckIndex);
 
-        (int back, int front)? sides = deck.CalculateSides();
-        deck.FrontSide = sides?.front;
-        deck.BackSide = sides?.back;
+        card.X = x;
+        card.Y = y;
+        card.Flipness = flipness;
 
-        Card createdCard =
-            _cards.Create(x, y, cardInfo.FrontSide, cardInfo.BackSide, flipness, sendRelatedMessage: false);
+        _table.ChangeEntityId(card);
+
+        // TODO сравнивать сайды карты, не всегда отправлять.
+        Card? displayedCard = deck.GetDisplayedCard();
 
         // Если клиент видит колоду, нужно для него достать карту.
         // Если клиент не видит, нужно карту просто заспавнить.
@@ -217,20 +228,17 @@ public class DecksSystem : SystemBase
             if (deckVisible)
             {
                 // TODO тупо скопировал, нужно вынести куда то
-                int? side = null;
+                CardFaceComplicated? side = null;
                 if (deck.Flipness == Flipness.Shown)
                 {
-                    if (deck.FrontSide != pastDeckFront && !_limit.IsLimitedFor(deck, seat))
+                    if (!_limit.IsLimitedFor(deck, seat))
                     {
-                        side = deck.FrontSide;
+                        side = displayedCard?.FrontSide;
                     }
                 }
                 else
                 {
-                    if (deck.BackSide != pastDeckBack)
-                    {
-                        side = deck.BackSide;
-                    }
+                    side = displayedCard?.BackSide;
                 }
 
                 int? index = null;
@@ -239,34 +247,38 @@ public class DecksSystem : SystemBase
                     index = deckIndex;
                 }
 
-                DeckCardRemovedMessage message = new(deck, _synchro.ViewEntity(createdCard, seat), side, index);
+                DeckCardRemovedMessage message = new(deck, _synchro.ViewEntity(card, seat), side, index);
                 _communication.Send(message, seat);
             }
             else
             {
-                EntityAddedMessage message = new(_synchro.ViewEntity(createdCard, seat));
+                EntityAddedMessage message = new(_synchro.ViewEntity(card, seat));
 
                 _communication.Send(message, seat);
             }
         }
 
-        return createdCard;
+        return card;
     }
 
     /// <summary>
     /// Добавляет карту без сообщения
     /// </summary>
-    private DeckCardInfo AddCardToDeckLocally(Deck deck, int front, int back, DeckWay way)
+    private int AddCardToDeckLocally(Deck deck, Card card, DeckWay way)
     {
-        DeckCardInfo info = new(back, front);
+        int index;
 
         if (way == DeckWay.Front)
         {
-            deck.Cards.Insert(0, info);
+            index = 0;
+
+            deck.Cards.Insert(index, card);
         }
         else if (way == DeckWay.Back)
         {
-            deck.Cards.Add(info);
+            deck.Cards.Add(card);
+
+            index = deck.Cards.Count - 1;
         }
         else if (way == DeckWay.Random)
         {
@@ -278,11 +290,7 @@ public class DecksSystem : SystemBase
             throw new Exception($"Неизвестный путь деквей {way}");
         }
 
-        (int back, int front)? sides = deck.CalculateSides();
-        deck.FrontSide = sides?.front;
-        deck.BackSide = sides?.back;
-
-        return info;
+        return index;
     }
 
     private void Limited(LimitedEvent obj)
@@ -313,11 +321,24 @@ public class DecksSystem : SystemBase
 
     private DeckDto TransformDeck(Deck deck, Seat? target)
     {
-        int? frontside = _limit.IsLimitedFor(deck, target) ? null : deck.FrontSide;
-
         IReadOnlyCollection<DeckCardInfo>? cards = GetCardsInfo(deck, target);
 
-        return new DeckDto(deck, frontside, deck.Cards.Count, cards);
+        Card? displayedCard = deck.GetDisplayedCard();
+
+        CardFaceComplicated? side = null;
+        if (deck.Flipness == Flipness.Hidden)
+        {
+            side = displayedCard?.BackSide;
+        }
+        else
+        {
+            if (!_limit.IsLimitedFor(deck, target))
+            {
+                side = displayedCard?.FrontSide;
+            }
+        }
+
+        return new DeckDto(deck, side, cards);
     }
 
     /// <summary>
@@ -327,24 +348,42 @@ public class DecksSystem : SystemBase
     {
         IReadOnlyCollection<DeckCardInfo>? cards = GetCardsInfo(deck, seat);
 
-        int? frontValue = _limit.IsLimitedFor(deck, seat) ? null : deck.FrontSide;
+        Card? displayedCard = deck.GetDisplayedCard();
 
-        return new DeckUpdatedMessage(deck, deck.BackSide, frontValue, deck.Cards.Count, cards,
-            deck.OrderedContentViewers?.Included(seat) == true);
+        CardFaceComplicated? side = null;
+        if (deck.Flipness == Flipness.Hidden)
+        {
+            side = displayedCard?.BackSide;
+        }
+        else
+        {
+            if (!_limit.IsLimitedFor(deck, seat))
+            {
+                side = displayedCard?.FrontSide;
+            }
+        }
+
+        bool orderKnown = deck.OrderedContentViewers?.Included(seat) == true;
+
+        return new DeckUpdatedMessage(deck, side, deck.Cards.Count, cards, orderKnown);
     }
 
     private IReadOnlyCollection<DeckCardInfo>? GetCardsInfo(Deck deck, Seat? target)
     {
         if (deck.OrderedContentViewers?.Included(target) == true)
         {
-            return deck.Cards.ToArray();
+            return deck.Cards
+                .Select(card => new DeckCardInfo(card.BackSide, card.FrontSide))
+                .ToArray();
         }
 
         if (deck.ContentViewers?.Included(target) == true)
         {
             // Это не игромехан, так что юзать систему рандома не стоит.
 
-            DeckCardInfo[] result = deck.Cards.ToArray();
+            DeckCardInfo[] result = deck.Cards
+                .Select(card => new DeckCardInfo(card.BackSide, card.FrontSide))
+                .ToArray();
 
             Random.Shared.Shuffle(result);
 
