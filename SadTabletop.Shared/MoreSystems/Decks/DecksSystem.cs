@@ -247,7 +247,16 @@ public class DecksSystem : SystemBase
                     index = deckIndex;
                 }
 
-                DeckCardRemovedMessage message = new(deck, _synchro.ViewEntity(card, seat), side, index);
+                ViewedEntity cardToSend = _synchro.ViewEntity(card, seat);
+
+                CardFaceComplicated? cardFront = null;
+                if (index == null && (cardToSend.Entity as CardDto)?.FrontSide == null &&
+                    deck.ContentViewers?.Included(seat) == true)
+                {
+                    cardFront = card.FrontSide;
+                }
+
+                DeckCardRemovedMessage message = new(deck, cardToSend, side, cardFront, index);
                 _communication.Send(message, seat);
             }
             else
