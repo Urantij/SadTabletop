@@ -1,20 +1,23 @@
-import Flipness from "@/actual/things/Flipness";
 import type MainScene from "../MainScene";
 import type Deck from "@/actual/things/concrete/Decks/Deck";
 import CardObject, { defaultBackSideKey, defaultFrontSidekey } from "./CardObject";
 import SimpleRenderObjectRepresentation from "../SimpleRenderObjectRepresentation";
+import CardRenderManager from "../CardRenderManager";
+import type BaseScene from "../BaseScene";
+import type CardFaceComplicated from "@/actual/things/concrete/Cards/CardFaceComplicated";
+import { sameCardFace2 } from "@/actual/things/concrete/Cards/CardCompareHelper";
 
 export const deckSpotKey = "deckSpot";
 
 export default class DeckObject extends SimpleRenderObjectRepresentation<Deck, Phaser.GameObjects.Sprite> {
 
-  displayedSide: number | null;
+  displayedFace: CardFaceComplicated | null;
 
   tooltip: Phaser.GameObjects.Text | null = null;
 
-  constructor(gameObject: Deck, sprite: Phaser.GameObjects.Sprite, displayedSide: number | null) {
+  constructor(gameObject: Deck, sprite: Phaser.GameObjects.Sprite, displayedFace: CardFaceComplicated | null) {
     super(gameObject, sprite, true);
-    this.displayedSide = displayedSide;
+    this.displayedFace = structuredClone(displayedFace);
 
     this.sprite.on("pointerover", (poiner: Phaser.Input.Pointer, localX: number, localY: number, event: Phaser.Types.Input.EventData) => {
       this.tooltip = sprite.scene.add.text(sprite.x + sprite.displayWidth, sprite.y, `${gameObject.cardsCount}`);
@@ -31,46 +34,48 @@ export default class DeckObject extends SimpleRenderObjectRepresentation<Deck, P
   }
 
   updateThingsPlease() {
-    const newSide = this.gameObject.flipness === Flipness.Shown ? this.gameObject.frontSide : this.gameObject.backSide;
 
-    if (newSide === this.displayedSide) {
+    if (sameCardFace2(this.displayedFace, this.gameObject.side))
       return;
+
+    const texture = DeckObject.getTexture(this.gameObject, this.sprite.scene as MainScene);
+
+    if (CardRenderManager.isCustomCardId(this.sprite.texture.key)) {
+      (this.sprite.scene as BaseScene).cardRender.freeCardTexture(this.sprite.texture.key);
     }
 
-    const textureKey = DeckObject.getCurrentTextureKey(this.gameObject, this.sprite.scene as MainScene);
+    this.sprite.setTexture(texture.key);
 
-    this.sprite.setTexture(textureKey);
-
-    this.displayedSide = newSide;
+    this.displayedFace = structuredClone(this.gameObject.side);
   }
 
   static create(deck: Deck, scene: MainScene, width: number, height: number) {
 
-    const textureKey = DeckObject.getCurrentTextureKey(deck, scene);
-
-    const texture = scene.textures.get(textureKey);
+    const texture = DeckObject.getTexture(deck, scene);
 
     const sprite = new Phaser.GameObjects.Sprite(scene, deck.x, deck.y, texture);
     sprite.setDisplaySize(width, height);
     scene.add.existing(sprite);
 
-    const side = deck.flipness === Flipness.Shown ? deck.frontSide : deck.backSide;
-
     sprite.setInteractive();
 
-    return new DeckObject(deck, sprite, side);
+    return new DeckObject(deck, sprite, deck.side);
   }
 
-  static getCurrentTextureKey(obj: Deck, scene: MainScene) {
+  static getTexture(obj: Deck, scene: MainScene) {
 
     if (obj.cardsCount === 0) {
-      return deckSpotKey;
+      return scene.textures.get(deckSpotKey);
     }
 
-    if (obj.flipness === Flipness.Shown) {
-      return CardObject.getCardSideTextureKey(obj.frontSide, defaultFrontSidekey, scene);
+    return CardObject.getCardSideTexture(obj.side, deckSpotKey, scene);
+  }
+
+  override destroy(): void {
+    if (CardRenderManager.isCustomCardId(this.sprite.texture.key)) {
+      (this.sprite.scene as BaseScene).cardRender.freeCardTexture(this.sprite.texture.key);
     }
 
-    return CardObject.getCardSideTextureKey(obj.backSide, defaultBackSideKey, scene);
+    super.destroy();
   }
 }

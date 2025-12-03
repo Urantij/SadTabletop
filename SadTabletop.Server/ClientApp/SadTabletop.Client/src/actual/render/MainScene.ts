@@ -41,6 +41,11 @@ type MainSceneEvents = {
   DescriptionNotNeeded: (obj: RenderObjectRepresentation) => void;
 }
 
+// TODO не тут
+export function makeCardTextureId(num: number) {
+  return `card${num}`;
+}
+
 export const cursorMovedInTheWorldName = "CursorMovedInTheWorld";
 
 interface DragHolder {

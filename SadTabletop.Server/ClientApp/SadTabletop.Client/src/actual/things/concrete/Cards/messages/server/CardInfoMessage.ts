@@ -1,4 +1,6 @@
+import type CardFaceComplicated from "../../CardFaceComplicated";
+
 export default interface CardInfoMessage {
   card: number;
-  front: number | null;
+  front: CardFaceComplicated | number | null;
 }

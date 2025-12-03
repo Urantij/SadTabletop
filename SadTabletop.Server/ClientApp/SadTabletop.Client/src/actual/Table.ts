@@ -9,6 +9,7 @@ import ClicksSystem from "./things/concrete/Clicks/ClicksSystem";
 import type DescriptionChangedMessage from "@/communication/messages/server/DescriptionChangedMessage";
 
 type TableEvents = {
+  ItemAddedEarly: (item: TableItem) => void;
   ItemAdded: (item: TableItem, data: object | null) => void;
   ItemRemoved: (item: TableItem) => void;
   ItemMoved: (item: TableItem, oldX: number, oldY: number) => void;
@@ -55,6 +56,7 @@ export default class Table {
 
   announceItem(item: TableItem, data: object | null) {
     console.log(`в стол добавлена ентити ${item.type} ${item.id}`);
+    this.events.emit("ItemAddedEarly", item);
     this.events.emit("ItemAdded", item, data);
   }
 
@@ -64,6 +66,7 @@ export default class Table {
 
     this.items.push(item);
 
+    this.events.emit("ItemAddedEarly", item);
     this.events.emit("ItemAdded", item, data);
   }
 

@@ -6,6 +6,9 @@ import type { InHandComponent } from "@/actual/things/concrete/Hands/InHandCompo
 import type BaseScene from "../BaseScene";
 import { DepthChart } from "../Renderer";
 import type { PlayableComponent } from "@/actual/things/concrete/Playable/PlayableComponent";
+import { makeCardTextureId } from "../MainScene";
+import CardRenderManager from "../CardRenderManager";
+import type CardFaceComplicated from "@/actual/things/concrete/Cards/CardFaceComplicated";
 
 export const defaultBackSideKey = "defaultBackSide";
 export const defaultFrontSidekey = "defaultFrontSide";
@@ -54,6 +57,10 @@ export default class CardObject extends SimpleRenderObjectRepresentation<Card, P
     // TODO бредик
     const texture = this.getCardSideTexture();
 
+    if (CardRenderManager.isCustomCardId(this.sprite.texture.key)) {
+      this.scene.cardRender.freeCardTexture(this.sprite.texture.key);
+    }
+
     this.sprite.setTexture(texture.key);
   }
 
@@ -66,25 +73,29 @@ export default class CardObject extends SimpleRenderObjectRepresentation<Card, P
 
   // мне впадлу сделать нормально унифицировано похуй.
 
-  static getCardSideTextureKey(num: number | null, fallback: string, scene: Phaser.Scene) {
-    if (num === null) {
-      return fallback;
-    }
+  // static getCardSideTextureKey(num: number | null, infos: CardRenderInfo[] | null, fallback: string, scene: Phaser.Scene) {
+  //   if (num === null) {
+  //     return fallback;
+  //   }
 
-    const cardId = `card${num}`;
-    if (scene.textures.exists(cardId))
-      return cardId;
+  //   const cardId = makeCardTextureId(num);
+  //   if (scene.textures.exists(cardId))
+  //     return cardId;
 
-    return fallback;
-  }
+  //   return fallback;
+  // }
 
-  static getCardSideTexture(num: number | null, fallback: string, scene: Phaser.Scene) {
+  static getCardSideTexture(face: CardFaceComplicated | null, fallback: string, scene: BaseScene) {
 
-    if (num === null) {
+    if (face === null) {
       return scene.textures.get(fallback);
     }
 
-    const cardId = `card${num}`;
+    if (face.renderInfos !== null) {
+      return scene.cardRender.allocCardTexture(face.side, face.renderInfos)
+    }
+
+    const cardId = makeCardTextureId(face.side);
 
     if (scene.textures.exists(cardId))
       return scene.textures.get(cardId);
@@ -93,6 +104,11 @@ export default class CardObject extends SimpleRenderObjectRepresentation<Card, P
   }
 
   override destroy(): void {
+
+    if (CardRenderManager.isCustomCardId(this.sprite.texture.key)) {
+      this.scene.cardRender.freeCardTexture(this.sprite.texture.key);
+    }
+
     super.destroy();
 
     this.scene.leGame.table.cards.events.off("CardFrontChanged", this.cardChanged, this);

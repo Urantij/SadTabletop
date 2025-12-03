@@ -1,4 +1,6 @@
+import type CardFaceComplicated from "../../CardFaceComplicated";
+
 export default interface CardFlippedMessage {
   card: number;
-  frontSide: number | null;
+  frontSide: CardFaceComplicated | number | null;
 }

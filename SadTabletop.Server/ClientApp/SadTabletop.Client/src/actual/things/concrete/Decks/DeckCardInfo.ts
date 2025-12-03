@@ -1,4 +1,6 @@
+import type CardFaceComplicated from "../Cards/CardFaceComplicated";
+
 export default interface DeckCardInfo {
-  backSide: number;
-  frontSide: number;
+  back: CardFaceComplicated;
+  front: CardFaceComplicated;
 }

@@ -1,10 +1,13 @@
 import type Card from "../../../Cards/Card";
+import type CardFaceComplicated from "../../../Cards/CardFaceComplicated";
 
 export default interface DeckCardRemovedMessage {
   deck: number;
   card: Card;
 
-  side: number | null;
+  side: CardFaceComplicated | number | null;
+
+  cardFront: CardFaceComplicated | number | null;
 
   cardIndex: number | null;
 }

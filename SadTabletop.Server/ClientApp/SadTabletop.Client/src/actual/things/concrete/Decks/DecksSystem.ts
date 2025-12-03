@@ -6,9 +6,10 @@ import type DeckUpdatedMessage from "./messages/server/DeckUpdatedMessage";
 import type Table from "@/actual/Table";
 import type Deck from "./Deck";
 import type Card from "../Cards/Card";
-import Flipness from "../../Flipness";
 import type DeckCardInfo from "./DeckCardInfo";
 import DeckCardRemovedData from "./DeckCardRemovedData";
+import type TableItem from "../../TableItem";
+import { CardFaceUncomplicate, FixDeckCard, sameCardFace } from "../Cards/CardCompareHelper";
 
 type DeckEvents = {
   DeckUpdated: (deck: Deck) => void;
@@ -30,6 +31,8 @@ export default class DecksSystem {
     connection.registerForMessage<DeckUpdatedMessage>("DeckUpdatedMessage", msg => this.deckUpdated(msg));
     connection.registerForMessage<DeckCardInsertedMessage>("DeckCardInsertedMessage", msg => this.deckCardInserted(msg));
     connection.registerForMessage<DeckCardRemovedMessage>("DeckCardRemovedMessage", msg => this.deckCardRemoved(msg))
+
+    this.table.events.on("ItemAddedEarly", this.earlyItemAdded, this);
   }
 
   private deckUpdated(msg: DeckUpdatedMessage): void {
@@ -39,8 +42,12 @@ export default class DecksSystem {
       return;
     }
 
-    deck.frontSide = msg.frontSide;
-    deck.backSide = msg.backSide;
+    if (msg.cards !== null)
+      for (const element of msg.cards) {
+        FixDeckCard(element);
+      }
+
+    deck.side = CardFaceUncomplicate(msg.side);
     deck.cardsCount = msg.cardsCount;
     deck.cards = msg.cards;
 
@@ -62,13 +69,11 @@ export default class DecksSystem {
 
     deck.cardsCount++;
 
+    msg.side = CardFaceUncomplicate(msg.side);
+    msg.cardFront = CardFaceUncomplicate(msg.cardFront);
+
     if (msg.side !== null) {
-      if (deck.flipness === Flipness.Shown) {
-        deck.frontSide = msg.side;
-      }
-      else {
-        deck.backSide = msg.side;
-      }
+      deck.side = msg.side;
     }
 
     if (msg.cardFront !== null) {
@@ -77,15 +82,15 @@ export default class DecksSystem {
 
     if (msg.deckIndex !== null) {
       const cardInfo: DeckCardInfo = {
-        frontSide: card.frontSide!,
-        backSide: card.backSide
+        front: card.frontSide!,
+        back: card.backSide
       };
       deck.cards!.splice(msg.deckIndex, 0, cardInfo);
     }
     else if (deck.cards !== null) {
       const cardInfo: DeckCardInfo = {
-        frontSide: card.frontSide!,
-        backSide: card.backSide
+        front: card.frontSide!,
+        back: card.backSide
       };
       deck.cards.push(cardInfo);
     }
@@ -102,25 +107,31 @@ export default class DecksSystem {
 
     deck.cardsCount--;
 
-    if (msg.side !== null) {
-      if (deck.flipness === Flipness.Shown) {
-        deck.frontSide = msg.side;
-      }
-      else {
-        deck.backSide = msg.side;
-      }
-    }
+    msg.card.frontSide = CardFaceUncomplicate(msg.card.frontSide);
+    msg.side = CardFaceUncomplicate(msg.side);
+    msg.cardFront = CardFaceUncomplicate(msg.cardFront);
 
     if (msg.cardIndex !== null) {
       deck.cards!.splice(msg.cardIndex, 1);
     }
     else if (deck.cards !== null) {
-      const infoIndex = deck.cards.findIndex(c => c.frontSide === msg.card.frontSide && c.backSide === msg.card.backSide);
-      if (infoIndex === -1) {
-        throw new Error("не нашлась карта в колоде при попытке её достать");
-      }
 
-      deck.cards.splice(infoIndex, 1);
+      const cardFront = msg.card.frontSide ?? msg.cardFront;
+
+      if (cardFront != null) {
+        const infoIndex = deck.cards.findIndex(deckCard =>
+          sameCardFace(deckCard.front, cardFront) &&
+          sameCardFace(deckCard.back, msg.card.backSide));
+
+        if (infoIndex === -1) {
+          throw new Error("не нашлась карта в колоде при попытке её достать");
+        }
+
+        deck.cards.splice(infoIndex, 1);
+      }
+      else {
+        console.warn(`Нет возможности определить карту для удаление в деке.`);
+      }
     }
 
     const data = new DeckCardRemovedData(deck);
@@ -128,5 +139,26 @@ export default class DecksSystem {
     this.table.addItem(msg.card, data);
 
     this.events.emit("CardRemoved", deck, msg.card);
+  }
+
+  private earlyItemAdded(item: TableItem) {
+    if (item.type !== "Deck")
+      return;
+
+    const deck = item as Deck;
+
+    if (typeof deck.side === "number") {
+      deck.side = {
+        side: deck.side,
+        renderInfos: null
+      };
+    }
+
+    if (deck.cards !== null) {
+
+      for (const element of deck.cards) {
+        FixDeckCard(element);
+      }
+    }
   }
 }

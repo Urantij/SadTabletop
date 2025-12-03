@@ -1,10 +1,10 @@
 import type Flipness from "../../Flipness";
 import type TableItem from "../../TableItem";
+import type CardFaceComplicated from "../Cards/CardFaceComplicated";
 import type DeckCardInfo from "./DeckCardInfo";
 
 export default interface Deck extends TableItem {
-  backSide: number | null;
-  frontSide: number | null;
+  side: CardFaceComplicated | null;
 
   flipness: Flipness;
 
