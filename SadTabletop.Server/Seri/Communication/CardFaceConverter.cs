@@ -6,6 +6,10 @@ namespace SadTabletop.Server.Seri.Communication;
 
 public class CardFaceConverter : JsonConverter<CardFaceComplicated>
 {
+    class Replacement(int side, List<CardRenderInfo>? renderInfos) : CardFaceComplicated(side, renderInfos)
+    {
+    }
+
     public override CardFaceComplicated? Read(ref Utf8JsonReader reader, Type typeToConvert,
         JsonSerializerOptions options)
     {
@@ -20,6 +24,9 @@ public class CardFaceConverter : JsonConverter<CardFaceComplicated>
             return;
         }
 
-        JsonSerializer.Serialize(writer, value, options);
+        // TODO сделай нормально как нить
+        Replacement r = new(value.Side, value.RenderInfos);
+
+        JsonSerializer.Serialize(writer, r, options);
     }
 }

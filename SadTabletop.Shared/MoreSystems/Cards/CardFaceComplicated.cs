@@ -1,3 +1,5 @@
+using SadTabletop.Shared.MoreSystems.Cards.Render;
+
 namespace SadTabletop.Shared.MoreSystems.Cards;
 
 /// <summary>
@@ -12,8 +14,34 @@ public class CardFaceComplicated(int side, List<CardRenderInfo>? renderInfos)
 
     public static CardFaceComplicated CreateSimple(int side) => new CardFaceComplicated(side, null);
 
+    public static CardFaceComplicatedBuilder CreateBuilder(int side) => new CardFaceComplicatedBuilder(side);
+
     // public static bool CompareSide(CardFaceComplicated face1, CardFaceComplicated face2)
     // {
     //     
     // }
+}
+
+public class CardFaceComplicatedBuilder
+{
+    public int Side { get; set; }
+
+    public List<CardRenderInfo> RenderInfos { get; } = new();
+
+    public CardFaceComplicatedBuilder(int side)
+    {
+        Side = side;
+    }
+
+    public CardFaceComplicatedBuilder WithText(string text, int x, int y, int width, int height, string? color = null)
+    {
+        RenderInfos.Add(new CardTextRender(text, x, y, width, height, color));
+
+        return this;
+    }
+
+    public CardFaceComplicated Build()
+    {
+        return new CardFaceComplicated(Side, RenderInfos);
+    }
 }

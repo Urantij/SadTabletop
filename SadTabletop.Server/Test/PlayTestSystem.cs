@@ -34,7 +34,8 @@ public class PlayTestSystem : SystemBase
 
         Seat seat = _seats.EnumerateRealSeats().First();
 
-        Card cardToFlip = _cards.Create(-500, 500, CardFaceComplicated.CreateSimple(4),
+        Card cardToFlip = _cards.Create(-500, 500,
+            CardFaceComplicated.CreateBuilder(4).WithText("hi", 0, 125, 259, 50, "Blue").Build(),
             CardFaceComplicated.CreateSimple(22), Flipness.Shown);
 
         Card selfClipCard = _cards.Create(0, 0, CardFaceComplicated.CreateSimple(4),

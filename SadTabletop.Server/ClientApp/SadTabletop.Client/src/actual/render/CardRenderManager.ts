@@ -75,17 +75,12 @@ export default class CardRenderManager {
   }
 
   private createTexture(side: number, infos: CardRenderInfo[]) {
-    const baseTextureId = makeCardTextureId(side);
+    const baseTextureCardId = makeCardTextureId(side);
     const resultTextureId: string = CardRenderManager.makeCustomCardId();
 
     let baseTexture: Phaser.Textures.Texture;
 
-    if (this.scene.textures.exists(baseTextureId)) {
-      baseTexture = this.scene.textures.get(baseTextureId);
-    }
-    else {
-      baseTexture = this.scene.textures.get(defaultFrontSidekey);
-    }
+    let baseTextureId = this.scene.textures.exists(baseTextureCardId) ? baseTextureCardId : defaultFrontSidekey;
 
     // TODO поч оно возвращает нул?
     const texture = this.scene.textures.addDynamicTexture(resultTextureId, Sizes.cardWidth, Sizes.cardHeight);
@@ -94,7 +89,7 @@ export default class CardRenderManager {
       throw new Error(`CardRenderManager.getCardTexture texture == null`);
     }
 
-    texture.draw(baseTexture);
+    texture.draw(baseTextureId);
 
     for (const info of infos) {
       this.drawInfo(texture, info);
@@ -110,6 +105,9 @@ export default class CardRenderManager {
 
       const text = new Phaser.GameObjects.Text(this.scene, 0, 0, info1.text, {
         color: info1.color ?? undefined,
+        align: "center",
+        fixedWidth: info1.height,
+        fixedHeight: info1.height,
       });
 
       texture.draw(text, info1.x, info1.y);

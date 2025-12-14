@@ -53,6 +53,7 @@ JsonSerializerOptions options = new()
         new SystemConverter(gr),
         new EntityConverter(gr),
         new CardFaceConverter(),
+        new CardRenderInfoConverter(),
     }
 };
 
