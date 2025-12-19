@@ -7,7 +7,5 @@ export default interface DeckCardRemovedMessage {
 
   side: CardFaceComplicated | number | null;
 
-  cardFront: CardFaceComplicated | number | null;
-
-  cardIndex: number | null;
+  cardDeckId: number | null;
 }

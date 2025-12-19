@@ -6,12 +6,22 @@ namespace SadTabletop.Shared.MoreSystems.Decks.Messages;
 public class DeckCardInsertedMessage(
     Deck deck,
     Card card,
+    int cardDeckId,
     CardFaceComplicated? side,
     CardFaceComplicated? cardFront,
     int? deckIndex) : ServerMessageBase
 {
     public Deck Deck { get; } = deck;
+
+    /// <summary>
+    /// Здесь будет старый айди
+    /// </summary>
     public Card Card { get; } = card;
+
+    /// <summary>
+    /// Айди карты после вклада в деку
+    /// </summary>
+    public int CardDeckId { get; } = cardDeckId;
 
     /// <summary>
     /// Если изображение деки меняется, клиенту нужно об этом узнать

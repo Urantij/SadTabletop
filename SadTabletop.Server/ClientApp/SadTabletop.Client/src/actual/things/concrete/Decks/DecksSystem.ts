@@ -10,6 +10,7 @@ import type DeckCardInfo from "./DeckCardInfo";
 import DeckCardRemovedData from "./DeckCardRemovedData";
 import type TableItem from "../../TableItem";
 import { CardFaceUncomplicate, FixDeckCard, sameCardFace } from "../Cards/CardCompareHelper";
+import { removeFromCollection } from "@/utilities/MyCollections";
 
 type DeckEvents = {
   DeckUpdated: (deck: Deck) => void;
@@ -82,6 +83,7 @@ export default class DecksSystem {
 
     if (msg.deckIndex !== null) {
       const cardInfo: DeckCardInfo = {
+        id: msg.cardDeckId,
         front: card.frontSide!,
         back: card.backSide
       };
@@ -89,6 +91,7 @@ export default class DecksSystem {
     }
     else if (deck.cards !== null) {
       const cardInfo: DeckCardInfo = {
+        id: msg.cardDeckId,
         front: card.frontSide!,
         back: card.backSide
       };
@@ -109,30 +112,21 @@ export default class DecksSystem {
 
     msg.card.frontSide = CardFaceUncomplicate(msg.card.frontSide);
     msg.side = CardFaceUncomplicate(msg.side);
-    msg.cardFront = CardFaceUncomplicate(msg.cardFront);
 
-    if (msg.cardIndex !== null) {
-      deck.cards!.splice(msg.cardIndex, 1);
-    }
-    else if (deck.cards !== null) {
+    if (deck.cards !== null) {
+      if (msg.cardDeckId !== null) {
 
-      const cardFront = msg.card.frontSide ?? msg.cardFront;
-
-      if (cardFront != null) {
-        const infoIndex = deck.cards.findIndex(deckCard =>
-          sameCardFace(deckCard.front, cardFront) &&
-          sameCardFace(deckCard.back, msg.card.backSide));
-
-        if (infoIndex === -1) {
+        const removed = removeFromCollection(deck.cards, c => c.id === msg.cardDeckId);
+        if (removed === undefined) {
           throw new Error("не нашлась карта в колоде при попытке её достать");
         }
-
-        deck.cards.splice(infoIndex, 1);
       }
       else {
         console.warn(`Нет возможности определить карту для удаление в деке.`);
       }
     }
+
+    deck.side = msg.side;
 
     const data = new DeckCardRemovedData(deck);
 

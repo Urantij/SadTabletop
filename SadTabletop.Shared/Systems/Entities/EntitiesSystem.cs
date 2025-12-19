@@ -80,7 +80,17 @@ public abstract class EntitiesSystem<T> : EntitiesSystem
     /// <param name="entity"></param>
     internal void ChangeEntityId(T entity)
     {
-        entity.SetId(GenerateId());
+        SetEntityId(entity, GenerateId());
+    }
+
+    /// <summary>
+    /// Мы не несём ответственности за возможный рассинхрон в случае наличия модели этого объекта на клиенте.
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <param name="id"></param>
+    internal void SetEntityId(T entity, int id)
+    {
+        entity.SetId(id);
     }
 
     public override IEnumerable<EntityBase> EnumerateRawEntities()

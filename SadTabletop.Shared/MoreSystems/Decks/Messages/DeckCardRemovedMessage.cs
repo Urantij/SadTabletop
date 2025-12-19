@@ -8,8 +8,7 @@ public class DeckCardRemovedMessage(
     Deck deck,
     ViewedEntity card,
     CardFaceComplicated? side,
-    CardFaceComplicated? cardFront,
-    int? cardIndex) : ServerMessageBase
+    int? cardDeckId) : ServerMessageBase
 {
     public Deck Deck { get; } = deck;
     public ViewedEntity Card { get; } = card;
@@ -20,14 +19,7 @@ public class DeckCardRemovedMessage(
     public CardFaceComplicated? Side { get; } = side;
 
     /// <summary>
-    /// Если клиент знал, какие карты в колоде лежат, но не знал порядок, ему нужно знать, какую карту убрали.
-    /// Вот только бывают ситуации, когда пришла в <see cref="DeckCardRemovedMessage.Card"/>, а там лицо лимитед)))
-    /// Так что))) ну))) типа)))
+    /// Айди карты в колоде.
     /// </summary>
-    public CardFaceComplicated? CardFront { get; } = cardFront;
-
-    /// <summary>
-    /// Индекс карты в колоде, если клиент видел порядок
-    /// </summary>
-    public int? CardIndex { get; } = cardIndex;
+    public int? CardDeckId { get; } = cardDeckId;
 }

@@ -1,3 +1,4 @@
+using SadTabletop.Shared.Helps;
 using SadTabletop.Shared.Mechanics;
 using SadTabletop.Shared.MoreSystems.Cards;
 using SadTabletop.Shared.MoreSystems.Decks.Messages;
@@ -55,13 +56,31 @@ public class DecksSystem : SystemBase
     /// <param name="x"></param>
     /// <param name="y"></param>
     /// <param name="flipness"></param>
-    /// <param name="infos"></param>
+    /// <param name="infos">айдишники ставить не надо, в системе поменяются на случайные</param>
     /// <returns></returns>
     public Deck Create(float x, float y, Flipness flipness, List<DeckCardInfo> infos)
     {
+        // если просто поставить айди от 0 до Count и зашафлить, то с клиента будет видно, что это ток что созданная дека
+        // так как при добавлении карт айди по другому работает...
+
+        // TODO тут всё равно или нужен ингейм рандомер? мне каж наоборот не нужен
+
+        // List<Card> cards = infos
+        //     .Select((info, index) =>
+        //     {
+        //         Card card = _cards.Create(x, y, info.Front, info.Back, flipness, sendRelatedMessage: false);
+        //
+        //         _table.SetEntityId(card, index);
+        //
+        //         return card;
+        //     })
+        //     .OrderBy(_ => Random.Shared.Next())
+        //     .ToList();
         List<Card> cards = infos
             .Select(info => _cards.Create(x, y, info.Front, info.Back, flipness, sendRelatedMessage: false))
             .ToList();
+
+        cards.NonRepeatedRandomAssign((c, i) => _table.SetEntityId(c, i));
 
         Deck deck = new(cards)
         {
@@ -86,6 +105,8 @@ public class DecksSystem : SystemBase
         Card? pastDisplayedCard = deck.GetDisplayedCard();
 
         _table.RemoveEntity(card, sendRelatedMessage: false);
+
+        int cardDeckId = deck.Cards.NonRepeatedRandomGet(c => c.Id);
         int cardDeckIndex = AddCardToDeckLocally(deck, card, way);
 
         Card displayedCard = deck.GetDisplayedCard()!;
@@ -145,11 +166,13 @@ public class DecksSystem : SystemBase
                     index = cardDeckIndex;
                 }
 
-                DeckCardInsertedMessage message = new(deck, card, side, cardFront, index);
+                DeckCardInsertedMessage message = new(deck, card, cardDeckId, side, cardFront, index);
 
                 _communication.Send(message, seat);
             }
         }
+
+        _table.SetEntityId(card, cardDeckId);
     }
 
     // /// <summary>
@@ -213,6 +236,8 @@ public class DecksSystem : SystemBase
         card.Y = y;
         card.Flipness = flipness;
 
+        int removedCardDeckId = card.Id;
+
         _table.ChangeEntityId(card);
 
         // TODO сравнивать сайды карты, не всегда отправлять.
@@ -241,22 +266,9 @@ public class DecksSystem : SystemBase
                     side = displayedCard?.BackSide;
                 }
 
-                int? index = null;
-                if (deck.OrderedContentViewers?.Included(seat) == true)
-                {
-                    index = deckIndex;
-                }
-
                 ViewedEntity cardToSend = _synchro.ViewEntity(card, seat);
 
-                CardFaceComplicated? cardFront = null;
-                if (index == null && (cardToSend.Entity as CardDto)?.FrontSide == null &&
-                    deck.ContentViewers?.Included(seat) == true)
-                {
-                    cardFront = card.FrontSide;
-                }
-
-                DeckCardRemovedMessage message = new(deck, cardToSend, side, cardFront, index);
+                DeckCardRemovedMessage message = new(deck, cardToSend, side, removedCardDeckId);
                 _communication.Send(message, seat);
             }
             else
@@ -382,7 +394,7 @@ public class DecksSystem : SystemBase
         if (deck.OrderedContentViewers?.Included(target) == true)
         {
             return deck.Cards
-                .Select(card => new DeckCardInfo(card.BackSide, card.FrontSide))
+                .Select(card => new DeckCardInfo(card.Id, card.BackSide, card.FrontSide))
                 .ToArray();
         }
 
@@ -391,7 +403,7 @@ public class DecksSystem : SystemBase
             // Это не игромехан, так что юзать систему рандома не стоит.
 
             DeckCardInfo[] result = deck.Cards
-                .Select(card => new DeckCardInfo(card.BackSide, card.FrontSide))
+                .Select(card => new DeckCardInfo(card.Id, card.BackSide, card.FrontSide))
                 .ToArray();
 
             Random.Shared.Shuffle(result);

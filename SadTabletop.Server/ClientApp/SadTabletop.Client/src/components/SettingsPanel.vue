@@ -32,7 +32,6 @@ function changeNameClicked() {
       backgroundColor: 'darkgray'
     }
   ]" :title="'Настройки'" :can-hide="false" :can-close="true" v-on:close-me="closeClicked()">
-    <button style="pointer-events: auto;" v-on:click="() => closeClicked()">X</button>
     <div>
       <span>Name:</span>
       <input ref="nameInput" :value="name" type="text"></input>
