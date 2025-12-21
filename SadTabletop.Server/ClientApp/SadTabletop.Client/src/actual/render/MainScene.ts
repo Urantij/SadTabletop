@@ -34,11 +34,13 @@ import MySpriteObject from "./objects/MySpriteObject";
 import type MyTileSprite from "../things/concrete/Sprites/MyTileSprite";
 import MyTileSpriteObject from "./objects/MyTileSpriteObject";
 import type CameraBoundSetting from "../things/concrete/Settings/Variants/CameraBoundSetting";
+import Table from "../Table";
 
 type MainSceneEvents = {
   ObjectCreated: (obj: RenderObjectRepresentation) => void;
   DescriptionRequired: (obj: RenderObjectRepresentation) => void;
   DescriptionNotNeeded: (obj: RenderObjectRepresentation) => void;
+  DeckRightClicked: (pointer: Phaser.Input.Pointer, obj: DeckObject) => void;
 }
 
 // TODO не тут
@@ -306,6 +308,29 @@ export default class MainScene extends BaseScene {
 
         clearTimeout(clickTimeoutNum);
 
+        if (pointer.rightButtonReleased()) {
+          // Я НЕ ЗНАЮ КАК, НО ЭТО МАССИВ С ДЛИНОЙ 0 В КОТОРОМ ЕСТЬ ЭЛЕМЕНТЫ.
+          let counter = 0;
+          for (const _ of currentlyOver) {
+            counter++;
+          }
+
+          if (counter !== 1)
+            return;
+
+          const target = currentlyOver[0];
+
+          const container = target.getData(ContainerObjectDataKey) as RenderObjectRepresentation | undefined;
+          if (container === undefined) {
+            return;
+          }
+
+          if (container instanceof DeckObject) {
+            this.myEvents.emit("DeckRightClicked", pointer, container);
+          }
+          return;
+        }
+
         const wereClicked = clickedClicky.splice(0).filter(container => container.clicky);
 
         if (wereClicked.length !== 1) {
@@ -505,8 +530,6 @@ export default class MainScene extends BaseScene {
       this.hander.events.on(cardDragEndedName, (cardObj: CardObject) => {
         if (!this.glowManager.drag)
           return;
-
-        console.log("asd");
 
         this.glowManager.cardDragEnded();
       });

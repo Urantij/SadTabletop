@@ -1,5 +1,18 @@
 namespace SadTabletop.Shared.Mechanics;
 
+public static class Spisok
+{
+    public static Spisok<T> CreateNoOneWithIncluded<T>(T included) where T : class?
+    {
+        return Spisok<T>.CreateNoOneWithIncluded(included);
+    }
+
+    public static Spisok<T> CreateAllWithExcluded<T>(T excluded) where T : class?
+    {
+        return Spisok<T>.CreateAllWithExcluded(excluded);
+    }
+}
+
 /// <summary>
 /// Список объектов, которые либо представлены внутри, либо нет.
 /// Список может включать в себя все объекты кроме указанных. Или никакие кроме указанных.

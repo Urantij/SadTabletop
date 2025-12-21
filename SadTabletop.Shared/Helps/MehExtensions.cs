@@ -29,7 +29,7 @@ public static class MehExtensions
         {
             int sample = samples[i];
 
-            if (samples.Skip(i).All(s => s != sample))
+            if (samples.Skip(i + 1).All(s => s != sample))
                 continue;
 
             do

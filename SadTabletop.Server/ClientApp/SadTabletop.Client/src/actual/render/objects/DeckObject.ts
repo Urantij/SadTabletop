@@ -1,6 +1,6 @@
 import type MainScene from "../MainScene";
 import type Deck from "@/actual/things/concrete/Decks/Deck";
-import CardObject, { defaultBackSideKey, defaultFrontSidekey } from "./CardObject";
+import CardObject from "./CardObject";
 import SimpleRenderObjectRepresentation from "../SimpleRenderObjectRepresentation";
 import CardRenderManager from "../CardRenderManager";
 import type BaseScene from "../BaseScene";

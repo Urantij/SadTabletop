@@ -27,6 +27,7 @@ public class GameDataLoader
             .Append(game => new AnotherTestSystem(game))
             .Append(game => new HandTestSystem(game))
             .Append(game => new PlayTestSystem(game))
+            .Append(game => new DeckTestSystem(game))
             .ToArray();
 
         return GameCreator.CreateBaseGame(new GameSetup(3, []), systemsFactories);

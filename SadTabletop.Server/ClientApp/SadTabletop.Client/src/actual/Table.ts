@@ -29,6 +29,8 @@ export default class Table {
 
   readonly clicks: ClicksSystem = new ClicksSystem(this);
 
+  static DeckTypeName = "Deck";
+
   subscribeToConnection(connection: Connection) {
     connection.registerForMessage<ItemMovedMessage>("ItemMovedMessage", msg => this.itemMoved(msg));
     connection.registerForMessage<DescriptionChangedMessage>("DescriptionChangedMessage", msg => this.descriptionChanged(msg));
@@ -43,7 +45,7 @@ export default class Table {
   }
 
   isTableEntityByType(type: string) {
-    return ["Card", "Dice", "Deck", "TextItem", "RectShape", "CircleShape", "MySprite", "MyTileSprite"].includes(type);
+    return ["Card", "Dice", Table.DeckTypeName, "TextItem", "RectShape", "CircleShape", "MySprite", "MyTileSprite"].includes(type);
   }
 
   /**

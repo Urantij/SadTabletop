@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type LeGame from '@/actual/LeGame';
-import { onMounted, onUnmounted, reactive, ref, render, useTemplateRef, watch, type Ref } from 'vue';
+import { onMounted, onUnmounted, reactive, ref, watch, type Ref } from 'vue';
 import PlayerPanel from './PlayerPanel.vue';
 import SettingsPanel from './SettingsPanel.vue';
 import type PopitOption from './PopitOption';
@@ -8,20 +8,30 @@ import Popit from './Popit.vue';
 import type PopitData from './PopitData';
 import { usePopitStore } from '@/stores/PopitStore';
 import Hint from './Hint.vue';
-
-const uicontainer = useTemplateRef("uicontainer");
+import type Deck from '@/actual/things/concrete/Decks/Deck';
+import BigCardsWindow from './BigCardsWindow/BigCardsWindow.vue';
+import type CardRenderManager from '@/actual/render/CardRenderManager';
+import type DeckCardInfo from '@/actual/things/concrete/Decks/DeckCardInfo';
 
 const popitStore = usePopitStore();
 
 const props = defineProps<{
   game: LeGame,
   // костыль мне впадлу
-  draw: boolean
+  draw: boolean,
+  cardRenderer: CardRenderManager
 }>();
+
+defineExpose({
+  showCardsMenu
+});
 
 const showSettings = ref(false);
 const showPopit = ref(true);
 const showPopitButton = ref(false);
+
+const displayDeck: Ref<Deck | null> = ref(null);
+const displayDeckCards: Ref<DeckCardInfo[]> = ref([]);
 
 const currentPopit: Ref<PopitData | null> = ref(null);
 
@@ -65,6 +75,15 @@ onUnmounted(() => {
 
   window.removeEventListener('resize', onResize);
 });
+
+// pub
+
+function showCardsMenu(deck: Deck) {
+  displayDeckCards.value = deck.cards ?? [];
+  displayDeck.value = deck;
+}
+
+// privet)
 
 function onResize(ev: UIEvent) {
 
@@ -127,6 +146,13 @@ function popitButtonClicked() {
     <button style="pointer-events: auto; width: 100px; height: 100px;" @click="(ev) => settingsClicked()">O</button>
     <button v-if="showPopitButton" style="pointer-events: auto; width: 100px; height: 100px;"
       @click="(ev) => popitButtonClicked()">P</button>
+    <BigCardsWindow v-if="displayDeck !== null" :title="'дека'" :can-hide="false" :can-close="true" :select="2"
+      :cardRender="props.cardRenderer" :cards="displayDeckCards" :style="[
+        {
+          position: 'absolute', top: '200px', left: '200px', width: '900px', height: '700px'
+        }
+      ]">
+    </BigCardsWindow>
     <Popit v-if="currentPopit !== null" :style="[
       {
         position: 'absolute', top: '300px', left: '500px', width: '500px', height: '500px'

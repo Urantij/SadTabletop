@@ -8,6 +8,7 @@ import type HintData from '@/components/HintData';
 import UiContainer from '@/components/UiContainer.vue';
 import { usePopitStore } from '@/stores/PopitStore';
 import { useUserStore } from '@/stores/UserStore';
+import ContextMenu, { type MenuItem } from '@imengyu/vue3-context-menu';
 import { onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
 
 const uicontainer = useTemplateRef("uicontainer");
@@ -24,7 +25,7 @@ const draw = ref(false);
 const leGame = new LeGame();
 leGame.subscribeToConnection(connection);
 
-const renderer = new Renderer(leGame, window.innerWidth, window.innerHeight, divId);
+const gameRenderer = new Renderer(leGame, window.innerWidth, window.innerHeight, divId);
 
 userStore.$onAction(({
   name, args, after
@@ -42,7 +43,7 @@ userStore.$onAction(({
   });
 });
 
-renderer.events.on("ClickyClicked", (entity) => {
+gameRenderer.events.on("ClickyClicked", (entity) => {
 
   // здесь должна быть система ивентов
   // но мне лень
@@ -51,7 +52,7 @@ renderer.events.on("ClickyClicked", (entity) => {
 
 let lastCursorPos: Phaser.Math.Vector2 | null = null;
 let lastSentPos: Phaser.Math.Vector2 | null = null;
-renderer.events.on("CursorMoved", (pos) => {
+gameRenderer.events.on("CursorMoved", (pos) => {
   // кстати там наноизменения ещё бывают. если не раундить, всё равно до какой то точки лучше смотреть
   lastCursorPos = new Phaser.Math.Vector2(Math.round(pos.x), Math.round(pos.y));
 });
@@ -67,9 +68,9 @@ onMounted(async () => {
   }
 
   connection.events.once("MeJoined", () => {
-    draw.value = true;
-    renderer.initAsync().then(() => {
-      renderer.scene!.myEvents.on("DescriptionRequired", (obj) => {
+    gameRenderer.initAsync().then(() => {
+      draw.value = true;
+      gameRenderer.scene!.myEvents.on("DescriptionRequired", (obj) => {
         if (hoverHint !== null) {
           popitStore.removeHint(hoverHint);
           hoverHint = null; // просто так
@@ -77,12 +78,37 @@ onMounted(async () => {
 
         hoverHint = popitStore.addHint(obj.gameObject.description!);
       });
-      renderer.scene!.myEvents.on("DescriptionNotNeeded", (obj) => {
+      gameRenderer.scene!.myEvents.on("DescriptionNotNeeded", (obj) => {
         if (hoverHint === null)
           return;
 
         popitStore.removeHint(hoverHint);
         hoverHint = null;
+      });
+      gameRenderer.scene!.myEvents.on("DeckRightClicked", (pointer, obj) => {
+        // не нужно кстати
+        pointer.event.preventDefault();
+
+        let items: MenuItem[] = [];
+        if (obj.gameObject.cards !== null && obj.gameObject.cardsCount > 0) {
+          items.push({
+            label: "Посмотреть",
+            onClick: () => {
+              uicontainer.value?.showCardsMenu(obj.gameObject);
+            }
+          });
+        }
+
+        items.push({
+          label: `Карт: ${obj.gameObject.cardsCount}`,
+          disabled: true
+        });
+
+        ContextMenu.showContextMenu({
+          x: pointer.x,
+          y: pointer.y,
+          items: items
+        });
       });
     });
 
@@ -147,7 +173,9 @@ function clearing() {
         // pointerEvents: 'none'
       }
     ]" :id="divId">
-      <UiContainer ref="uicontainer" :draw="draw" :game="leGame"></UiContainer>
+      <UiContainer ref="uicontainer" v-if="draw" :draw="draw" :game="leGame"
+        :cardRenderer="gameRenderer.scene!.cardRender">
+      </UiContainer>
     </div>
   </main>
 </template>

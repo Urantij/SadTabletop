@@ -57,8 +57,11 @@ public class DecksSystem : SystemBase
     /// <param name="y"></param>
     /// <param name="flipness"></param>
     /// <param name="infos">айдишники ставить не надо, в системе поменяются на случайные</param>
+    /// <param name="contentViewers"></param>
+    /// <param name="orderedContentViewers"></param>
     /// <returns></returns>
-    public Deck Create(float x, float y, Flipness flipness, List<DeckCardInfo> infos)
+    public Deck Create(float x, float y, Flipness flipness, List<DeckCardInfo> infos,
+        Spisok<Seat?>? contentViewers = null, Spisok<Seat?>? orderedContentViewers = null)
     {
         // если просто поставить айди от 0 до Count и зашафлить, то с клиента будет видно, что это ток что созданная дека
         // так как при добавлении карт айди по другому работает...
@@ -82,7 +85,7 @@ public class DecksSystem : SystemBase
 
         cards.NonRepeatedRandomAssign((c, i) => _table.SetEntityId(c, i));
 
-        Deck deck = new(cards)
+        Deck deck = new(cards, orderedContentViewers, contentViewers)
         {
             Flipness = flipness,
             X = x,
@@ -394,7 +397,7 @@ public class DecksSystem : SystemBase
         if (deck.OrderedContentViewers?.Included(target) == true)
         {
             return deck.Cards
-                .Select(card => new DeckCardInfo(card.Id, card.BackSide, card.FrontSide))
+                .Select(card => new DeckCardInfo(card.Id, card.FrontSide, card.BackSide))
                 .ToArray();
         }
 
@@ -403,7 +406,7 @@ public class DecksSystem : SystemBase
             // Это не игромехан, так что юзать систему рандома не стоит.
 
             DeckCardInfo[] result = deck.Cards
-                .Select(card => new DeckCardInfo(card.Id, card.BackSide, card.FrontSide))
+                .Select(card => new DeckCardInfo(card.Id, card.FrontSide, card.BackSide))
                 .ToArray();
 
             Random.Shared.Shuffle(result);

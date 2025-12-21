@@ -14,8 +14,8 @@ namespace SadTabletop.Shared.MoreSystems.Decks;
 /// </summary>
 public class Deck(
     List<Card> cards,
-    Spisok<Seat?>? orderedContentViewers = null,
-    Spisok<Seat?>? contentViewers = null) : TableItem, ILimitable
+    Spisok<Seat?>? orderedContentViewers,
+    Spisok<Seat?>? contentViewers) : TableItem, ILimitable
 {
     public Flipness Flipness { get; internal set; }
 
