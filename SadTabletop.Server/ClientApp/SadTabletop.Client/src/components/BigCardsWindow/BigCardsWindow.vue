@@ -4,14 +4,19 @@ import DumbWindow from '../DumbWindow.vue';
 import type DeckCardInfo from '@/actual/things/concrete/Decks/DeckCardInfo';
 import { onBeforeMount, onUnmounted, reactive, ref } from 'vue';
 import CardObject, { defaultFrontSidekey } from '@/actual/render/objects/CardObject';
+import type BigCardsWiwdowData from './BigCardsWiwdowData';
+import { useRendererStore } from '@/stores/RendererStore';
+
+const rendererStore = useRendererStore();
 
 const props = defineProps<{
-  title: string | undefined,
-  canHide: boolean,
-  canClose: boolean,
-  cardRender: CardRenderManager,
-  cards: DeckCardInfo[],
-  select: number
+  data: BigCardsWiwdowData
+}>();
+
+const emits = defineEmits<{
+  (e: "hideMe"): void,
+  (e: "closeMe"): void,
+  (e: 'selectionMade', cards: DeckCardInfo[]): void
 }>();
 
 interface CardData {
@@ -25,8 +30,11 @@ const cards: CardData[] = reactive([]);
 const selectedCount = ref(0);
 
 onBeforeMount(() => {
-  for (const c of props.cards) {
-    const texture = CardObject.getCardSideTexture(c.front, defaultFrontSidekey, props.cardRender.scene);
+  if (rendererStore.renderer === null)
+    return;
+
+  for (const c of props.data.cards) {
+    const texture = CardObject.getCardSideTexture(c.front, defaultFrontSidekey, rendererStore.renderer.scene);
 
     const base64 = texture.manager.getBase64(texture.key);
 
@@ -59,21 +67,19 @@ onBeforeMount(() => {
 });
 
 onUnmounted(() => {
+  if (rendererStore.renderer === null)
+    return;
+
   for (const container of cards) {
     if (CardRenderManager.isCustomCardId(container.textureKey)) {
-      props.cardRender.freeCardTexture(container.textureKey);
+      rendererStore.renderer.freeCardTexture(container.textureKey);
     }
   }
 });
 
-const emits = defineEmits<{
-  "HideMe": [],
-  "CloseMe": []
-}>();
-
 function imgClicked(card: CardData) {
 
-  if (props.select <= 0)
+  if (props.data.select <= 0)
     return;
 
   if (card.selected) {
@@ -82,19 +88,33 @@ function imgClicked(card: CardData) {
     return;
   }
 
-  if (selectedCount.value === props.select)
+  if (selectedCount.value === props.data.select)
     return;
 
   card.selected = true;
   selectedCount.value++;
+
+  if (props.data.select === 1) {
+    makeSelection([card.card]);
+  }
 }
 
 function hideMeClicked() {
-  emits("HideMe");
+  emits("hideMe");
 }
 
 function closeClicked() {
-  emits("CloseMe");
+  emits("closeMe");
+}
+
+function selectClicked() {
+  const selected = cards.filter(c => c.selected).map(c => c.card);
+
+  makeSelection(selected);
+}
+
+function makeSelection(cards: DeckCardInfo[]) {
+  emits("selectionMade", cards);
 }
 
 </script>
@@ -104,8 +124,7 @@ function closeClicked() {
     {
       backgroundColor: 'darkgray'
     }
-  ]" :title="props.title" :can-hide="props.canHide" :can-close="props.canClose" v-on:hide-me="hideMeClicked()"
-    v-on:close-me="closeClicked()">
+  ]" :data="props.data" v-on:hide-me="hideMeClicked()" v-on:close-me="closeClicked()">
     <div :style="[
       {
         'display': 'flex',
@@ -119,11 +138,14 @@ function closeClicked() {
         <img :class="{ 'selected': card.selected }" :src="card.dataUrl" v-on:click="() => imgClicked(card)"></img>
       </template>
     </div>
+    <div v-if="props.data.select > 1">
+      <button :disabled="props.data.select !== selectedCount" @click="selectClicked()">селект</button>
+    </div>
   </DumbWindow>
 </template>
 
 <style lang="css">
-selected {
+.selected {
   box-shadow: 0px 0px 5px #2cff36;
 }
 </style>

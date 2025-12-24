@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import type WiwdowBaseData from './Wiwdow/WiwdowBaseData';
+
 const props = defineProps<{
-  title: string | undefined,
-  canHide: boolean,
-  canClose: boolean
+  data: WiwdowBaseData
 }>();
 
 const emits = defineEmits<{
@@ -23,14 +23,19 @@ function closeClicked() {
 
   <div :style="[
     {
+      position: 'absolute',
+      top: props.data.x,
+      left: props.data.y,
+      width: props.data.width,
+      height: props.data.height,
       pointerEvents: 'auto',
       backgroundColor: 'darkcyan'
     }
   ]">
     <div>
-      <span v-if="props.title !== undefined">{{ props.title }}</span>
-      <button @click="hideClicked()" v-if="props.canHide">_</button>
-      <button @click="closeClicked()" v-if="props.canClose">X</button>
+      <span v-if="props.data.title !== undefined">{{ props.data.title }}</span>
+      <button @click="hideClicked()" v-if="props.data.canHide">_</button>
+      <button @click="closeClicked()" v-if="props.data.canClose">X</button>
     </div>
     <div>
       <slot></slot>

@@ -7,6 +7,7 @@ import type MoveCursorMessage from '@/communication/messages/client/MoveCursorMe
 import type HintData from '@/components/HintData';
 import UiContainer from '@/components/UiContainer.vue';
 import { usePopitStore } from '@/stores/PopitStore';
+import { useRendererStore } from '@/stores/RendererStore';
 import { useUserStore } from '@/stores/UserStore';
 import ContextMenu, { type MenuItem } from '@imengyu/vue3-context-menu';
 import { onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
@@ -15,6 +16,7 @@ const uicontainer = useTemplateRef("uicontainer");
 
 const userStore = useUserStore();
 const popitStore = usePopitStore();
+const rendererStore = useRendererStore();
 
 const divId = "taskete";
 
@@ -69,6 +71,9 @@ onMounted(async () => {
 
   connection.events.once("MeJoined", () => {
     gameRenderer.initAsync().then(() => {
+
+      rendererStore.setRender(gameRenderer.scene!.cardRender);
+
       draw.value = true;
       gameRenderer.scene!.myEvents.on("DescriptionRequired", (obj) => {
         if (hoverHint !== null) {
@@ -173,8 +178,7 @@ function clearing() {
         // pointerEvents: 'none'
       }
     ]" :id="divId">
-      <UiContainer ref="uicontainer" v-if="draw" :draw="draw" :game="leGame"
-        :cardRenderer="gameRenderer.scene!.cardRender">
+      <UiContainer ref="uicontainer" v-if="draw" :draw="draw" :game="leGame">
       </UiContainer>
     </div>
   </main>

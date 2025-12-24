@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores/UserStore';
 import { ref, useTemplateRef } from 'vue';
-import DumbWindow from './DumbWindow.vue';
+import DumbWindow from '../DumbWindow.vue';
+import type SettingsWiwdowData from './SettingsWiwdowData';
 
 const userStore = useUserStore();
 
@@ -9,12 +10,16 @@ const name = ref(userStore.name);
 
 const nameInput = useTemplateRef("nameInput");
 
+const props = defineProps<{
+  data: SettingsWiwdowData
+}>();
+
 const emits = defineEmits<{
-  "CloseMe": []
+  "closeMe": []
 }>();
 
 function closeClicked() {
-  emits("CloseMe");
+  emits("closeMe");
 }
 
 function changeNameClicked() {
@@ -31,7 +36,7 @@ function changeNameClicked() {
     {
       backgroundColor: 'darkgray'
     }
-  ]" :title="'Настройки'" :can-hide="false" :can-close="true" v-on:close-me="closeClicked()">
+  ]" :data="data" v-on:close-me="closeClicked()">
     <div>
       <span>Name:</span>
       <input ref="nameInput" :value="name" type="text"></input>

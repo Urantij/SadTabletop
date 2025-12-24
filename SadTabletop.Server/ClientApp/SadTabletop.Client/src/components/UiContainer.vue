@@ -2,16 +2,20 @@
 import type LeGame from '@/actual/LeGame';
 import { onMounted, onUnmounted, reactive, ref, watch, type Ref } from 'vue';
 import PlayerPanel from './PlayerPanel.vue';
-import SettingsPanel from './SettingsPanel.vue';
 import type PopitOption from './PopitOption';
 import Popit from './Popit.vue';
 import type PopitData from './PopitData';
 import { usePopitStore } from '@/stores/PopitStore';
 import Hint from './Hint.vue';
 import type Deck from '@/actual/things/concrete/Decks/Deck';
-import BigCardsWindow from './BigCardsWindow/BigCardsWindow.vue';
-import type CardRenderManager from '@/actual/render/CardRenderManager';
 import type DeckCardInfo from '@/actual/things/concrete/Decks/DeckCardInfo';
+import type WiwdowBaseData from './Wiwdow/WiwdowBaseData';
+import SettingsWindow from './SettingsWindow/SettingsWindow.vue';
+import WiwdowType from './Wiwdow/WiwdowType';
+import type SettingsWiwdowData from './SettingsWindow/SettingsWiwdowData';
+import type BigCardsWiwdowData from './BigCardsWindow/BigCardsWiwdowData';
+import BigCardsWindow from './BigCardsWindow/BigCardsWindow.vue';
+import { removeFromCollection } from '@/utilities/MyCollections';
 
 const popitStore = usePopitStore();
 
@@ -19,19 +23,27 @@ const props = defineProps<{
   game: LeGame,
   // костыль мне впадлу
   draw: boolean,
-  cardRenderer: CardRenderManager
 }>();
 
 defineExpose({
-  showCardsMenu
+  showCardsMenu,
+  openCardsSelection
 });
 
-const showSettings = ref(false);
+const wiwdows: WiwdowBaseData[] = reactive([]);
+const wiwdowsButHidden: WiwdowBaseData[] = reactive([]);
+
+// я не нашёл инфу че будет если хранить функции в реактируемой объекте
+const handlersData: {
+  id: number,
+  handler: (selected: number[]) => void,
+}[] = [];
+
+let nextWiwdowId = 1;
+function getNextWiwdowId() { return nextWiwdowId++ };
+
 const showPopit = ref(true);
 const showPopitButton = ref(false);
-
-const displayDeck: Ref<Deck | null> = ref(null);
-const displayDeckCards: Ref<DeckCardInfo[]> = ref([]);
 
 const currentPopit: Ref<PopitData | null> = ref(null);
 
@@ -79,8 +91,53 @@ onUnmounted(() => {
 // pub
 
 function showCardsMenu(deck: Deck) {
-  displayDeckCards.value = deck.cards ?? [];
-  displayDeck.value = deck;
+  if (deck.cards === null) {
+    console.warn(`а как ты хош показать деку без карт? ${deck.id}`);
+    return;
+  }
+
+  const data: BigCardsWiwdowData = {
+    id: getNextWiwdowId(),
+    x: "100px",
+    y: "100px",
+    width: "800px",
+    height: "600px",
+    canClose: true,
+    canHide: false,
+    title: "смари деку",
+    select: 0,
+    cards: deck.cards,
+    type: WiwdowType.BigCards,
+    hidden: false
+  };
+
+  const dataR = reactive(data);
+  wiwdows.push(dataR);
+}
+
+function openCardsSelection(cards: DeckCardInfo[], select: number, handler: (selected: number[]) => void) {
+  const data: BigCardsWiwdowData = {
+    id: getNextWiwdowId(),
+    x: "100px",
+    y: "100px",
+    width: "800px",
+    height: "600px",
+    canClose: false,
+    canHide: true,
+    title: "выбери",
+    select: select,
+    cards: cards,
+    type: WiwdowType.BigCards,
+    hidden: false
+  };
+
+  handlersData.push({
+    id: data.id,
+    handler: handler
+  });
+
+  const dataR = reactive(data);
+  wiwdows.push(dataR);
 }
 
 // privet)
@@ -106,8 +163,80 @@ function popitChoseOption(option: PopitOption) {
   option.callback();
 }
 
+function openSettingsWindow() {
+  const data: SettingsWiwdowData = {
+    id: getNextWiwdowId(),
+    x: "200px",
+    y: "200px",
+    width: "500px",
+    height: "600px",
+    canHide: false,
+    canClose: true,
+    title: "Настроечки",
+    type: WiwdowType.Settings,
+    hidden: false
+  };
+
+  const dataR = reactive(data);
+
+  wiwdows.push(dataR);
+}
+
+function cardsSelected(data: BigCardsWiwdowData, cards: DeckCardInfo[]) {
+
+  const indexes: number[] = cards.map(selectedCard => data.cards.findIndex(card => card === selectedCard));
+
+  const hdata = removeFromCollection(handlersData, h => h.id === data.id);
+
+  closeWiwdow(data);
+
+  if (hdata === undefined) {
+    console.error(`уэ хендлер не нашёлсся в доте`);
+    return;
+  }
+
+  hdata.handler(indexes);
+}
+
+function closeWiwdow(data: WiwdowBaseData) {
+  const index = wiwdows.findIndex(w => w.id === data.id);
+
+  if (index === -1) {
+    console.warn(`попытка закрыть несуществующее окно ${data.type} ${data.title}`);
+    return;
+  }
+
+  wiwdows.splice(index, 1);
+
+  if (data.type === WiwdowType.BigCards) {
+    removeFromCollection(handlersData, h => h.id === data.id);
+  }
+}
+
+function hideWiwdow(data: WiwdowBaseData) {
+  data.hidden = true;
+  wiwdowsButHidden.push(data);
+}
+
+function wiwdowWantsToClose(data: WiwdowBaseData) {
+  closeWiwdow(data);
+}
+
+function wiwdowWantsToHide(data: WiwdowBaseData) {
+  hideWiwdow(data);
+}
+
 function settingsClicked() {
-  showSettings.value = true;
+
+  const existing = wiwdows.find(w => w.type === WiwdowType.Settings) as SettingsWiwdowData | undefined;
+
+  if (existing !== undefined) {
+    closeWiwdow(existing);
+  }
+  else {
+    openSettingsWindow();
+  }
+
   // const node = h(SettingsPanel, {
   //   width: window.innerWidth,
   //   height: window.innerHeight,
@@ -131,6 +260,16 @@ function popitButtonClicked() {
   showPopitButton.value = false;
   showPopit.value = true;
 }
+
+function unhideButtonClicked() {
+  const last = wiwdowsButHidden.pop();
+  if (last === undefined) {
+    console.warn("a? unhideButtonClicked");
+    return;
+  }
+
+  last.hidden = false;
+}
 </script>
 
 <template>
@@ -143,28 +282,23 @@ function popitButtonClicked() {
     <div style="width: 200px; height: 600px;" v-if="props.draw">
       <PlayerPanel :game="game"></PlayerPanel>
     </div>
-    <button style="pointer-events: auto; width: 100px; height: 100px;" @click="(ev) => settingsClicked()">O</button>
-    <button v-if="showPopitButton" style="pointer-events: auto; width: 100px; height: 100px;"
-      @click="(ev) => popitButtonClicked()">P</button>
-    <BigCardsWindow v-if="displayDeck !== null" :title="'дека'" :can-hide="false" :can-close="true" :select="2"
-      :cardRender="props.cardRenderer" :cards="displayDeckCards" :style="[
-        {
-          position: 'absolute', top: '200px', left: '200px', width: '900px', height: '700px'
-        }
-      ]">
-    </BigCardsWindow>
+    <template v-for="wiwdow in wiwdows">
+      <BigCardsWindow v-if="wiwdow.type === WiwdowType.BigCards" v-show="!wiwdow.hidden"
+        :data="wiwdow as BigCardsWiwdowData" @close-me="() => wiwdowWantsToClose(wiwdow)"
+        @hide-me="() => wiwdowWantsToHide(wiwdow)"
+        @selection-made="(cards) => cardsSelected(wiwdow as BigCardsWiwdowData, cards)"></BigCardsWindow>
+      <SettingsWindow v-if="wiwdow.type === WiwdowType.Settings" v-show="!wiwdow.hidden"
+        :data="wiwdow as SettingsWiwdowData" @close-me="() => wiwdowWantsToClose(wiwdow)"></SettingsWindow>
+    </template>
+    <button class="bubutton" @click="(ev) => settingsClicked()">O</button>
+    <button class="bubutton" v-if="showPopitButton" @click="(ev) => popitButtonClicked()">P</button>
+    <button class="bubutton" v-if="wiwdowsButHidden.length > 0" @click="(ev) => unhideButtonClicked()">H</button>
     <Popit v-if="currentPopit !== null" :style="[
       {
         position: 'absolute', top: '300px', left: '500px', width: '500px', height: '500px'
       }]" :data="currentPopit" @close-me="popitWantsClose()" @hide-me="popitWantsHide()"
       @option-clicked="(option) => popitChoseOption(option)">
     </Popit>
-    <SettingsPanel :style="[
-      {
-        position: 'absolute', top: '100px', left: '100px', width: '500px', height: '400px'
-      }
-    ]" v-if="showSettings" @close-me="() => showSettings = false">
-    </SettingsPanel>
   </div>
 </template>
 
@@ -179,5 +313,11 @@ function popitButtonClicked() {
   overflow: hidden;
   pointer-events: none;
   z-index: 1;
+}
+
+.bubutton {
+  pointer-events: auto;
+  width: 100px;
+  height: 100px;
 }
 </style>
