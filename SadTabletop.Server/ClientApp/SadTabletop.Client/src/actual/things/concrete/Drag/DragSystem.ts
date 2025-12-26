@@ -2,7 +2,7 @@ import type TypedEmitter from "@/utilities/TypedEmiiter";
 import type Connection from "@/communication/Connection";
 import type DragStartedMessage from "./messages/server/DragStartedMessage";
 import type DragEndedMessage from "./messages/server/DragEndedMessage";
-import type TableItem from "../../TableItem";
+import type TableItem from "../Table/TableItem";
 import type LeGame from "@/actual/LeGame";
 import type Player from "../../Player";
 import { findComponent, findComponentForSure, replaceDtoComponent } from "@/utilities/Componenter";
@@ -68,7 +68,7 @@ export default class DragSystem {
       let item: TableItem | null = null;
 
       if (dto.item !== null) {
-        const foundItem = this.leGame.table.findItem(dto.item);
+        const foundItem = this.leGame.table.find(dto.item);
 
         if (foundItem === undefined) {
           console.error(`replaceDtoComponent DraggerComponent ${dto.item}`);
@@ -111,7 +111,7 @@ export default class DragSystem {
       return;
     }
 
-    const item = this.leGame.table.findItem(msg.item);
+    const item = this.leGame.table.find(msg.item);
 
     if (item === undefined) {
       console.error(`dragStartedMessage item не наден ${msg.item}`);

@@ -86,7 +86,7 @@ export default class HandScene extends BaseScene {
     this.playNoTargetY = handPositionY - inhandCardHeight;
     this.playWithTargetY = handPositionY - inhandCardHeight * 0.3;
 
-    this.leGame.table.events.on("ItemAdded", (item) => {
+    this.leGame.table.events.on("EntityAdded", (item) => {
       if (item.type !== "Card")
         return;
 
@@ -100,7 +100,7 @@ export default class HandScene extends BaseScene {
       const obj = this.createCardObject(card, inHand);
       this.hand.addCardToHand(obj, true);
     });
-    this.leGame.table.events.on("ItemRemoved", (item) => {
+    this.leGame.table.events.on("EntityRemoved", (item) => {
       if (item.type !== "Card")
         return;
 

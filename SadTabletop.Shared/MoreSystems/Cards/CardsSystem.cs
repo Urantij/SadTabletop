@@ -49,7 +49,7 @@ public class CardsSystem : SystemBase
     public Card Create(float x, float y, CardFaceComplicated frontSide, CardFaceComplicated backSide,
         Flipness flipness, bool sendRelatedMessage = true)
     {
-        Card card = new(backSide, frontSide)
+        Card card = new(frontSide, backSide)
         {
             Flipness = flipness,
             X = x,
@@ -73,7 +73,7 @@ public class CardsSystem : SystemBase
         {
             foreach (Seat? seat in _seats.EnumerateAllSeats())
             {
-                CardFaceComplicated? front = _limit.IsLimitedFor(card, seat) ? null : card.FrontSide;
+                CardFaceComplicated? front = _limit.IsLimitedFor(card, seat) ? null : card.Front;
 
                 _communication.SendEntityRelated(new CardFlippedMessage(card, front), card, target: seat);
             }
@@ -130,7 +130,7 @@ public class CardsSystem : SystemBase
 
         if (obj.TheyKnowNow != null)
         {
-            _communication.SendEntityRelated(new CardInfoMessage(card, card.FrontSide), card, obj.TheyKnowNow);
+            _communication.SendEntityRelated(new CardInfoMessage(card, card.Front), card, obj.TheyKnowNow);
         }
 
         if (obj.TheyDontKnowNow != null)

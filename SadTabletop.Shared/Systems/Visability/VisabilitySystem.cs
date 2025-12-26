@@ -21,6 +21,11 @@ public class VisabilitySystem : ComponentSystemBase
     {
     }
 
+    /// <summary>
+    /// Если ентити была скрыта от таргета, сделает видимой.
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <param name="target"></param>
     public void Show(EntityBase entity, Seat? target)
     {
         VisabilityComponent? visability = entity.TryGetComponent<VisabilityComponent>();
@@ -65,6 +70,48 @@ public class VisabilitySystem : ComponentSystemBase
         }
 
         _communication.Send(new EntityRemovedMessage(entity), target);
+    }
+
+    /// <summary>
+    /// Скроет ентити от всех кроме исключения. Сделает ентити не скрытым для исключения
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <param name="exceptionalTarget"></param>
+    /// <param name="sendRelatedMessage"></param>
+    public void HideFromEveryoneExcept(EntityBase entity, Seat exceptionalTarget, bool sendRelatedMessage = true)
+    {
+        Seat?[]? toHideFromThem = sendRelatedMessage
+            ? _seats.EnumerateAllSeats()
+                .Where(t => t != exceptionalTarget && IsVisibleFor(entity, t))
+                .ToArray()
+            : null;
+
+        bool announceToExceptional = sendRelatedMessage && !IsVisibleFor(entity, exceptionalTarget);
+
+        Spisok<Seat?> spisok = Spisok<Seat?>.CreateNoOneWithIncluded(exceptionalTarget);
+
+        VisabilityComponent? visability = entity.TryGetComponent<VisabilityComponent>();
+        if (visability == null)
+        {
+            visability = new VisabilityComponent(spisok);
+            AddComponentToEntity(entity, visability);
+        }
+        else
+        {
+            visability.Viewers = spisok;
+        }
+
+        if (toHideFromThem?.Length > 0)
+        {
+            _communication.Send(new EntityRemovedMessage(entity), toHideFromThem);
+        }
+
+        if (announceToExceptional)
+        {
+            ViewedEntity view = _synchro.ViewEntity(entity, exceptionalTarget);
+
+            _communication.Send(new EntityAddedMessage(view), exceptionalTarget);
+        }
     }
 
     public bool IsVisibleFor(EntityBase entity, Seat? target)

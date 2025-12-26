@@ -8,5 +8,5 @@ namespace SadTabletop.Shared.Systems.Visability;
 /// </summary>
 public class VisabilityComponent(Spisok<Seat?> viewers) : ComponentBase
 {
-    public Spisok<Seat?> Viewers { get; init; } = viewers;
+    public Spisok<Seat?> Viewers { get; internal set; } = viewers;
 }

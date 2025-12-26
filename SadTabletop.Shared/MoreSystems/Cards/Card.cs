@@ -6,18 +6,18 @@ namespace SadTabletop.Shared.MoreSystems.Cards;
 /// <summary>
 /// Отдельно взятая карта на столе.
 /// </summary>
-public class Card(CardFaceComplicated backSide, CardFaceComplicated frontSide) : TableItem, ILimitable
+public class Card(CardFaceComplicated front, CardFaceComplicated back) : TableItem, ILimitable, ICard
 {
-    public CardFaceComplicated BackSide { get; } = backSide;
-    public CardFaceComplicated FrontSide { get; } = frontSide;
+    public CardFaceComplicated Front { get; } = front;
+    public CardFaceComplicated Back { get; } = back;
 
     public Flipness Flipness { get; internal set; }
 }
 
 public class CardDto(Card card, bool revealFront) : TableItemDto(card)
 {
-    public CardFaceComplicated BackSide { get; } = card.BackSide;
-    public CardFaceComplicated? FrontSide { get; } = revealFront ? card.FrontSide : null;
+    public CardFaceComplicated? Front { get; } = revealFront ? card.Front : null;
+    public CardFaceComplicated Back { get; } = card.Back;
 
     public Flipness Flipness { get; } = card.Flipness;
 

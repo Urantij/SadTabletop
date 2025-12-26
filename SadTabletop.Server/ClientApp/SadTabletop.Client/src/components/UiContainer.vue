@@ -59,7 +59,10 @@ watch(popitStore.arr, () => {
   if (popitStore.arr.length === 0)
     return;
 
-  currentPopit.value = popitStore.arr[0];
+  const a = popitStore.arr[0];
+  a.id = getNextWiwdowId();
+  currentPopit.value = a;
+
   popitStore.arr.shift();
 }, {
   flush: "post"
@@ -71,7 +74,10 @@ function trySetNextPopit() {
     return;
   }
 
-  currentPopit.value = popitStore.arr[0];
+  const a = popitStore.arr[0];
+  a.id = getNextWiwdowId();
+  currentPopit.value = a;
+
   popitStore.arr.shift();
 }
 
@@ -293,10 +299,7 @@ function unhideButtonClicked() {
     <button class="bubutton" @click="(ev) => settingsClicked()">O</button>
     <button class="bubutton" v-if="showPopitButton" @click="(ev) => popitButtonClicked()">P</button>
     <button class="bubutton" v-if="wiwdowsButHidden.length > 0" @click="(ev) => unhideButtonClicked()">H</button>
-    <Popit v-if="currentPopit !== null" :style="[
-      {
-        position: 'absolute', top: '300px', left: '500px', width: '500px', height: '500px'
-      }]" :data="currentPopit" @close-me="popitWantsClose()" @hide-me="popitWantsHide()"
+    <Popit v-if="currentPopit !== null" :data="currentPopit" @close-me="popitWantsClose()" @hide-me="popitWantsHide()"
       @option-clicked="(option) => popitChoseOption(option)">
     </Popit>
   </div>

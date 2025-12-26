@@ -7,11 +7,11 @@ import type TextItem from "../things/concrete/TextItem";
 import type Deck from "@/actual/things/concrete/Decks/Deck";
 import type Card from "../things/concrete/Cards/Card";
 import type RenderObjectRepresentation from "./RenderObjectRepresentation";
-import type TableItem from "../things/TableItem";
 import type RectShape from "../things/concrete/Shapes/RectShape";
 import type CircleShape from "../things/concrete/Shapes/CircleShape";
 import type MySprite from "../things/concrete/Sprites/MySprite";
 import type MyTileSprite from "../things/concrete/Sprites/MyTileSprite";
+import type TableItem from "../things/concrete/Table/TableItem";
 
 type RendererEvents = {
   ClickyClicked: (entity: TableItem) => void;
@@ -91,10 +91,10 @@ export default class Renderer {
             this.events.emit("CursorMoved", pos);
           });
 
-          this.leGame.table.events.on("ItemAdded", (item, data) => {
+          this.leGame.table.events.on("EntityAdded", (item, data) => {
             this.createEntity(item, data);
           });
-          this.leGame.table.events.on("ItemRemoved", (item) => {
+          this.leGame.table.events.on("EntityRemoved", (item) => {
             this.scene?.destroyEntity(item);
           });
           this.leGame.table.events.on("ItemMoved", (item, oldX, oldY) => {
@@ -146,7 +146,7 @@ export default class Renderer {
             this.scene?.createCursor(player);
           }
 
-          for (const entity of this.leGame.table.items) {
+          for (const entity of this.leGame.table.entities) {
             this.createEntity(entity, null);
           }
 

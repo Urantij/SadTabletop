@@ -2,8 +2,8 @@ import type Connection from "@/communication/Connection";
 import type TypedEmitter from "@/utilities/TypedEmiiter";
 import type CardPlayabilityChangedMessage from "./Messages/Server/CardPlayabilityChangedMessage";
 import type CardUnplayabilityMessage from "./Messages/Server/CardUnplayabilityMessage";
-import type Table from "@/actual/Table";
-import type TableItem from "../../TableItem";
+import type Table from "@/actual/things/concrete/Table/Table";
+import type TableItem from "../Table/TableItem";
 import type Card from "../Cards/Card";
 import { findComponent, replaceDtoComponent } from "@/utilities/Componenter";
 import type Bench from "@/actual/Bench";
@@ -28,7 +28,7 @@ export default class PlayableSystem {
     this.table = table;
     this.bench = bench;
 
-    this.table.events.on("ItemAdded", (item) => this.itemAdded(item));
+    this.table.events.on("EntityAdded", (item) => this.itemAdded(item));
   }
 
   subscribeToConnection(connection: Connection) {
@@ -55,7 +55,7 @@ export default class PlayableSystem {
 
     const component = replaceDtoComponent(item, "PlayableComponent", (dto: PlayableComponentDto) => {
 
-      const owner = this.bench.seats.find(s => s.id === dto.owner);
+      const owner = this.bench.entities.find(s => s.id === dto.owner);
       if (owner === undefined) {
         console.error(`PlayableSystem itemAdded owner ${dto.owner}`);
         return;
@@ -63,7 +63,7 @@ export default class PlayableSystem {
 
       let targets: TableItem[] | null = null;
       if (dto.targets !== null) {
-        targets = dto.targets.map(t => this.table.getItem(t));
+        targets = dto.targets.map(t => this.table.get(t));
       }
 
       const component: PlayableComponent = {
@@ -82,14 +82,14 @@ export default class PlayableSystem {
 
   private cardPlayabilityChanged(msg: CardPlayabilityChangedMessage): void {
 
-    const card = this.table.getItem<Card>(msg.card);
+    const card = this.table.findCast<Card>(msg.card);
 
     if (card === undefined) {
       console.warn(`cardPlayabilityChanged не удалось найти карту ${msg.card}`);
       return;
     }
 
-    const owner = this.bench.seats.find(s => s.id === msg.owner);
+    const owner = this.bench.entities.find(s => s.id === msg.owner);
     if (owner === undefined) {
       console.error(`PlayableSystem itemAdded owner ${msg.owner}`);
       return;
@@ -97,7 +97,7 @@ export default class PlayableSystem {
 
     let targets: TableItem[] | null = null;
     if (msg.targets !== null) {
-      targets = msg.targets.map(t => this.table.getItem(t));
+      targets = msg.targets.map(t => this.table.get(t));
     }
 
     const component: PlayableComponent = {
@@ -113,7 +113,7 @@ export default class PlayableSystem {
   }
 
   private cardUnplayability(msg: CardUnplayabilityMessage): void {
-    const card = this.table.getItem<Card>(msg.card);
+    const card = this.table.getCast<Card>(msg.card);
 
     if (card === undefined) {
       console.warn(`cardUnplayability не удалось найти карту ${msg.card}`);

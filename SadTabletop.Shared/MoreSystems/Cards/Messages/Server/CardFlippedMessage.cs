@@ -15,5 +15,5 @@ public class CardFlippedMessage(Card card, CardFaceComplicated? front) : ServerM
     /// <summary>
     /// Информация о лицевой стороне карты, если не была известна.
     /// </summary>
-    public CardFaceComplicated? FrontSide { get; } = front;
+    public CardFaceComplicated? Front { get; } = front;
 }

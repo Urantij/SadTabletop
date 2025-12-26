@@ -1,6 +1,7 @@
 import type HintData from "@/components/HintData";
 import type PopitData from "@/components/PopitData";
 import type PopitOption from "@/components/PopitOption";
+import WiwdowType from "@/components/Wiwdow/WiwdowType";
 import { removeFromCollection, removeItemFromCollection } from "@/utilities/MyCollections";
 import { defineStore } from "pinia";
 import { ref, type Ref } from "vue";
@@ -15,11 +16,21 @@ export const usePopitStore = defineStore('popit', () => {
 
   function addPopit(title: string, options: PopitOption[], canHide: boolean = true, canClose: boolean = true) {
 
+    // position: 'absolute', top: '300px', left: '500px', width: '500px', height: '500px'
     const data: PopitData = {
+      id: -1,
       title: title,
       options: options,
       canHide: canHide,
       canClose: canClose,
+
+      x: "300px",
+      y: "500px",
+      width: "500px",
+      height: "500px",
+
+      hidden: false,
+      type: WiwdowType.Popit,
 
       finished: false
     };

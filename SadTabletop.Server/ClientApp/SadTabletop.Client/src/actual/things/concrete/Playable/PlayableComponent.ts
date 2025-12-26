@@ -1,6 +1,6 @@
 import type EntityComponent from "../../EntityComponent";
 import type Seat from "../../Seat";
-import type TableItem from "../../TableItem";
+import type TableItem from "../Table/TableItem";
 
 export interface PlayableComponent extends EntityComponent {
   owner: Seat;

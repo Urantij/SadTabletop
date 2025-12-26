@@ -18,5 +18,9 @@ public abstract class EntityBaseDto(EntityBase entity) : IEntity
         return _clientComponents;
     }
 
+    /// <summary>
+    /// Каким типом притворяется этот дто
+    /// </summary>
+    /// <returns></returns>
     public abstract Type WhatIsMyType();
 }

@@ -31,8 +31,8 @@ export default class CardObject extends SimpleRenderObjectRepresentation<Card, P
   public static create(card: Card, scene: BaseScene, x: number, y: number, width: number, height: number) {
 
     const fallback = card.flipness === Flipness.Shown ? defaultFrontSidekey : defaultBackSideKey;
-    const sideTexture = card.flipness === Flipness.Shown ? CardObject.getCardSideTexture(card.frontSide, fallback, scene)
-      : CardObject.getCardSideTexture(card.backSide, fallback, scene);
+    const sideTexture = card.flipness === Flipness.Shown ? CardObject.getCardSideTexture(card.front, fallback, scene)
+      : CardObject.getCardSideTexture(card.back, fallback, scene);
 
     const cardSprite = new Phaser.GameObjects.Sprite(scene, x, y, sideTexture);
     cardSprite.setDepth(DepthChart.Card);
@@ -65,7 +65,7 @@ export default class CardObject extends SimpleRenderObjectRepresentation<Card, P
   }
 
   getCardSideTexture() {
-    const side = this.gameObject.flipness === Flipness.Shown ? this.gameObject.frontSide : this.gameObject.backSide;
+    const side = this.gameObject.flipness === Flipness.Shown ? this.gameObject.front : this.gameObject.back;
     const fallback = this.gameObject.flipness === Flipness.Shown ? defaultFrontSidekey : defaultBackSideKey;
 
     return CardObject.getCardSideTexture(side, fallback, this.scene);

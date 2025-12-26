@@ -1,4 +1,3 @@
-import type MainScene from "@/actual/render/MainScene.ts";
 import type RenderObjectRepresentation from "./RenderObjectRepresentation";
 import CardObject from "./objects/CardObject";
 

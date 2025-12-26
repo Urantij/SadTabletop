@@ -1,6 +1,6 @@
 import { isClicky } from "@/utilities/Componenter";
 import type RenderObjectRepresentation from "./RenderObjectRepresentation";
-import type TableItem from "../things/TableItem";
+import type TableItem from "../things/concrete/Table/TableItem";
 
 export const ContainerObjectDataKey = "gameObject";
 

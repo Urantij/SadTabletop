@@ -73,7 +73,7 @@ public class Deck(
 public class DeckDto(
     Deck deck,
     CardFaceComplicated? side,
-    IReadOnlyCollection<DeckCardInfo>? cards)
+    IReadOnlyCollection<CardInfo>? cards)
     : TableItemDto(deck)
 {
     /// <summary>
@@ -85,7 +85,7 @@ public class DeckDto(
     public Flipness Flipness { get; } = deck.Flipness;
 
     public int CardsCount { get; } = deck.Cards.Count;
-    public IReadOnlyCollection<DeckCardInfo>? Cards { get; } = cards;
+    public IReadOnlyCollection<CardInfo>? Cards { get; } = cards;
 
     public override Type WhatIsMyType() => typeof(Deck);
 }

@@ -2,8 +2,7 @@ import type TypedEmitter from "@/utilities/TypedEmiiter";
 import Phaser from "phaser";
 import CardObject, { defaultBackSideKey, defaultFrontSidekey } from "./objects/CardObject";
 import type RenderObjectRepresentation from "@/actual/render/RenderObjectRepresentation.ts";
-import { removeFromCollection, removeItemFromCollection } from "@/utilities/MyCollections.ts";
-import type TableItem from "../things/TableItem";
+import { removeFromCollection } from "@/utilities/MyCollections.ts";
 import type TextItem from "../things/concrete/TextItem";
 import TextItemObject from "./objects/TextItemObject";
 import type Deck from "@/actual/things/concrete/Decks/Deck";
@@ -34,7 +33,7 @@ import MySpriteObject from "./objects/MySpriteObject";
 import type MyTileSprite from "../things/concrete/Sprites/MyTileSprite";
 import MyTileSpriteObject from "./objects/MyTileSpriteObject";
 import type CameraBoundSetting from "../things/concrete/Settings/Variants/CameraBoundSetting";
-import Table from "../Table";
+import type TableItem from "../things/concrete/Table/TableItem";
 
 type MainSceneEvents = {
   ObjectCreated: (obj: RenderObjectRepresentation) => void;
@@ -76,7 +75,7 @@ export default class MainScene extends BaseScene {
 
     if (obj === undefined) {
 
-      const seatIndex = this.leGame.bench.seats.indexOf(hand.owner);
+      const seatIndex = this.leGame.bench.entities.indexOf(hand.owner);
 
       // я не буду обрабатывать -1
 
@@ -491,7 +490,7 @@ export default class MainScene extends BaseScene {
 
         this.glowManager.addClicky(obj);
       });
-      this.leGame.table.events.on("ItemRemoved", (item) => {
+      this.leGame.table.events.on("EntityRemoved", (item) => {
         const obj = this.objects.find(o => o.gameObject === item);
         if (obj === undefined)
           return;

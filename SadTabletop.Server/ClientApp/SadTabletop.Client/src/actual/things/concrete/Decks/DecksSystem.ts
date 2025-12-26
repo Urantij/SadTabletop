@@ -3,12 +3,12 @@ import type Connection from "@/communication/Connection";
 import type DeckCardInsertedMessage from "./messages/server/DeckCardInsertedMessage";
 import type DeckCardRemovedMessage from "./messages/server/DeckCardRemovedMessage";
 import type DeckUpdatedMessage from "./messages/server/DeckUpdatedMessage";
-import type Table from "@/actual/Table";
+import type Table from "@/actual/things/concrete/Table/Table";
 import type Deck from "./Deck";
 import type Card from "../Cards/Card";
 import type DeckCardInfo from "./DeckCardInfo";
 import DeckCardRemovedData from "./DeckCardRemovedData";
-import type TableItem from "../../TableItem";
+import type TableItem from "../Table/TableItem";
 import { CardFaceUncomplicate, FixDeckCard, sameCardFace } from "../Cards/CardCompareHelper";
 import { removeFromCollection } from "@/utilities/MyCollections";
 
@@ -33,11 +33,11 @@ export default class DecksSystem {
     connection.registerForMessage<DeckCardInsertedMessage>("DeckCardInsertedMessage", msg => this.deckCardInserted(msg));
     connection.registerForMessage<DeckCardRemovedMessage>("DeckCardRemovedMessage", msg => this.deckCardRemoved(msg))
 
-    this.table.events.on("ItemAddedEarly", this.earlyItemAdded, this);
+    this.table.events.on("EntityAddedEarly", this.earlyItemAdded, this);
   }
 
   private deckUpdated(msg: DeckUpdatedMessage): void {
-    const deck = this.table.items.find(i => i.id === msg.deck) as Deck;
+    const deck = this.table.entities.find(i => i.id === msg.deck) as Deck;
     if (deck === undefined) {
       console.warn(`При попытке deckUpdated ентити не был найден. ${msg.deck}`);
       return;
@@ -56,13 +56,13 @@ export default class DecksSystem {
   }
 
   private deckCardInserted(msg: DeckCardInsertedMessage): void {
-    const deck = this.table.items.find(i => i.id === msg.deck) as Deck;
+    const deck = this.table.entities.find(i => i.id === msg.deck) as Deck;
     if (deck === undefined) {
       console.warn(`При попытке deckCardInserted deck ентити не был найден. ${msg.deck}`);
       return;
     }
 
-    const card = this.table.items.find(i => i.id === msg.card) as Card;
+    const card = this.table.entities.find(i => i.id === msg.card) as Card;
     if (card === undefined) {
       console.warn(`При попытке deckCardInserted card ентити не был найден. ${msg.card}`);
       return;
@@ -78,22 +78,22 @@ export default class DecksSystem {
     }
 
     if (msg.cardFront !== null) {
-      card.frontSide = msg.cardFront;
+      card.front = msg.cardFront;
     }
 
     if (msg.deckIndex !== null) {
       const cardInfo: DeckCardInfo = {
         id: msg.cardDeckId,
-        front: card.frontSide!,
-        back: card.backSide
+        front: card.front!,
+        back: card.back
       };
       deck.cards!.splice(msg.deckIndex, 0, cardInfo);
     }
     else if (deck.cards !== null) {
       const cardInfo: DeckCardInfo = {
         id: msg.cardDeckId,
-        front: card.frontSide!,
-        back: card.backSide
+        front: card.front!,
+        back: card.back
       };
       deck.cards.push(cardInfo);
     }
@@ -102,7 +102,7 @@ export default class DecksSystem {
   }
 
   private deckCardRemoved(msg: DeckCardRemovedMessage): void {
-    const deck = this.table.items.find(i => i.id === msg.deck) as Deck;
+    const deck = this.table.entities.find(i => i.id === msg.deck) as Deck;
     if (deck === undefined) {
       console.warn(`При попытке deckCardInserted deck ентити не был найден. ${msg.deck}`);
       return;
@@ -110,7 +110,7 @@ export default class DecksSystem {
 
     deck.cardsCount--;
 
-    msg.card.frontSide = CardFaceUncomplicate(msg.card.frontSide);
+    msg.card.front = CardFaceUncomplicate(msg.card.front);
     msg.side = CardFaceUncomplicate(msg.side);
 
     if (deck.cards !== null) {
@@ -130,7 +130,7 @@ export default class DecksSystem {
 
     const data = new DeckCardRemovedData(deck);
 
-    this.table.addItem(msg.card, data);
+    this.table.addSimple(msg.card, data);
 
     this.events.emit("CardRemoved", deck, msg.card);
   }
@@ -149,7 +149,6 @@ export default class DecksSystem {
     }
 
     if (deck.cards !== null) {
-
       for (const element of deck.cards) {
         FixDeckCard(element);
       }

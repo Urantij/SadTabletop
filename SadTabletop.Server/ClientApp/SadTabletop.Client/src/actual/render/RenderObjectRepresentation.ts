@@ -1,4 +1,4 @@
-import type TableItem from "../things/TableItem";
+import type TableItem from "../things/concrete/Table/TableItem";
 
 export default interface RenderObjectRepresentation {
   gameObject: TableItem;

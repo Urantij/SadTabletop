@@ -1,4 +1,4 @@
-import type TableItem from "../../TableItem";
+import type TableItem from "../Table/TableItem";
 
 export default interface MyTileSprite extends TableItem {
   assetName: string;

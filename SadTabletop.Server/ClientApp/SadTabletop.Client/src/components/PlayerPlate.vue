@@ -67,7 +67,7 @@ function clicked() {
     if (changeChairPopit?.finished === false)
       return;
 
-    const options: PopitOption[] = props.game.bench.seats
+    const options: PopitOption[] = props.game.bench.entities
       .filter(s => !props.game.playersContainer.isSeatBusy(s))
       .map<PopitOption>(seat => {
         return {

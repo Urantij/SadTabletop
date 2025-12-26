@@ -28,8 +28,7 @@ function optionClicked(option: PopitOption) {
 </script>
 
 <template>
-  <DumbWindow :can-hide="props.data.canHide" :can-close="props.data.canClose" :title="props.data.title"
-    v-on:close-me="closeClicked()" v-on:hide-me="hideClicked()">
+  <DumbWindow :data="props.data" v-on:close-me="closeClicked()" v-on:hide-me="hideClicked()">
     <div v-for="option in props.data.options">
       <button @click="() => optionClicked(option)">{{ option.title }}</button>
     </div>

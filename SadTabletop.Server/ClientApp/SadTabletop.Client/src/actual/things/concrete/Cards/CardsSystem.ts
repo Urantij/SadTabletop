@@ -1,12 +1,12 @@
 import type TypedEmitter from "@/utilities/TypedEmiiter";
-import type Table from "@/actual/Table";
+import type Table from "@/actual/things/concrete/Table/Table";
 import type Card from "./Card";
 import { FlipFlipness } from "../../Flipness";
 import type Connection from "@/communication/Connection";
 import type CardFlippedMessage from "@/actual/things/concrete/Cards/messages/server/CardFlippedMessage";
 import type CardInfoMessage from "./messages/server/CardInfoMessage";
 import type FlipCardMessage from "./messages/client/FlipCardMessage";
-import type TableItem from "../../TableItem";
+import type TableItem from "../Table/TableItem";
 import type CardFaceComplicated from "./CardFaceComplicated";
 import { CardFaceUncomplicate, CardFaceUncomplicateForSure } from "./CardCompareHelper";
 
@@ -32,7 +32,7 @@ export default class CardsSystem {
     connection.registerForMessage<CardFlippedMessage>("CardFlippedMessage", msg => this.cardFlipped(msg));
     connection.registerForMessage<CardInfoMessage>("CardInfoMessage", msg => this.cardInfoChanged(msg));
 
-    this.table.events.on("ItemAddedEarly", this.earlyItemAdded, this);
+    this.table.events.on("EntityAddedEarly", this.earlyItemAdded, this);
   }
 
   flip(card: Card) {
@@ -43,8 +43,8 @@ export default class CardsSystem {
     this.connection?.sendMessage("FlipCardMessage", message);
   }
 
-  private flipCard(cardId: number, frontSide: CardFaceComplicated | null): void {
-    const card = this.table.items.find(i => i.id === cardId) as Card;
+  private flipCard(cardId: number, front: CardFaceComplicated | null): void {
+    const card = this.table.entities.find(i => i.id === cardId) as Card;
 
     if (card === undefined) {
       console.warn(`При попытке flipCard ентити не был найден. ${cardId}`);
@@ -52,18 +52,18 @@ export default class CardsSystem {
     }
 
     card.flipness = FlipFlipness(card.flipness);
-    card.frontSide = frontSide;
+    card.front = front;
 
     this.events.emit("CardFlipped", card);
   }
 
   private cardFlipped(msg: CardFlippedMessage): void {
-    msg.frontSide = CardFaceUncomplicate(msg.frontSide);
-    this.flipCard(msg.card, msg.frontSide);
+    msg.front = CardFaceUncomplicate(msg.front);
+    this.flipCard(msg.card, msg.front);
   }
 
   private cardInfoChanged(msg: CardInfoMessage) {
-    const card = this.table.items.find(i => i.id === msg.card) as Card;
+    const card = this.table.entities.find(i => i.id === msg.card) as Card;
 
     if (card === undefined) {
       console.warn(`При попытке cardInfoChanged ентити не был найден. ${msg.card}`);
@@ -81,7 +81,7 @@ export default class CardsSystem {
 
     const card = item as Card;
 
-    card.backSide = CardFaceUncomplicateForSure(card.backSide);
-    card.frontSide = CardFaceUncomplicate(card.frontSide);
+    card.back = CardFaceUncomplicateForSure(card.back);
+    card.front = CardFaceUncomplicate(card.front);
   }
 }

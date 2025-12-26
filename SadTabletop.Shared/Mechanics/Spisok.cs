@@ -32,6 +32,12 @@ public class Spisok<T>
         _white = white;
     }
 
+    /// <summary>
+    /// Белый список, в который включён только элемент из аргумента.
+    /// То есть исключены все кроме аргумента.
+    /// </summary>
+    /// <param name="included"></param>
+    /// <returns></returns>
     public static Spisok<T> CreateNoOneWithIncluded(T included)
     {
         Spisok<T> spisok = new(true);
@@ -40,6 +46,12 @@ public class Spisok<T>
         return spisok;
     }
 
+    /// <summary>
+    /// Чёрный список, в который включён только элемент из аргумента.
+    /// То есть включены все кроме аргумента.
+    /// </summary>
+    /// <param name="excluded"></param>
+    /// <returns></returns>
     public static Spisok<T> CreateAllWithExcluded(T excluded)
     {
         Spisok<T> spisok = new(false);

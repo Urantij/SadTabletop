@@ -1,14 +1,12 @@
 import type TypedEmitter from "@/utilities/TypedEmiiter";
 import type Connection from "@/communication/Connection";
-import Table from "./Table";
+import Table from "./things/concrete/Table/Table";
 import type EntityAddedMessage from "@/communication/messages/server/EntityAddedMessage";
 import type EntityRemovedMessage from "@/communication/messages/server/EntityRemovedMessage";
 import type JoinedMessage from "@/communication/messages/server/JoinedMessage";
 import type AssetInfo from "./things/AssetInfo";
-import type TableItem from "./things/TableItem";
 import type YouTookSeatMessage from "@/communication/messages/server/YouTookSeatMessage";
 import Bench from "./Bench";
-import type Seat from "./things/Seat";
 import PlayersContainer from "./PlayersContainer";
 import type Player from "./things/Player";
 import HandsSystem from "./things/concrete/Hands/HandsSystem";
@@ -16,6 +14,8 @@ import DragSystem from "./things/concrete/Drag/DragSystem";
 import PlayableSystem from "./things/concrete/Playable/PlayableSystem";
 import HintsSystem from "./things/concrete/Hints/HintsSystem";
 import SettingsSystem from "./things/concrete/Settings/SettingsSystem";
+import CardSelectionSystem from "./things/concrete/CardSelection/CardSelectionSystem";
+import type { EntitiesBaseSystem } from "./things/EntitiesSystem";
 
 type LeGameEvents = {
   Clearing: () => void;
@@ -31,6 +31,15 @@ export default class LeGame {
   public readonly table: Table = new Table();
   public readonly bench: Bench = new Bench();
   public readonly settings: SettingsSystem = new SettingsSystem();
+
+  public readonly cardSelection: CardSelectionSystem = new CardSelectionSystem(this);
+
+  private readonly entitiesSystems: EntitiesBaseSystem[] = [
+    this.table,
+    this.bench,
+    this.settings,
+    this.cardSelection
+  ];
 
   public readonly hands: HandsSystem = new HandsSystem(this.table, this.bench);
   public readonly playable: PlayableSystem = new PlayableSystem(this.table, this.bench);
@@ -69,66 +78,69 @@ export default class LeGame {
 
   private meJoined(data: JoinedMessage): void {
 
-    const seatsToAnnounce: Seat[] = [];
-    const itemsToAnnounce: TableItem[] = [];
-
+    // у меня голова болит мне не хочется делать нормально
     for (const entity of data.entities) {
-      if (this.bench.isBenchEntityByType(entity.type)) {
-        this.bench.preAddSeat(entity as Seat);
-        seatsToAnnounce.push(entity as Seat);
-      }
-      else if (entity.type === "AssetInfo") {
 
+      if (entity.type === "AssetInfo") {
         const info = entity as AssetInfo;
         this.assetsData.push({
           name: info.name,
           url: info.url
         });
+        continue;
       }
-      else if (this.table.isTableEntityByType(entity.type)) {
-        this.table.preAddItem(entity as TableItem);
-        itemsToAnnounce.push(entity as TableItem);
-      }
-      else if (this.settings.isSetting(entity.type)) {
-        this.settings.addSetting(entity);
+
+      for (const sys of this.entitiesSystems) {
+        if (!sys.isIncludedEntityByType(entity.type))
+          continue;
+
+        sys.addComplexStage1(entity);
       }
     }
 
     for (const player of data.players) {
       this.playersContainer.addPlayer(player);
     }
-
     this.ourPlayer = this.playersContainer.players.find(p => p.id === data.playerId) ?? null;
+
+    for (const entity of data.entities) {
+      for (const sys of this.entitiesSystems) {
+        if (!sys.isIncludedEntityByType(entity.type))
+          continue;
+
+        sys.addComplexStage2(entity);
+      }
+    }
 
     this.events.emit("PreDataSet");
 
-    // разделение сделано тому шо компоненты могут ссылаться на ещё несозданные объекты так что объекты нужно создать йес йес
+    for (const entity of data.entities) {
+      for (const sys of this.entitiesSystems) {
+        if (!sys.isIncludedEntityByType(entity.type))
+          continue;
 
-    for (const seat of seatsToAnnounce) {
-      this.bench.announceSeat(seat);
-    }
-    for (const item of itemsToAnnounce) {
-      this.table.announceItem(item, null);
+        sys.addComplexStage3(entity, null);
+      }
     }
 
     this.events.emit("DataSet");
   }
 
   private entityAdded(data: EntityAddedMessage): void {
-    if (this.table.isTableEntityByType(data.entity.type)) {
-      this.table.addItem(data.entity as TableItem, null);
-    }
-    else if (this.settings.isSetting(data.entity.type)) {
-      this.settings.addSetting(data.entity);
+    for (const sys of this.entitiesSystems) {
+      if (!sys.isIncludedEntityByType(data.entity.type))
+        continue;
+
+      sys.addSimple(data.entity, null);
     }
   }
 
   private entityRemoved(data: EntityRemovedMessage): void {
-    if (this.table.isTableEntityByType(data.entity.type)) {
-      this.table.removeItem(data.entity.id);
-    }
-    else if (this.settings.isSetting(data.entity.type)) {
-      this.settings.removeSetting(data.entity.id, data.entity.type);
+    for (const sys of this.entitiesSystems) {
+      if (!sys.isIncludedEntityByType(data.entity.type))
+        continue;
+
+      sys.remove(data.entity.id);
     }
   }
 
@@ -136,30 +148,39 @@ export default class LeGame {
 
     this.events.emit("Clearing");
 
-    this.table.clear();
-    this.bench.clear();
+    for (const sys of this.entitiesSystems) {
+      sys.clear();
+    }
 
+    // я просто скопировал коуд, так как местами нужно поменять, а делать более женерик я устал
     for (const entity of msg.entities) {
-      if (this.bench.isBenchEntityByType(entity.type)) {
-        this.bench.addSeat(entity as Seat);
-      }
-      else if (entity.type === "AssetInfo") {
+      for (const sys of this.entitiesSystems) {
+        if (!sys.isIncludedEntityByType(entity.type))
+          continue;
 
-        const info = entity as AssetInfo;
-        this.assetsData.push({
-          name: info.name,
-          url: info.url
-        });
+        sys.addComplexStage1(entity);
       }
     }
 
-    this.ourPlayer!.seat = this.bench.seats.find(s => s.id === msg.seatId) ?? null;
+    this.ourPlayer!.seat = this.bench.entities.find(s => s.id === msg.seatId) ?? null;
+
+    for (const entity of msg.entities) {
+      for (const sys of this.entitiesSystems) {
+        if (!sys.isIncludedEntityByType(entity.type))
+          continue;
+
+        sys.addComplexStage2(entity);
+      }
+    }
 
     this.events.emit("PreDataSet");
 
     for (const entity of msg.entities) {
-      if (this.table.isTableEntityByType(entity.type)) {
-        this.table.addItem(entity as TableItem, null);
+      for (const sys of this.entitiesSystems) {
+        if (!sys.isIncludedEntityByType(entity.type))
+          continue;
+
+        sys.addComplexStage3(entity, null);
       }
     }
 

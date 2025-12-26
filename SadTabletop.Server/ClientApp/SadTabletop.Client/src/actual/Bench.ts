@@ -1,6 +1,7 @@
 import type TypedEmitter from "@/utilities/TypedEmiiter";
 import type Seat from "./things/Seat";
 import type Connection from "@/communication/Connection";
+import EntitiesSystem from "./things/EntitiesSystem";
 
 type BenchEvents = {
   SeatAdded: (seat: Seat) => void;
@@ -13,8 +14,7 @@ interface TakeSeatMessage {
 /**
  * Хранит стулья...
  */
-export default class Bench {
-  readonly seats: Seat[] = [];
+export default class Bench extends EntitiesSystem<Seat> {
 
   private connection: Connection | null = null;
 
@@ -22,10 +22,6 @@ export default class Bench {
 
   subscribeToConnection(connection: Connection) {
     this.connection = connection;
-  }
-
-  clear() {
-    this.seats.splice(0);
   }
 
   sendTakeSeat(seat: Seat | null) {
@@ -36,7 +32,7 @@ export default class Bench {
     this.connection?.sendMessage("TakeSeatMessage", msg);
   }
 
-  isBenchEntityByType(type: string) {
+  override isIncludedEntityByType(type: string) {
     return ["Seat"].includes(type);
   }
 
@@ -45,7 +41,7 @@ export default class Bench {
    * @param seat
    */
   preAddSeat(seat: Seat) {
-    this.seats.push(seat);
+    this.entities.push(seat);
   }
 
   announceSeat(seat: Seat) {
@@ -53,7 +49,7 @@ export default class Bench {
   }
 
   addSeat(seat: Seat) {
-    this.seats.push(seat);
+    this.entities.push(seat);
     this.events.emit("SeatAdded", seat);
   }
 }

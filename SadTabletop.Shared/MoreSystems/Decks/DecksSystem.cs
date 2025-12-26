@@ -60,7 +60,7 @@ public class DecksSystem : SystemBase
     /// <param name="contentViewers"></param>
     /// <param name="orderedContentViewers"></param>
     /// <returns></returns>
-    public Deck Create(float x, float y, Flipness flipness, List<DeckCardInfo> infos,
+    public Deck Create(float x, float y, Flipness flipness, List<CardInfo> infos,
         Spisok<Seat?>? contentViewers = null, Spisok<Seat?>? orderedContentViewers = null)
     {
         // если просто поставить айди от 0 до Count и зашафлить, то с клиента будет видно, что это ток что созданная дека
@@ -150,7 +150,7 @@ public class DecksSystem : SystemBase
                 CardFaceComplicated? side = null;
                 if (pastDisplayedCard != displayedCard)
                 {
-                    side = deck.Flipness == Flipness.Shown ? displayedCard.FrontSide : displayedCard.BackSide;
+                    side = deck.Flipness == Flipness.Shown ? displayedCard.Front : displayedCard.Back;
                 }
 
                 // Если клиент знает, какие карты в колоде, но не знает, какую карту положили, ему нужно рассказать
@@ -159,7 +159,7 @@ public class DecksSystem : SystemBase
                 {
                     if (card.Flipness == Flipness.Hidden || _limit.IsLimitedFor(card, seat))
                     {
-                        cardFront = card.FrontSide;
+                        cardFront = card.Front;
                     }
                 }
 
@@ -261,12 +261,12 @@ public class DecksSystem : SystemBase
                 {
                     if (!_limit.IsLimitedFor(deck, seat))
                     {
-                        side = displayedCard?.FrontSide;
+                        side = displayedCard?.Front;
                     }
                 }
                 else
                 {
-                    side = displayedCard?.BackSide;
+                    side = displayedCard?.Back;
                 }
 
                 ViewedEntity cardToSend = _synchro.ViewEntity(card, seat);
@@ -345,20 +345,20 @@ public class DecksSystem : SystemBase
 
     private DeckDto TransformDeck(Deck deck, Seat? target)
     {
-        IReadOnlyCollection<DeckCardInfo>? cards = GetCardsInfo(deck, target);
+        IReadOnlyCollection<CardInfo>? cards = GetCardsInfo(deck, target);
 
         Card? displayedCard = deck.GetDisplayedCard();
 
         CardFaceComplicated? side = null;
         if (deck.Flipness == Flipness.Hidden)
         {
-            side = displayedCard?.BackSide;
+            side = displayedCard?.Back;
         }
         else
         {
             if (!_limit.IsLimitedFor(deck, target))
             {
-                side = displayedCard?.FrontSide;
+                side = displayedCard?.Front;
             }
         }
 
@@ -370,20 +370,20 @@ public class DecksSystem : SystemBase
     /// </summary>
     private DeckUpdatedMessage FormUpdateMessage(Deck deck, Seat? seat)
     {
-        IReadOnlyCollection<DeckCardInfo>? cards = GetCardsInfo(deck, seat);
+        IReadOnlyCollection<CardInfo>? cards = GetCardsInfo(deck, seat);
 
         Card? displayedCard = deck.GetDisplayedCard();
 
         CardFaceComplicated? side = null;
         if (deck.Flipness == Flipness.Hidden)
         {
-            side = displayedCard?.BackSide;
+            side = displayedCard?.Back;
         }
         else
         {
             if (!_limit.IsLimitedFor(deck, seat))
             {
-                side = displayedCard?.FrontSide;
+                side = displayedCard?.Front;
             }
         }
 
@@ -392,12 +392,12 @@ public class DecksSystem : SystemBase
         return new DeckUpdatedMessage(deck, side, deck.Cards.Count, cards, orderKnown);
     }
 
-    private IReadOnlyCollection<DeckCardInfo>? GetCardsInfo(Deck deck, Seat? target)
+    private IReadOnlyCollection<CardInfo>? GetCardsInfo(Deck deck, Seat? target)
     {
         if (deck.OrderedContentViewers?.Included(target) == true)
         {
             return deck.Cards
-                .Select(card => new DeckCardInfo(card.Id, card.FrontSide, card.BackSide))
+                .Select(CardInfo.FromCard)
                 .ToArray();
         }
 
@@ -405,8 +405,8 @@ public class DecksSystem : SystemBase
         {
             // Это не игромехан, так что юзать систему рандома не стоит.
 
-            DeckCardInfo[] result = deck.Cards
-                .Select(card => new DeckCardInfo(card.Id, card.FrontSide, card.BackSide))
+            CardInfo[] result = deck.Cards
+                .Select(CardInfo.FromCard)
                 .ToArray();
 
             Random.Shared.Shuffle(result);

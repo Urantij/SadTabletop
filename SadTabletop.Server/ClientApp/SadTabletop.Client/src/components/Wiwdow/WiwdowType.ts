@@ -1,6 +1,7 @@
 enum WiwdowType {
   BigCards,
-  Settings
+  Settings,
+  Popit
 }
 
 export default WiwdowType;

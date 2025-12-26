@@ -1,7 +1,7 @@
 import type ClickComponent from "@/actual/things/concrete/Clicks/ClickComponent";
+import type TableItem from "@/actual/things/concrete/Table/TableItem";
 import type Entity from "@/actual/things/Entity";
 import type EntityComponent from "@/actual/things/EntityComponent";
-import type TableItem from "@/actual/things/TableItem";
 
 export function findComponent<T extends EntityComponent>(entity: Entity, type: string) {
   const component = entity.components.find(c => c.type === type);

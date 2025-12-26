@@ -22,12 +22,12 @@ public class DeckTestSystem : SystemBase
         Seat seat = _seats.EnumerateRealSeats().First();
 
         Deck deck = _decks.Create(-200, 900, Flipness.Shown, [
-            new DeckCardInfo(0, CardFaceComplicated.CreateSimple(7), CardFaceComplicated.CreateSimple(22)),
-            new DeckCardInfo(0, CardFaceComplicated.CreateSimple(4), CardFaceComplicated.CreateSimple(22)),
-            new DeckCardInfo(0, CardFaceComplicated.CreateSimple(7), CardFaceComplicated.CreateSimple(22)),
-            new DeckCardInfo(0, CardFaceComplicated.CreateSimple(4), CardFaceComplicated.CreateSimple(22)),
-            new DeckCardInfo(0, CardFaceComplicated.CreateSimple(7), CardFaceComplicated.CreateSimple(22)),
-            new DeckCardInfo(0, CardFaceComplicated.CreateSimple(4), CardFaceComplicated.CreateSimple(22))
+            new CardInfo(0, CardFaceComplicated.CreateSimple(7), CardFaceComplicated.CreateSimple(22)),
+            new CardInfo(0, CardFaceComplicated.CreateSimple(4), CardFaceComplicated.CreateSimple(22)),
+            new CardInfo(0, CardFaceComplicated.CreateSimple(7), CardFaceComplicated.CreateSimple(22)),
+            new CardInfo(0, CardFaceComplicated.CreateSimple(4), CardFaceComplicated.CreateSimple(22)),
+            new CardInfo(0, CardFaceComplicated.CreateSimple(7), CardFaceComplicated.CreateSimple(22)),
+            new CardInfo(0, CardFaceComplicated.CreateSimple(4), CardFaceComplicated.CreateSimple(22))
         ], orderedContentViewers: Spisok.CreateNoOneWithIncluded(seat));
     }
 }

@@ -1,10 +1,10 @@
-import type Table from "@/actual/Table";
+import type Table from "@/actual/things/concrete/Table/Table";
 import type Connection from "@/communication/Connection";
 import type TypedEmitter from "@/utilities/TypedEmiiter";
 import type CardMovedToHandMessage from "./messages/server/CardMovedToHandMessage";
 import type CardRemovedFromHandMessage from "./messages/server/CardRemovedFromHandMessage";
 import type CardsSwappedMessage from "./messages/server/CardsSwappedMessage";
-import type TableItem from "../../TableItem";
+import type TableItem from "../Table/TableItem";
 import type Card from "../Cards/Card";
 import type Bench from "@/actual/Bench";
 import type { InHandComponent, InHandComponentDto } from "./InHandComponent";
@@ -15,7 +15,7 @@ import type Seat from "../../Seat";
 import type MoveCardInHandMessage from "./messages/client/MoveCardInHandMessage";
 import type CardMovedInHandMessage from "./messages/server/CardMovedInHandMessage";
 
-type MessageEvents = {
+type HandsEvents = {
   CardMovedToHand: (card: Card, component: InHandComponent) => void;
   CardRemovedFromHand: (card: Card, hand: Hand) => void;
   CardsSwapped: (card1: Card, card2: Card) => void;
@@ -31,7 +31,7 @@ export default class HandsSystem {
   // pizda)
   readonly hands: Hand[] = [];
 
-  readonly events: TypedEmitter<MessageEvents> = new Phaser.Events.EventEmitter();
+  readonly events: TypedEmitter<HandsEvents> = new Phaser.Events.EventEmitter();
 
   connection: Connection | null = null;
 
@@ -39,7 +39,7 @@ export default class HandsSystem {
     this.table = table;
     this.bench = bench;
 
-    this.table.events.on("ItemAdded", (item) => this.itemAdded(item));
+    this.table.events.on("EntityAdded", (item) => this.itemAdded(item));
     // this.table.events.on("ItemRemoved", (item) => this.itemRemoved(item));
   }
 
@@ -81,7 +81,7 @@ export default class HandsSystem {
 
     const component = replaceDtoComponent(item, "InHandComponent", (dto: InHandComponentDto) => {
 
-      const owner = this.bench.seats.find(s => s.id === dto.owner);
+      const owner = this.bench.entities.find(s => s.id === dto.owner);
       if (owner === undefined) {
         console.error(`itemAdded owner ${dto.owner}`);
         return;
@@ -118,13 +118,13 @@ export default class HandsSystem {
 
   private cardMovedToHand(msg: CardMovedToHandMessage): void {
 
-    const card = this.table.findItem<Card>(msg.card);
+    const card = this.table.findCast<Card>(msg.card);
     if (card === undefined) {
       console.warn(`cardMovedToHand ${msg.card} card`);
       return;
     }
 
-    const seat = this.bench.seats.find(s => s.id === msg.owner);
+    const seat = this.bench.entities.find(s => s.id === msg.owner);
     if (seat === undefined) {
       console.warn(`cardMovedToHand ${msg.owner} seat`);
       return;
@@ -154,7 +154,7 @@ export default class HandsSystem {
   }
 
   private cardRemovedFromHand(msg: CardRemovedFromHandMessage): void {
-    const card = this.table.findItem<Card>(msg.card);
+    const card = this.table.findCast<Card>(msg.card);
     if (card === undefined) {
       console.warn(`cardRemovedFromHand ${msg.card}`)
       return;
@@ -172,12 +172,12 @@ export default class HandsSystem {
 
   private cardsSwapped(msg: CardsSwappedMessage): void {
 
-    const card1 = this.table.findItem<Card>(msg.card1);
+    const card1 = this.table.findCast<Card>(msg.card1);
     if (card1 === undefined) {
       console.warn(`cardsSwapped 1 ${msg.card1}`)
       return;
     }
-    const card2 = this.table.findItem<Card>(msg.card2);
+    const card2 = this.table.findCast<Card>(msg.card2);
     if (card2 === undefined) {
       console.warn(`cardsSwapped 2 ${msg.card2}`)
       return;
@@ -203,7 +203,7 @@ export default class HandsSystem {
 
   private cardMovedInHand(msg: CardMovedInHandMessage): void {
 
-    const card = this.table.findItem<Card>(msg.card);
+    const card = this.table.findCast<Card>(msg.card);
     if (card === undefined) {
       console.warn(`cardMovedInHand card ${msg.card}`)
       return;

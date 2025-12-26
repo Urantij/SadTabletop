@@ -45,7 +45,7 @@ export default class PlayersContainer {
   addPlayer(playerInfo: PlayerInfo) {
     let seat: Seat | null = null;
     if (playerInfo.seatId !== null) {
-      seat = this.leGame.bench.seats.find(s => s.id === playerInfo.seatId) ?? null;
+      seat = this.leGame.bench.entities.find(s => s.id === playerInfo.seatId) ?? null;
     }
 
     const player: Player = {
@@ -57,7 +57,8 @@ export default class PlayersContainer {
         components: [],
         type: "Cursor",
         x: 0,
-        y: 0
+        y: 0,
+        description: null
       }
     };
 
@@ -101,7 +102,7 @@ export default class PlayersContainer {
 
     let seat: Seat | null = null;
     if (msg.seatId !== null) {
-      seat = this.leGame.bench.seats.find(s => s.id === msg.seatId) ?? null;
+      seat = this.leGame.bench.entities.find(s => s.id === msg.seatId) ?? null;
     }
 
     player.seat = seat;
@@ -130,7 +131,7 @@ export default class PlayersContainer {
     let seat: Seat | null = null;
 
     if (msg.seatId !== null) {
-      seat = this.leGame.bench.seats.find(s => s.id === msg.seatId) ?? null;
+      seat = this.leGame.bench.entities.find(s => s.id === msg.seatId) ?? null;
 
       if (seat === null) {
         console.warn(`не удалось найти стул ${msg.seatId} youTookSeatMessage`);

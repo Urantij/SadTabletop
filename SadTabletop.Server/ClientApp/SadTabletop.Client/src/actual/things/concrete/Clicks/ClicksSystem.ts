@@ -1,12 +1,12 @@
-import type Table from "@/actual/Table";
+import type Table from "@/actual/things/concrete/Table/Table";
 import type Connection from "@/communication/Connection";
 import type TypedEmitter from "@/utilities/TypedEmiiter";
 import type ItemClickyMessage from "./messages/server/ItemClickyMessage";
-import type TableItem from "../../TableItem";
 import { removeFromCollection, removeItemFromCollection } from "@/utilities/MyCollections";
 import type ClickMessage from "./messages/client/ClickMessage";
 import { findClicky, isClicky } from "@/utilities/Componenter";
 import type ClickComponent from "./ClickComponent";
+import type TableItem from "../Table/TableItem";
 
 type MessageEvents = {
   ItemClickyChanged(item: TableItem, isClicky: boolean): void;
@@ -55,7 +55,7 @@ export default class ClicksSystem {
 
   private itemClickyChanged(msg: ItemClickyMessage): void {
 
-    const item = this.table.items.find(i => i.id == msg.item);
+    const item = this.table.entities.find(i => i.id == msg.item);
     if (item === undefined) {
       console.error(`не удалось найти итем ${msg.item} itemClickyChanged`);
       return;

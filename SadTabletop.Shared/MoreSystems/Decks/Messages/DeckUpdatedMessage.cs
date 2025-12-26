@@ -7,7 +7,7 @@ public class DeckUpdatedMessage(
     Deck deck,
     CardFaceComplicated? side,
     int cardsCount,
-    IReadOnlyCollection<DeckCardInfo>? cards,
+    IReadOnlyCollection<CardInfo>? cards,
     bool? orderKnown) : ServerMessageBase
 {
     public Deck Deck { get; } = deck;
@@ -20,7 +20,7 @@ public class DeckUpdatedMessage(
     /// <summary>
     /// Список карт, если известен. Если порядок случайный, коллекция уже должна быть зашафлена.
     /// </summary>
-    public IReadOnlyCollection<DeckCardInfo>? Cards { get; } = cards;
+    public IReadOnlyCollection<CardInfo>? Cards { get; } = cards;
 
     /// <summary>
     /// null = коллекции нет. false = порядок случайный. ...
