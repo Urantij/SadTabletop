@@ -9,7 +9,7 @@ public static class MehExtensions
         do
         {
             sample = Random.Shared.Next(int.MinValue, int.MaxValue);
-        } while (!list.Select(get).Contains(sample));
+        } while (list.Select(get).Contains(sample));
 
         return sample;
     }
@@ -35,7 +35,7 @@ public static class MehExtensions
             do
             {
                 sample = Random.Shared.Next(int.MinValue, int.MaxValue);
-            } while (!samples.Contains(sample));
+            } while (samples.Contains(sample));
 
             samples[i] = sample;
         }
