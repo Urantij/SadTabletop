@@ -24,9 +24,9 @@ public class LimitSystem : ComponentSystemBase
         LimitComponent? limit = entity.TryGetComponent<LimitComponent>(l => l.Source == source);
 
         Seat?[] toLimit = _seats.EnumerateAllSeats()
-        .Where(s => s != seat)
-        .Where(s => !IsLimitedFor(entity, s))
-        .ToArray();
+            .Where(s => s != seat)
+            .Where(s => !IsLimitedFor(entity, s))
+            .ToArray();
 
         if (limit != null)
         {
@@ -115,40 +115,52 @@ public class LimitSystem : ComponentSystemBase
         }
     }
 
-    public void LiftLimitsBySource<T>(T entity, object source) where T : EntityBase, ILimitable
+    public void LiftLimitsBySource<T>(T entity, object source, bool sendRelatedMessage = true)
+        where T : EntityBase, ILimitable
     {
         LimitComponent[] comps = entity.EnumerateComponents()
-        .OfType<LimitComponent>()
-        .Where(c => c.Source == source)
-        .ToArray();
+            .OfType<LimitComponent>()
+            .Where(c => c.Source == source)
+            .ToArray();
 
         if (comps.Length == 0)
             return;
 
         // TODO тупо както
+        // upd ещё тупее. хызы как без повторок и лишних переменных сделать
 
-        List<Seat?> theyWereLimited = [];
-
-        foreach (Seat? seat in _seats.EnumerateAllSeats())
+        if (sendRelatedMessage)
         {
-            if (IsLimitedFor(entity, seat))
+            List<Seat?> theyWereLimited = [];
+
+            foreach (Seat? seat in _seats.EnumerateAllSeats())
             {
-                theyWereLimited.Add(seat);
+                if (IsLimitedFor(entity, seat))
+                {
+                    theyWereLimited.Add(seat);
+                }
+            }
+
+            foreach (LimitComponent comp in comps)
+            {
+                RemoveComponentFromEntity(entity, comp);
+            }
+
+            Seat?[] theyKnow = theyWereLimited
+                .Where(s => !IsLimitedFor(entity, s))
+                .ToArray();
+
+            if (theyKnow.Length > 0)
+            {
+                _events.Invoke(new LimitedEvent(entity, theyKnowNow: theyKnow));
             }
         }
-
-        foreach (LimitComponent comp in comps)
+        else
         {
-            RemoveComponentFromEntity(entity, comp);
-        }
-
-        Seat?[] theyKnow = theyWereLimited
-        .Where(s => !IsLimitedFor(entity, s))
-        .ToArray();
-
-        if (theyKnow.Length > 0)
-        {
-            _events.Invoke(new LimitedEvent(entity, theyKnowNow: theyKnow));
+            foreach (LimitComponent comp in comps)
+            {
+                RemoveComponentFromEntity(entity, comp);
+            }
         }
     }
 

@@ -1,6 +1,7 @@
 using SadTabletop.Shared.Helps;
 using SadTabletop.Shared.Mechanics;
 using SadTabletop.Shared.MoreSystems.Cards;
+using SadTabletop.Shared.MoreSystems.Decks.Events;
 using SadTabletop.Shared.MoreSystems.Decks.Messages;
 using SadTabletop.Shared.MoreSystems.Hands;
 using SadTabletop.Shared.Systems.Communication;
@@ -86,7 +87,15 @@ public class DecksSystem : SystemBase
         //     .OrderBy(_ => Random.Shared.Next())
         //     .ToList();
         List<Card> cards = infos
-            .Select(info => _cards.Create(x, y, info.Front, info.Back, flipness, sendRelatedMessage: false))
+            .Select(info =>
+            {
+                // кансер
+                Card card = _cards.Create(x, y, info.Front, info.Back, flipness, sendRelatedMessage: false);
+
+                _table.RemoveEntity(card, sendRelatedMessage: false);
+
+                return card;
+            })
             .ToList();
 
         cards.NonRepeatedRandomAssign((c, i) => _table.SetEntityId(c, i));
@@ -111,6 +120,8 @@ public class DecksSystem : SystemBase
     /// <param name="way"></param>
     public void PutCard(Deck deck, Card card, DeckWay way)
     {
+        _events.Invoke(new CardAddingToDeckEvent(deck, card));
+
         Card? pastDisplayedCard = deck.GetDisplayedCard();
 
         _table.RemoveEntity(card, sendRelatedMessage: false);
@@ -247,7 +258,7 @@ public class DecksSystem : SystemBase
         _table.SetPosition(card, x, y);
         _cards.SetFlipness(card, flipness);
 
-        AnnounceRemoveCardFromDeck(deck, card);
+        ProcessRemovedFromDeckCard(deck, card);
     }
 
     /// <summary>
@@ -292,7 +303,7 @@ public class DecksSystem : SystemBase
         card.Y = y;
         card.Flipness = flipness;
 
-        AnnounceRemoveCardFromDeck(deck, card);
+        ProcessRemovedFromDeckCard(deck, card);
 
         return card;
     }
@@ -302,11 +313,11 @@ public class DecksSystem : SystemBase
     /// </summary>
     /// <param name="deck"></param>
     /// <param name="card"></param>
-    private void AnnounceRemoveCardFromDeck(Deck deck, Card card)
+    private void ProcessRemovedFromDeckCard(Deck deck, Card card)
     {
         int removedCardDeckId = card.Id;
 
-        _table.ChangeEntityId(card);
+        _table.AddEntity(card, sendRelatedMessage: false);
 
         // TODO сравнивать сайды карты, не всегда отправлять.
         Card? displayedCard = deck.GetDisplayedCard();

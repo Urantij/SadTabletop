@@ -1,5 +1,6 @@
 using SadTabletop.Shared.Mechanics;
 using SadTabletop.Shared.MoreSystems.Cards;
+using SadTabletop.Shared.MoreSystems.Decks.Events;
 using SadTabletop.Shared.MoreSystems.Hands.Messages.Client;
 using SadTabletop.Shared.MoreSystems.Hands.Messages.Server;
 using SadTabletop.Shared.Systems.Communication;
@@ -27,7 +28,9 @@ public class HandsSystem : ComponentSystemBase
     {
         base.GameCreated();
 
-        Game.GetSystem<EventsSystem>().Subscribe<ClientMessageReceivedEvent<MoveCardInHandMessage>>(EventPriority.Normal, this, CardMovedInHand);
+        Game.GetSystem<EventsSystem>().Subscribe<CardAddingToDeckEvent>(EventPriority.Normal, this, CardAddingToDeck);
+        Game.GetSystem<EventsSystem>()
+            .Subscribe<ClientMessageReceivedEvent<MoveCardInHandMessage>>(EventPriority.Normal, this, CardMovedInHand);
     }
 
     protected internal override void GameLoaded()
@@ -132,6 +135,15 @@ public class HandsSystem : ComponentSystemBase
         _communication.SendEntityRelated(message, card1);
     }
 
+    private void CardAddingToDeck(CardAddingToDeckEvent @event)
+    {
+        InHandComponent? inHand = @event.Card.TryGetComponent<InHandComponent>();
+        if (inHand != null)
+        {
+            RemoveInHandComponent(@event.Card, inHand, sendRelatedMessages: false);
+        }
+    }
+
     private void CardMovedInHand(ClientMessageReceivedEvent<MoveCardInHandMessage> @event)
     {
         if (@event.Seat == null)
@@ -173,9 +185,9 @@ public class HandsSystem : ComponentSystemBase
         _communication.SendEntityRelated(message, @event.Message.Card);
     }
 
-    private void RemoveInHandComponent(Card card, InHandComponent inHand)
+    private void RemoveInHandComponent(Card card, InHandComponent inHand, bool sendRelatedMessages = true)
     {
-        _limit.LiftLimitsBySource(card, this);
+        _limit.LiftLimitsBySource(card, this, sendRelatedMessage: sendRelatedMessages);
 
         RemoveComponentFromEntity(card, inHand);
         inHand.Hand.RemoveCard(card);

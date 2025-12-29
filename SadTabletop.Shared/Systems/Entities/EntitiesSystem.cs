@@ -42,6 +42,7 @@ public abstract class EntitiesSystem<T> : EntitiesSystem
 
     /// <summary>
     /// Добавляет энтити в список и рассказывает игрокам об этом.
+    /// Обновляет айди ентити.
     /// </summary>
     /// <param name="entity"></param>
     /// <param name="sendRelatedMessage">Если фолс, клиентам не будет отправлено сообщение о появлении этого ентити</param>
