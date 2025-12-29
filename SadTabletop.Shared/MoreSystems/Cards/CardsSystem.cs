@@ -69,19 +69,30 @@ public class CardsSystem : SystemBase
             _ => throw new Exception("че бля")
         };
 
-        if (card.Flipness == Flipness.Shown)
-        {
-            foreach (Seat? seat in _seats.EnumerateAllSeats())
-            {
-                CardFaceComplicated? front = _limit.IsLimitedFor(card, seat) ? null : card.Front;
+        AnnounceFlip(card);
+    }
 
-                _communication.SendEntityRelated(new CardFlippedMessage(card, front), card, target: seat);
-            }
-        }
-        else
-        {
-            _communication.SendEntityRelated(new CardFlippedMessage(card, null), card);
-        }
+    /// <summary>
+    /// Устанавливает указанный флип, и сообщает клиентам, если флип новый
+    /// </summary>
+    /// <param name="card"></param>
+    /// <param name="flipness"></param>
+    public void Flip(Card card, Flipness flipness)
+    {
+        if (card.Flipness == flipness)
+            return;
+
+        card.Flipness = flipness;
+
+        AnnounceFlip(card);
+    }
+
+    /// <summary>
+    /// Не обновляет информацию у клиентов, использовать только для работы с картами в деке.
+    /// </summary>
+    public void SetFlipness(Card card, Flipness flipness)
+    {
+        card.Flipness = flipness;
     }
 
     public bool CanFlip(Seat seat, Card card)
@@ -107,6 +118,23 @@ public class CardsSystem : SystemBase
         }
 
         return false;
+    }
+
+    private void AnnounceFlip(Card card)
+    {
+        if (card.Flipness == Flipness.Shown)
+        {
+            foreach (Seat? seat in _seats.EnumerateAllSeats())
+            {
+                CardFaceComplicated? front = _limit.IsLimitedFor(card, seat) ? null : card.Front;
+
+                _communication.SendEntityRelated(new CardFlippedMessage(card, front), card, target: seat);
+            }
+        }
+        else
+        {
+            _communication.SendEntityRelated(new CardFlippedMessage(card, null), card);
+        }
     }
 
     private void CardFlipRequested(ClientMessageReceivedEvent<FlipCardMessage> @event)

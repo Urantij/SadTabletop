@@ -2,10 +2,12 @@ using SadTabletop.Shared.Helps;
 using SadTabletop.Shared.Mechanics;
 using SadTabletop.Shared.MoreSystems.Cards;
 using SadTabletop.Shared.MoreSystems.Decks.Messages;
+using SadTabletop.Shared.MoreSystems.Hands;
 using SadTabletop.Shared.Systems.Communication;
 using SadTabletop.Shared.Systems.Events;
 using SadTabletop.Shared.Systems.Limit;
 using SadTabletop.Shared.Systems.Limit.Events;
+using SadTabletop.Shared.Systems.MyRandom;
 using SadTabletop.Shared.Systems.Seats;
 using SadTabletop.Shared.Systems.Synchro;
 using SadTabletop.Shared.Systems.Synchro.Messages;
@@ -26,11 +28,15 @@ public class DecksSystem : SystemBase
     private readonly LimitSystem _limit;
     private readonly ViewerSystem _viewer;
 
+    private readonly RandomSystem _random;
+
     private readonly TableSystem _table;
     private readonly SeatsSystem _seats;
     private readonly CommunicationSystem _communication;
 
     private readonly CardsSystem _cards;
+
+    private readonly HandsSystem _hands;
 
     public DecksSystem(Game game) : base(game)
     {
@@ -197,6 +203,53 @@ public class DecksSystem : SystemBase
     //     }
     // }
 
+    // TODO как будто это должно быть где то ещё
+    /// <summary>
+    /// Достаёт карту из колоды рубашкой вверх на позицию деки, переносит её в руку цели, флипает лицом вверх.
+    /// </summary>
+    /// <param name="deck"></param>
+    /// <param name="card"></param>
+    /// <param name="target"></param>
+    public void DrawCard(Deck deck, Card card, Seat target)
+    {
+        GetCard(deck, card, deck.X, deck.Y, Flipness.Hidden);
+        _hands.AddToHand(card, target);
+        _cards.Flip(card, Flipness.Shown);
+    }
+
+    /// <summary>
+    /// Достаёт карту из колоды и кладёт её лицом вверх поверх колоды.
+    /// </summary>
+    /// <param name="deck"></param>
+    /// <param name="card"></param>
+    /// <returns></returns>
+    public void GetCard(Deck deck, Card card)
+    {
+        GetCard(deck, card, deck.X, deck.Y, Flipness.Shown);
+    }
+
+    /// <summary>
+    /// Достаёт указанную карту из колоды и размещает её по указанным координатам
+    /// </summary>
+    /// <param name="deck"></param>
+    /// <param name="card"></param>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="flipness"></param>
+    /// <exception cref="Exception"></exception>
+    public void GetCard(Deck deck, Card card, float x, float y, Flipness flipness)
+    {
+        if (!deck.Cards.Remove(card))
+        {
+            throw new Exception($"Попытка удалить карту {card.Id} из колоды {deck.Id} где её нет.");
+        }
+
+        _table.SetPosition(card, x, y);
+        _cards.SetFlipness(card, flipness);
+
+        AnnounceRemoveCardFromDeck(deck, card);
+    }
+
     /// <summary>
     /// Достаёт карту с верха колоды.
     /// Если колода пустая, кидает ексепшн.
@@ -239,6 +292,18 @@ public class DecksSystem : SystemBase
         card.Y = y;
         card.Flipness = flipness;
 
+        AnnounceRemoveCardFromDeck(deck, card);
+
+        return card;
+    }
+
+    /// <summary>
+    /// Уже удалённую карту из колоды анонсирует клиентам и меняет её айди ещё
+    /// </summary>
+    /// <param name="deck"></param>
+    /// <param name="card"></param>
+    private void AnnounceRemoveCardFromDeck(Deck deck, Card card)
+    {
         int removedCardDeckId = card.Id;
 
         _table.ChangeEntityId(card);
@@ -281,8 +346,6 @@ public class DecksSystem : SystemBase
                 _communication.Send(message, seat);
             }
         }
-
-        return card;
     }
 
     /// <summary>
@@ -306,8 +369,9 @@ public class DecksSystem : SystemBase
         }
         else if (way == DeckWay.Random)
         {
-            // TODO не хо4у ща думать
-            throw new NotImplementedException();
+            index = _random.Get(0, deck.Cards.Count);
+
+            deck.Cards.Insert(index, card);
         }
         else
         {

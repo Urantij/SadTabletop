@@ -28,4 +28,16 @@ public class TableSystem : EntitiesSystem<TableItem>
 
         _communication.SendEntityRelated(new ItemMovedMessage(item, x, y), item);
     }
+
+    /// <summary>
+    /// Устанавливает позицию объекта, не сообщая об этом клиентам.
+    /// </summary>
+    /// <param name="item"></param>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    public void SetPosition(TableItem item, float x, float y)
+    {
+        item.X = x;
+        item.Y = y;
+    }
 }
