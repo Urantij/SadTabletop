@@ -35,9 +35,9 @@ public class PlayableSystem : ComponentSystemBase
         _viewer.RegisterComponent<PlayableComponent>(TransformComponent);
     }
 
-    public void MakePlayable(Card card, Seat owner, Action<TableItem?> playHandler)
+    public void MakePlayable(Card card, Seat owner, Action<TableItem?> playHandler, bool singleUse = true)
     {
-        MakePlayable(card, owner, playHandler, null);
+        MakePlayable(card, owner, playHandler, null, singleUse: singleUse);
     }
 
     /// <summary>
@@ -49,7 +49,9 @@ public class PlayableSystem : ComponentSystemBase
     /// <param name="owner"></param>
     /// <param name="playHandler"></param>
     /// <param name="targets"></param>
-    public void MakePlayable(Card card, Seat owner, Action<TableItem?> playHandler, params TableItem[]? targets)
+    /// <param name="singleUse"></param>
+    public void MakePlayable(Card card, Seat owner, Action<TableItem?> playHandler, TableItem[]? targets,
+        bool singleUse = true)
     {
         PlayableComponent? existing = card.TryGetComponent<PlayableComponent>();
 
@@ -58,12 +60,10 @@ public class PlayableSystem : ComponentSystemBase
             RemoveComponentFromEntity(card, existing);
         }
 
-        PlayableComponent playable = new(owner, targets, playHandler);
+        PlayableComponent playable = new(owner, targets, playHandler, singleUse);
 
         AddComponentToEntity(card, playable);
-
         CardPlayabilityChangedMessage message = new(card, owner, targets);
-
         _communication.SendEntityRelated(message, card);
     }
 
@@ -81,11 +81,7 @@ public class PlayableSystem : ComponentSystemBase
             return;
         }
 
-        RemoveComponentFromEntity(card, component);
-
-        CardUnplayabilityMessage message = new(card);
-
-        _communication.SendEntityRelated(message, card);
+        RemovePlayability(card, component);
     }
 
     private void CardPlayed(ClientMessageReceivedEvent<PlayCardMessage> obj)
@@ -120,7 +116,20 @@ public class PlayableSystem : ComponentSystemBase
             return;
         }
 
+        if (component.SingleUse)
+        {
+            // TODO а другая херня сообщает сингл юз клиентам и они сами короче да
+            RemovePlayability(card, component);
+        }
+
         component.PlayHandler(obj.Message.Target);
+    }
+
+    private void RemovePlayability(Card card, PlayableComponent component)
+    {
+        RemoveComponentFromEntity(card, component);
+        CardUnplayabilityMessage message = new(card);
+        _communication.SendEntityRelated(message, card);
     }
 
     private PlayableComponentDto TransformComponent(PlayableComponent component, Seat? seat)
