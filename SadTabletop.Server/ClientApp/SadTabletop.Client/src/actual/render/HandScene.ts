@@ -53,6 +53,17 @@ export default class HandScene extends BaseScene {
 
   fkey: Phaser.Input.Keyboard.Key | undefined;
 
+  // xd
+  public removeCard(card: Card) {
+    const obj = this.hand.objs.find(o => o.gameObject === card);
+    if (obj === undefined) {
+      console.warn(`не удалось найти карту removeCard ${card.id}`);
+      return;
+    }
+
+    this.destroyCard(obj);
+  }
+
   private preload() {
     console.log("preload");
 
@@ -108,16 +119,7 @@ export default class HandScene extends BaseScene {
       if (obj === undefined)
         return;
 
-      if (this.dragObj === obj) {
-        this.dragObj = null;
-      }
-      if (this.hoveredObject === obj) {
-        this.hoveredObject = null;
-      }
-
-      this.hand.removeCardFromHand(obj);
-
-      obj.destroy();
+      this.destroyCard(obj);
     });
     this.leGame.events.on("Clearing", () => {
       for (const obj of this.hand.objs) {
@@ -146,9 +148,7 @@ export default class HandScene extends BaseScene {
         return;
       }
 
-      this.hand.removeCardFromHand(obj);
-
-      obj.destroy();
+      this.destroyCard(obj);
     });
 
     this.leGame.playable.events.on("Playable", (card, component) => {
@@ -247,6 +247,19 @@ export default class HandScene extends BaseScene {
       this.fkey.plugin.enabled = false;
       Control.takeHands(false);
     }
+  }
+
+  private destroyCard(obj: CardObject) {
+    if (this.dragObj === obj) {
+      this.dragObj = null;
+    }
+    if (this.hoveredObject === obj) {
+      this.hoveredObject = null;
+    }
+
+    this.hand.removeCardFromHand(obj);
+
+    obj.destroy();
   }
 
   private pointerMoved(pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) {

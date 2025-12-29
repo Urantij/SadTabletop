@@ -34,6 +34,7 @@ import type MyTileSprite from "../things/concrete/Sprites/MyTileSprite";
 import MyTileSpriteObject from "./objects/MyTileSpriteObject";
 import type CameraBoundSetting from "../things/concrete/Settings/Variants/CameraBoundSetting";
 import type TableItem from "../things/concrete/Table/TableItem";
+import type DeckCardInsertedData from "../things/concrete/Decks/DeckCardInsertedData";
 
 type MainSceneEvents = {
   ObjectCreated: (obj: RenderObjectRepresentation) => void;
@@ -837,33 +838,39 @@ export default class MainScene extends BaseScene {
     obj.updateThingsPlease();
   }
 
-  insertCardToDeck(deck: Deck, card: Card) {
-    const deckObj = this.objects.find(o => o.gameObject.id === deck.id) as DeckObject;
+  // я уже ваще ниче не понимаю
+  insertCardToDeck(card: Card, data: DeckCardInsertedData) {
+    const deckObj = this.objects.find(o => o.gameObject.id === data.deck.id) as DeckObject;
     if (deckObj === undefined) {
-      console.warn(`при insertCardToDeck такого нет deck ${deck}`);
+      console.warn(`при insertCardToDeck такого нет deck ${data.deck}`);
       return;
     }
 
-    const cardObj = this.objects.find(o => o.gameObject.id === card.id) as CardObject;
+    // xd
+    // this.hander.removeCard(card);
+
+    const cardObj = removeFromCollection(this.objects, o => o.gameObject.id === card.id) as CardObject | undefined;
     if (cardObj === undefined) {
       console.warn(`при insertCardToDeck такого нет card ${card}`);
       return;
     }
 
     this.animka.moveObjectToObject(cardObj, deckObj, () => {
-      cardObj.destroy();
+      this.destroy(cardObj);
       deckObj.updateThingsPlease();
     });
   }
 
-  removeCardFromDeck(deck: Deck, card: Card) {
-    const deckObj = this.objects.find(o => o.gameObject.id === deck.id) as DeckObject;
+  removeCardFromDeck(card: Card, data: DeckCardRemovedData) {
+    const deckObj = this.objects.find(o => o.gameObject.id === data.deck.id) as DeckObject;
     if (deckObj === undefined) {
-      console.warn(`при insertCardToDeck такого нет deck ${deck}`);
+      console.warn(`при insertCardToDeck такого нет deck ${data.deck}`);
       return;
     }
 
     deckObj.updateThingsPlease();
+
+    this.createCard(card, data);
   }
 
   updateClicky(item: TableItem, clicky: boolean) {

@@ -25,7 +25,7 @@ import type { un } from "vue-router/dist/router-CWoNjPRp.mjs";
 export type EntitiesEvents<T extends Entity> = {
   EntityAddedEarly: (entity: T) => void;
   EntityAdded: (entity: T, data: object | null) => void;
-  EntityRemoved: (entity: T) => void;
+  EntityRemoved: (entity: T, data: object | null) => void;
 }
 
 export abstract class EntitiesBaseSystem {
@@ -72,24 +72,24 @@ export default abstract class EntitiesSystem<TEntity extends Entity> extends Ent
     this.events.emit("EntityAddedEarly", entity);
   }
 
-  override addComplexStage3(entity: TEntity, data: object | null) {
+  override addComplexStage3(entity: TEntity, data: object | null = null) {
     this.events.emit("EntityAdded", entity, data);
   }
 
-  override addSimple(entity: TEntity, data: object | null) {
+  override addSimple(entity: TEntity, data: object | null = null) {
     this.addEntityToList(entity);
     this.events.emit("EntityAddedEarly", entity);
     this.events.emit("EntityAdded", entity, data);
   }
 
-  override remove(id: number): void {
+  override remove(id: number, data: object | null = null): void {
     const entity = removeFromCollection(this.entities, i => i.id === id);
     if (entity === undefined) {
       console.log(`удаляем неизвестный ентити ${id}`);
       return;
     }
 
-    this.events.emit("EntityRemoved", entity);
+    this.events.emit("EntityRemoved", entity, data);
   }
 
   override clear(): void {

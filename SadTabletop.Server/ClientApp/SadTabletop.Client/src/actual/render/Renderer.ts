@@ -12,6 +12,8 @@ import type CircleShape from "../things/concrete/Shapes/CircleShape";
 import type MySprite from "../things/concrete/Sprites/MySprite";
 import type MyTileSprite from "../things/concrete/Sprites/MyTileSprite";
 import type TableItem from "../things/concrete/Table/TableItem";
+import DeckCardInsertedData from "../things/concrete/Decks/DeckCardInsertedData";
+import DeckCardRemovedData from "../things/concrete/Decks/DeckCardRemovedData";
 
 type RendererEvents = {
   ClickyClicked: (entity: TableItem) => void;
@@ -92,10 +94,20 @@ export default class Renderer {
           });
 
           this.leGame.table.events.on("EntityAdded", (item, data) => {
-            this.createEntity(item, data);
+            if (data instanceof DeckCardRemovedData) {
+              this.scene?.removeCardFromDeck(item as Card, data);
+            }
+            else {
+              this.createEntity(item, data);
+            }
           });
-          this.leGame.table.events.on("EntityRemoved", (item) => {
-            this.scene?.destroyEntity(item);
+          this.leGame.table.events.on("EntityRemoved", (item, data) => {
+            if (data instanceof DeckCardInsertedData) {
+              this.scene?.insertCardToDeck(item as Card, data);
+            }
+            else {
+              this.scene?.destroyEntity(item);
+            }
           });
           this.leGame.table.events.on("ItemMoved", (item, oldX, oldY) => {
             this.scene?.moveItem(item);
@@ -111,12 +123,12 @@ export default class Renderer {
           this.leGame.table.decks.events.on("DeckUpdated", (deck) => {
             this.scene?.updateDeck(deck);
           });
-          this.leGame.table.decks.events.on("CardInserted", (deck, card) => {
-            this.scene?.insertCardToDeck(deck, card);
-          });
-          this.leGame.table.decks.events.on("CardRemoved", (deck, card) => {
-            this.scene?.removeCardFromDeck(deck, card);
-          });
+          // this.leGame.table.decks.events.on("CardInserted", (deck, card) => {
+          //   this.scene?.insertCardToDeck(deck, card);
+          // });
+          // this.leGame.table.decks.events.on("CardRemoved", (deck, card) => {
+          //   this.scene?.removeCardFromDeck(deck, card);
+          // });
 
           this.leGame.table.clicks.events.on("ItemClickyChanged", (item, clicky) => {
             this.scene?.updateClicky(item, clicky);

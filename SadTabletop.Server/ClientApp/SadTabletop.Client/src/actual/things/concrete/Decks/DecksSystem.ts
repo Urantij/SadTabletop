@@ -11,11 +11,12 @@ import DeckCardRemovedData from "./DeckCardRemovedData";
 import type TableItem from "../Table/TableItem";
 import { CardFaceUncomplicate, FixDeckCard, sameCardFace } from "../Cards/CardCompareHelper";
 import { removeFromCollection } from "@/utilities/MyCollections";
+import DeckCardInsertedData from "./DeckCardInsertedData";
 
 type DeckEvents = {
   DeckUpdated: (deck: Deck) => void;
-  CardInserted: (deck: Deck, card: Card) => void;
-  CardRemoved: (deck: Deck, card: Card) => void;
+  // CardInserted: (deck: Deck, card: Card) => void;
+  // CardRemoved: (deck: Deck, card: Card) => void;
 }
 
 export default class DecksSystem {
@@ -98,7 +99,12 @@ export default class DecksSystem {
       deck.cards.push(cardInfo);
     }
 
-    this.events.emit("CardInserted", deck, card);
+    const data = new DeckCardInsertedData(deck);
+
+    // TODO сделать ремув с аргументом инсертед?
+    // this.events.emit("CardInserted", deck, card);
+
+    this.table.remove(card.id, data);
   }
 
   private deckCardRemoved(msg: DeckCardRemovedMessage): void {
@@ -132,7 +138,7 @@ export default class DecksSystem {
 
     this.table.addSimple(msg.card, data);
 
-    this.events.emit("CardRemoved", deck, msg.card);
+    // this.events.emit("CardRemoved", deck, msg.card);
   }
 
   private earlyItemAdded(item: TableItem) {
@@ -141,12 +147,7 @@ export default class DecksSystem {
 
     const deck = item as Deck;
 
-    if (typeof deck.side === "number") {
-      deck.side = {
-        side: deck.side,
-        renderInfos: null
-      };
-    }
+    deck.side = CardFaceUncomplicate(deck.side);
 
     if (deck.cards !== null) {
       for (const element of deck.cards) {
