@@ -1,6 +1,9 @@
 import type LeGame from "@/actual/LeGame";
 import EntitiesSystem from "../../EntitiesSystem";
 import type CardSelectionData from "./CardSelectionData";
+import type DeckCardInfo from "../Decks/DeckCardInfo";
+import type SelectCardsMessage from "./messages/client/SelectCardsMessage";
+import { FixDeckCard } from "../Cards/CardCompareHelper";
 
 export default class CardSelectionSystem extends EntitiesSystem<CardSelectionData> {
 
@@ -11,9 +14,18 @@ export default class CardSelectionSystem extends EntitiesSystem<CardSelectionDat
     this.leGame = leGame;
   }
 
-  addSimple(arg0: CardSelectionData) {
+  public sendSelection(selection: CardSelectionData, cards: DeckCardInfo[]) {
+    const message: SelectCardsMessage = {
+      selection: selection.id,
+      cards: cards.map(c => c.id),
+    };
+
+    this.leGame.connection?.sendMessage("SelectCardsMessage", message);
+  }
+
+  override addSimple(arg0: CardSelectionData) {
     this.transform(arg0);
-    throw new Error("Method not implemented.");
+    super.addSimple(arg0, null);
   }
 
   isIncludedEntityByType(type: string) {
@@ -23,5 +35,9 @@ export default class CardSelectionSystem extends EntitiesSystem<CardSelectionDat
   private transform(data: CardSelectionData) {
     const id = data.target as unknown as number;
     data.target = this.leGame.bench.get(id);
+
+    for (const card of data.cards) {
+      FixDeckCard(card);
+    }
   }
 }

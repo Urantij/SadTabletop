@@ -57,10 +57,14 @@ export default class LeGame {
 
   public ourPlayer: Player | null = null;
 
+  public connection: Connection | null = null;
+
   constructor() {
   }
 
   subscribeToConnection(connection: Connection) {
+    this.connection = connection;
+
     connection.events.once("MeJoined", (data) => this.meJoined(data));
     connection.events.on("EntityAdded", (data) => this.entityAdded(data));
     connection.events.on("EntityRemoved", (data) => this.entityRemoved(data));

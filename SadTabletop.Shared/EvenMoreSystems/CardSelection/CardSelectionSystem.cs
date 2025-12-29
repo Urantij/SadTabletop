@@ -5,6 +5,7 @@ using SadTabletop.Shared.Systems.Communication.Events;
 using SadTabletop.Shared.Systems.Entities;
 using SadTabletop.Shared.Systems.Events;
 using SadTabletop.Shared.Systems.Seats;
+using SadTabletop.Shared.Systems.Viewer;
 using SadTabletop.Shared.Systems.Visability;
 
 namespace SadTabletop.Shared.EvenMoreSystems.CardSelection;
@@ -17,10 +18,19 @@ namespace SadTabletop.Shared.EvenMoreSystems.CardSelection;
 /// </summary>
 public class CardSelectionSystem : EntitiesSystem<CardSelectionData>
 {
+    private readonly ViewerSystem _viewer;
+
     private readonly VisabilitySystem _visability;
 
     public CardSelectionSystem(Game game) : base(game)
     {
+    }
+
+    protected internal override void GameLoaded()
+    {
+        base.GameLoaded();
+
+        _viewer.RegisterEntity<CardSelectionData>(TransformSelection);
     }
 
     protected internal override void GameCreated()
@@ -74,5 +84,10 @@ public class CardSelectionSystem : EntitiesSystem<CardSelectionData>
         RemoveEntity(data);
 
         data.Handler(result);
+    }
+
+    private CardSelectionDataDto TransformSelection(CardSelectionData card, Seat? seat)
+    {
+        return new CardSelectionDataDto(card);
     }
 }
