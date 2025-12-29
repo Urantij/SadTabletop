@@ -104,6 +104,15 @@ onMounted(async () => {
           });
         }
 
+        if (obj.clicky) {
+          items.push({
+            label: "Нажать",
+            onClick: () => {
+              leGame.table.clicks.clickyClicked(obj.gameObject);
+            }
+          });
+        }
+
         items.push({
           label: `Карт: ${obj.gameObject.cardsCount}`,
           disabled: true
@@ -113,6 +122,19 @@ onMounted(async () => {
           x: pointer.x,
           y: pointer.y,
           items: items
+        });
+      });
+
+      leGame.cardSelection.events.on("EntityAdded", (selection) => {
+
+        if (uicontainer.value == undefined)
+          return;
+
+        if (selection.target !== leGame.ourPlayer?.seat)
+          return;
+
+        uicontainer.value.openCardsSelection(selection.cards, selection.minSelect, selection.maxSelect, (selected) => {
+          leGame.cardSelection.sendSelection(selection, selected);
         });
       });
     });

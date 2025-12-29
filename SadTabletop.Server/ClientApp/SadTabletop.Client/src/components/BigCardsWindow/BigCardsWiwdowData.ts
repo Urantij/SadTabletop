@@ -3,5 +3,6 @@ import type WiwdowBaseData from "../Wiwdow/WiwdowBaseData";
 
 export default interface BigCardsWiwdowData extends WiwdowBaseData {
   cards: DeckCardInfo[],
-  select: number,
+  min: number,
+  max: number,
 }

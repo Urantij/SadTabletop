@@ -79,7 +79,7 @@ onUnmounted(() => {
 
 function imgClicked(card: CardData) {
 
-  if (props.data.select <= 0)
+  if (props.data.max <= 0)
     return;
 
   if (card.selected) {
@@ -88,13 +88,13 @@ function imgClicked(card: CardData) {
     return;
   }
 
-  if (selectedCount.value === props.data.select)
+  if (selectedCount.value === props.data.max)
     return;
 
   card.selected = true;
   selectedCount.value++;
 
-  if (props.data.select === 1) {
+  if (props.data.max === 1) {
     makeSelection([card.card]);
   }
 }
@@ -138,8 +138,8 @@ function makeSelection(cards: DeckCardInfo[]) {
         <img :class="{ 'selected': card.selected }" :src="card.dataUrl" v-on:click="() => imgClicked(card)"></img>
       </template>
     </div>
-    <div v-if="props.data.select > 1">
-      <button :disabled="props.data.select !== selectedCount" @click="selectClicked()">селект</button>
+    <div v-if="props.data.max > 1">
+      <button :disabled="props.data.min < selectedCount" @click="selectClicked()">селект</button>
     </div>
   </DumbWindow>
 </template>

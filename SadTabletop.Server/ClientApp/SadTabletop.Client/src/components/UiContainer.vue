@@ -15,7 +15,7 @@ import WiwdowType from './Wiwdow/WiwdowType';
 import type SettingsWiwdowData from './SettingsWindow/SettingsWiwdowData';
 import type BigCardsWiwdowData from './BigCardsWindow/BigCardsWiwdowData';
 import BigCardsWindow from './BigCardsWindow/BigCardsWindow.vue';
-import { removeFromCollection } from '@/utilities/MyCollections';
+import { findForSure, removeFromCollection } from '@/utilities/MyCollections';
 
 const popitStore = usePopitStore();
 
@@ -36,7 +36,8 @@ const wiwdowsButHidden: WiwdowBaseData[] = reactive([]);
 // я не нашёл инфу че будет если хранить функции в реактируемой объекте
 const handlersData: {
   id: number,
-  handler: (selected: number[]) => void,
+  nonReactiveCardsData: DeckCardInfo[],
+  handler: ((selected: DeckCardInfo[]) => void) | null,
 }[] = [];
 
 let nextWiwdowId = 1;
@@ -111,17 +112,24 @@ function showCardsMenu(deck: Deck) {
     canClose: true,
     canHide: false,
     title: "смари деку",
-    select: 0,
+    min: 0,
+    max: 0,
     cards: deck.cards,
     type: WiwdowType.BigCards,
     hidden: false
   };
 
+  handlersData.push({
+    id: data.id,
+    nonReactiveCardsData: deck.cards,
+    handler: null
+  });
+
   const dataR = reactive(data);
   wiwdows.push(dataR);
 }
 
-function openCardsSelection(cards: DeckCardInfo[], select: number, handler: (selected: number[]) => void) {
+function openCardsSelection(cards: DeckCardInfo[], min: number, max: number, handler: (selected: DeckCardInfo[]) => void) {
   const data: BigCardsWiwdowData = {
     id: getNextWiwdowId(),
     x: "100px",
@@ -131,7 +139,8 @@ function openCardsSelection(cards: DeckCardInfo[], select: number, handler: (sel
     canClose: false,
     canHide: true,
     title: "выбери",
-    select: select,
+    min: min,
+    max: max,
     cards: cards,
     type: WiwdowType.BigCards,
     hidden: false
@@ -139,6 +148,7 @@ function openCardsSelection(cards: DeckCardInfo[], select: number, handler: (sel
 
   handlersData.push({
     id: data.id,
+    nonReactiveCardsData: cards,
     handler: handler
   });
 
@@ -184,24 +194,28 @@ function openSettingsWindow() {
   };
 
   const dataR = reactive(data);
-
   wiwdows.push(dataR);
 }
 
-function cardsSelected(data: BigCardsWiwdowData, cards: DeckCardInfo[]) {
-
-  const indexes: number[] = cards.map(selectedCard => data.cards.findIndex(card => card === selectedCard));
+function cardsSelected(data: BigCardsWiwdowData, selectedCards: DeckCardInfo[]) {
 
   const hdata = removeFromCollection(handlersData, h => h.id === data.id);
-
-  closeWiwdow(data);
 
   if (hdata === undefined) {
     console.error(`уэ хендлер не нашёлсся в доте`);
     return;
   }
 
-  hdata.handler(indexes);
+  const realCards = selectedCards.map(selectedCard => findForSure(hdata.nonReactiveCardsData, real => real.id === selectedCard.id));
+
+  closeWiwdow(data);
+
+  if (hdata.handler === null) {
+    console.error(`уэ хендлер нулл в селекшене?`);
+    return;
+  }
+
+  hdata.handler(realCards);
 }
 
 function closeWiwdow(data: WiwdowBaseData) {

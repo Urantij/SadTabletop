@@ -21,3 +21,14 @@ export function removeFromCollection<T>(array: Array<T>, predicate: (t: T) => bo
 
   return array.splice(index, 1)[0];
 }
+
+export function findForSure<T>(array: Array<T>, predicate: (t: T) => boolean): T {
+
+  const index = array.findIndex(predicate);
+
+  if (index === -1) {
+    throw new Error(`не удалось найти элемент`)
+  }
+
+  return array[index];
+}
