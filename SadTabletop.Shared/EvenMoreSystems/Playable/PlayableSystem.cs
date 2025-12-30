@@ -2,6 +2,7 @@ using SadTabletop.Shared.EvenMoreSystems.Playable.Messages.Client;
 using SadTabletop.Shared.EvenMoreSystems.Playable.Messages.Server;
 using SadTabletop.Shared.Mechanics;
 using SadTabletop.Shared.MoreSystems.Cards;
+using SadTabletop.Shared.MoreSystems.Decks.Events;
 using SadTabletop.Shared.Systems.Communication;
 using SadTabletop.Shared.Systems.Communication.Events;
 using SadTabletop.Shared.Systems.Events;
@@ -11,6 +12,10 @@ using SadTabletop.Shared.Systems.Viewer;
 
 namespace SadTabletop.Shared.EvenMoreSystems.Playable;
 
+/// <summary>
+/// Позволяет делать карты в "руке" игроков играюищимися.
+/// Если карта кладётся в деку, она перестает быть играемой.
+/// </summary>
 public class PlayableSystem : ComponentSystemBase
 {
     private readonly ViewerSystem _viewer;
@@ -25,6 +30,7 @@ public class PlayableSystem : ComponentSystemBase
     {
         base.GameCreated();
 
+        Game.GetSystem<EventsSystem>().Subscribe<CardAddingToDeckEvent>(EventPriority.Normal, this, CardAddingToDeck);
         _events.Subscribe<ClientMessageReceivedEvent<PlayCardMessage>>(EventPriority.Normal, this, CardPlayed);
     }
 
@@ -84,6 +90,16 @@ public class PlayableSystem : ComponentSystemBase
         RemovePlayability(card, component);
     }
 
+    private void CardAddingToDeck(CardAddingToDeckEvent obj)
+    {
+        PlayableComponent? component = obj.Card.TryGetComponent<PlayableComponent>();
+
+        if (component == null)
+            return;
+
+        RemovePlayability(obj.Card, component, sendRelatedMessages: false);
+    }
+
     private void CardPlayed(ClientMessageReceivedEvent<PlayCardMessage> obj)
     {
         Card card = obj.Message.Card;
@@ -125,11 +141,15 @@ public class PlayableSystem : ComponentSystemBase
         component.PlayHandler(obj.Message.Target);
     }
 
-    private void RemovePlayability(Card card, PlayableComponent component)
+    private void RemovePlayability(Card card, PlayableComponent component, bool sendRelatedMessages = true)
     {
         RemoveComponentFromEntity(card, component);
-        CardUnplayabilityMessage message = new(card);
-        _communication.SendEntityRelated(message, card);
+
+        if (sendRelatedMessages)
+        {
+            CardUnplayabilityMessage message = new(card);
+            _communication.SendEntityRelated(message, card);
+        }
     }
 
     private PlayableComponentDto TransformComponent(PlayableComponent component, Seat? seat)

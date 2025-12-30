@@ -12,6 +12,10 @@ using SadTabletop.Shared.Systems.Viewer;
 
 namespace SadTabletop.Shared.MoreSystems.Hands;
 
+/// <summary>
+/// Позволяет работать с "руками" игроков. В руки можно класть карты.
+/// Если карта кладётся в деку, она выпадает из руки.
+/// </summary>
 public class HandsSystem : ComponentSystemBase
 {
     private readonly CommunicationSystem _communication;
