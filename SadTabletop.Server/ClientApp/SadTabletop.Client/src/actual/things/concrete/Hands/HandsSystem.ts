@@ -40,7 +40,7 @@ export default class HandsSystem {
     this.bench = bench;
 
     this.table.events.on("EntityAdded", (item) => this.itemAdded(item));
-    // this.table.events.on("ItemRemoved", (item) => this.itemRemoved(item));
+    this.table.events.on("EntityRemoved", (item) => this.itemRemoved(item));
   }
 
   subscribeToConnection(connection: Connection) {
@@ -110,6 +110,21 @@ export default class HandsSystem {
 
       return ca.index - cb.index;
     });
+  }
+
+  private itemRemoved(item: TableItem): void {
+    if (item.type !== "Card")
+      return;
+
+    const card = item as Card;
+
+    const component = findComponent<InHandComponent>(card, "InHandComponent");
+    if (component === undefined)
+      return;
+
+    removeItemFromCollection(component.hand.cards, card);
+
+    this.updateIndexesLikeStupid(component.hand);
   }
 
   // private itemRemoved(item: TableItem): void {
