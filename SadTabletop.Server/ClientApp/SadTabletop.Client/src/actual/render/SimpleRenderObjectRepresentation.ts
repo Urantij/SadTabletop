@@ -22,6 +22,7 @@ export default class SimpleRenderObjectRepresentation<TGameObj extends TableItem
 
   readonly baseScale: number;
 
+  // кто нибудь объяснит мне почему я это сделал?
   readonly cashbackNaVse: { [key: string]: object; } = {};
 
   constructor(gameObject: TGameObj, sprite: TRender, needInteraction: boolean) {
@@ -43,8 +44,16 @@ export default class SimpleRenderObjectRepresentation<TGameObj extends TableItem
     return this.sprite.preFX;
   }
 
-  getDataManager() {
-    return this.sprite.data;
+  setData<T>(key: string | T, data?: any): void {
+    this.sprite.setData(key, data);
+  }
+
+  getData(key: string | string[]) {
+    this.sprite.getData(key);
+  }
+
+  removeData(key: string | string[]): void {
+    this.sprite.data.remove(key);
   }
 
   getCurrentPosition(): Phaser.Math.Vector2 {

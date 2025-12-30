@@ -35,8 +35,7 @@ export default class Animka {
     const distance = current.distance(new Phaser.Math.Vector2(x, y));
     const time = distance / (speedPerUnit ?? this.speedPerUnit);
 
-    const data = obj.getDataManager();
-    const moveData = data.get(moveKey);
+    const moveData = obj.getData(moveKey);
 
     let passedTime: number | null = null;
 
@@ -47,7 +46,7 @@ export default class Animka {
       moveTween.stop();
       // moveTween.destroy();
 
-      data.remove(moveKey);
+      obj.removeData(moveKey);
     }
 
     const holder = {
@@ -67,9 +66,12 @@ export default class Animka {
     const tween = this.scene.tweens.add({
       targets: holder,
       duration: time,
+      paused: true,
       onComplete: function () {
 
-        data.remove(moveKey);
+        // я не понимаю почему это началось)
+        if (!obj.destroyed)
+          obj.removeData(moveKey);
 
         if (continuation === null) {
           return;
@@ -95,12 +97,14 @@ export default class Animka {
     });
     test.tween = tween;
 
+    obj.setData(moveData, test);
+
+    tween.play();
+
     if (passedTime !== null) {
       const p = scene.time.now - passedTime;
       tween.update(p);
     }
-
-    data.set(moveKey, test);
   }
 
   public flipCard(obj: CardObject) {

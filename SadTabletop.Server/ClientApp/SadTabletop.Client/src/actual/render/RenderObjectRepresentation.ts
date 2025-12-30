@@ -12,7 +12,11 @@ export default interface RenderObjectRepresentation {
     [key: string]: object;
   };
 
-  getDataManager(): Phaser.Data.DataManager;
+  setData<T>(key: string | T, data?: any): void;
+
+  getData(key: string | string[]): any;
+
+  removeData(key: string | string[]): void;
 
   getCurrentPosition(): Phaser.Math.Vector2;
 
