@@ -1,9 +1,0 @@
-using SadTabletop.Shared.Systems.Communication;
-
-namespace SadTabletop.Shared.MoreSystems.Dices.Messages;
-
-public class DiceRolledMessage(Dice dice, int newIndex) : ServerMessageBase
-{
-    public Dice Dice { get; } = dice;
-    public int NewIndex { get; } = newIndex;
-}
