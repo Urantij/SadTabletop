@@ -41,7 +41,7 @@ export default class DragSystem {
     connection.registerForMessage<DragStartedMessage>("DragStartedMessage", msg => this.dragStartedMessage(msg));
     connection.registerForMessage<DragEndedMessage>("DragEndedMessage", msg => this.dragEndedMessage(msg));
 
-    this.leGame.bench.events.on("SeatAdded", (seat) => this.seatAdded(seat));
+    this.leGame.bench.events.on("EntityAdded", (seat) => this.seatAdded(seat));
     this.leGame.playersContainer.events.on("PlayerRemoved", (player) => this.playerRemoved(player));
   }
 
