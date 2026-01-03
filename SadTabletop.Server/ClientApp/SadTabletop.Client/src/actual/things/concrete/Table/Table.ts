@@ -8,6 +8,8 @@ import ClicksSystem from "../Clicks/ClicksSystem";
 import type DescriptionChangedMessage from "@/communication/messages/server/DescriptionChangedMessage";
 import EntitiesSystem, { type EntitiesEvents } from "../../EntitiesSystem";
 import type TableItem from "./TableItem";
+import { DicesSystem } from "../Dices/DicesSystem";
+import type LeGame from "@/actual/LeGame";
 
 type TableEvents = EntitiesEvents<TableItem> & {
   ItemMoved: (item: TableItem, oldX: number, oldY: number) => void;
@@ -19,14 +21,20 @@ type TableEvents = EntitiesEvents<TableItem> & {
  */
 export default class Table extends EntitiesSystem<TableItem> {
 
-  readonly events: TypedEmitter<TableEvents> = new Phaser.Events.EventEmitter();
+  declare events: TypedEmitter<TableEvents>;
 
   readonly cards: CardsSystem = new CardsSystem(this);
   readonly decks: DeckSystem = new DeckSystem(this);
+  readonly dices: DicesSystem;
 
   readonly clicks: ClicksSystem = new ClicksSystem(this);
 
   static DeckTypeName = "Deck";
+
+  constructor(game: LeGame) {
+    super();
+    this.dices = new DicesSystem(game);
+  }
 
   subscribeToConnection(connection: Connection) {
     connection.registerForMessage<ItemMovedMessage>("ItemMovedMessage", msg => this.itemMoved(msg));
@@ -35,6 +43,7 @@ export default class Table extends EntitiesSystem<TableItem> {
     this.cards.subscribeToConnection(connection);
     this.decks.subscribeToConnection(connection);
     this.clicks.subscribeToConnection(connection);
+    this.dices.subscribeToConnection(connection);
   }
 
   override isIncludedEntityByType(type: string) {

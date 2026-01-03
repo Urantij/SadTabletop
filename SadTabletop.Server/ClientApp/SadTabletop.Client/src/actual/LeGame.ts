@@ -28,7 +28,7 @@ type LeGameEvents = {
  */
 export default class LeGame {
 
-  public readonly table: Table = new Table();
+  public readonly table: Table = new Table(this);
   public readonly bench: Bench = new Bench();
   public readonly settings: SettingsSystem = new SettingsSystem();
 
@@ -49,7 +49,7 @@ export default class LeGame {
   public readonly drags: DragSystem = new DragSystem(this);
 
   public readonly sidesData: { num: number; path: string }[] = [];
-  public readonly assetsData: { name: string; url: string }[] = [];
+  public readonly assetsData: { id: number, name: string; url: string }[] = [];
 
   public readonly playersContainer: PlayersContainer = new PlayersContainer(this);
 
@@ -88,6 +88,7 @@ export default class LeGame {
       if (entity.type === "AssetInfo") {
         const info = entity as AssetInfo;
         this.assetsData.push({
+          id: info.id,
           name: info.name,
           url: info.url
         });

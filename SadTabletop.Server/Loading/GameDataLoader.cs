@@ -2,6 +2,7 @@ using System.Reflection;
 using SadTabletop.Server.Test;
 using SadTabletop.Shared;
 using SadTabletop.Shared.Mechanics;
+using SadTabletop.Shared.MoreSystems.Dices;
 
 namespace SadTabletop.Server.Loading;
 
@@ -28,6 +29,7 @@ public class GameDataLoader
             .Append(game => new HandTestSystem(game))
             .Append(game => new PlayTestSystem(game))
             .Append(game => new DeckTestSystem(game))
+            .Append(game => new DiceTestSystem(game))
             .ToArray();
 
         return GameCreator.CreateBaseGame(new GameSetup(3, []), systemsFactories);

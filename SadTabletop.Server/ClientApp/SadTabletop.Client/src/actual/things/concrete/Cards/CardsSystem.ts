@@ -10,7 +10,7 @@ import type TableItem from "../Table/TableItem";
 import type CardFaceComplicated from "./CardFaceComplicated";
 import { CardFaceUncomplicate, CardFaceUncomplicateForSure } from "./CardCompareHelper";
 
-type MessageEvents = {
+type CardsEvents = {
   CardFlipped: (card: Card) => void;
   CardFrontChanged: (card: Card) => void;
 }
@@ -19,7 +19,7 @@ export default class CardsSystem {
 
   readonly table: Table;
 
-  readonly events: TypedEmitter<MessageEvents> = new Phaser.Events.EventEmitter();
+  readonly events: TypedEmitter<CardsEvents> = new Phaser.Events.EventEmitter();
 
   connection: Connection | undefined;
 

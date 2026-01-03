@@ -14,6 +14,7 @@ import type MyTileSprite from "../things/concrete/Sprites/MyTileSprite";
 import type TableItem from "../things/concrete/Table/TableItem";
 import DeckCardInsertedData from "../things/concrete/Decks/DeckCardInsertedData";
 import DeckCardRemovedData from "../things/concrete/Decks/DeckCardRemovedData";
+import type Dice from "../things/concrete/Dices/Dice";
 
 type RendererEvents = {
   ClickyClicked: (entity: TableItem) => void;
@@ -130,6 +131,13 @@ export default class Renderer {
           //   this.scene?.removeCardFromDeck(deck, card);
           // });
 
+          this.leGame.table.dices.events.on("DiceChanged", (dice) => {
+            this.scene?.updateDice(dice);
+          });
+          this.leGame.table.dices.events.on("DiceRolled", (dice) => {
+            this.scene?.rollDice(dice);
+          });
+
           this.leGame.table.clicks.events.on("ItemClickyChanged", (item, clicky) => {
             this.scene?.updateClicky(item, clicky);
           });
@@ -184,6 +192,7 @@ export default class Renderer {
       this.scene.createDeck(entity as Deck);
     }
     else if (entity.type === "Dice") {
+      this.scene.createDice(entity as Dice);
     }
     else if (entity.type === "TextItem") {
       this.scene.createText(entity as TextItem)

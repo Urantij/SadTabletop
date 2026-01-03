@@ -35,6 +35,8 @@ import MyTileSpriteObject from "./objects/MyTileSpriteObject";
 import type CameraBoundSetting from "../things/concrete/Settings/Variants/CameraBoundSetting";
 import type TableItem from "../things/concrete/Table/TableItem";
 import type DeckCardInsertedData from "../things/concrete/Decks/DeckCardInsertedData";
+import DiceObject, { defaultDiceTextureKey } from "./objects/DiceObject";
+import type Dice from "../things/concrete/Dices/Dice";
 
 type MainSceneEvents = {
   ObjectCreated: (obj: RenderObjectRepresentation) => void;
@@ -46,6 +48,9 @@ type MainSceneEvents = {
 // TODO не тут
 export function makeCardTextureId(num: number) {
   return `card${num}`;
+}
+export function makeTextureId(assetId: number) {
+  return `_assetid${assetId}`;
 }
 
 export const cursorMovedInTheWorldName = "CursorMovedInTheWorld";
@@ -95,6 +100,12 @@ export default class MainScene extends BaseScene {
   private preload() {
     console.log("preload");
 
+    this.textures.generate(defaultDiceTextureKey, {
+      data: ['1'],
+      pixelWidth: 1,
+      pixelHeight: 1
+    })
+
     this.load.image(defaultBackSideKey, "back.png");
     this.load.image(defaultFrontSidekey, "front.png");
     this.load.image(cursorTextureKey, "cursor.png");
@@ -103,6 +114,8 @@ export default class MainScene extends BaseScene {
 
     for (const data of this.leGame.assetsData) {
       this.load.image(data.name, data.url);
+      // TODO разобраться ок или нет
+      this.load.image(makeTextureId(data.id), data.url);
     }
   }
 
@@ -767,12 +780,12 @@ export default class MainScene extends BaseScene {
       const deckPos = deckObj.getCurrentPosition();
 
       obj = CardObject.create(card, this, deckPos.x, deckPos.y, Sizes.cardWidth, Sizes.cardHeight);
-      this.objects.push(obj);
     }
     else {
       obj = CardObject.create(card, this, card.x, card.y, Sizes.cardWidth, Sizes.cardHeight);
-      this.objects.push(obj);
     }
+    card.render = obj;
+    this.objects.push(obj);
 
     if (obj.inhand !== null) {
       const sceneHand = this.getHand(obj.inhand.hand);
@@ -790,6 +803,35 @@ export default class MainScene extends BaseScene {
     }
 
     this.animka.flipCard(obj);
+  }
+
+  createDice(dice: Dice) {
+    const obj = DiceObject.create(dice, this);
+    dice.render = obj;
+    this.objects.push(obj);
+    this.myEvents.emit("ObjectCreated", obj);
+  }
+
+  rollDice(dice: Dice) {
+    if (dice.render === undefined) {
+      console.warn(`rollDice ${dice.id} undefined`);
+      return;
+    }
+
+    const obj = dice.render as DiceObject;
+
+    obj.roll();
+  }
+
+  updateDice(dice: Dice) {
+    if (dice.render === undefined) {
+      console.warn(`updateDice ${dice.id} undefined`);
+      return;
+    }
+
+    const obj = dice.render as DiceObject;
+
+    obj.updateSide();
   }
 
   createText(textItem: TextItem) {
@@ -824,6 +866,7 @@ export default class MainScene extends BaseScene {
 
   createDeck(deck: Deck) {
     const obj = DeckObject.create(deck, this, Sizes.cardWidth, Sizes.cardHeight);
+    deck.render = obj;
     this.objects.push(obj);
     this.myEvents.emit("ObjectCreated", obj);
   }
