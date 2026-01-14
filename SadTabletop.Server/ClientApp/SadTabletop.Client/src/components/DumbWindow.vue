@@ -24,8 +24,8 @@ function closeClicked() {
   <div :style="[
     {
       position: 'absolute',
-      top: props.data.x,
-      left: props.data.y,
+      left: props.data.x,
+      top: props.data.y,
       width: props.data.width,
       height: props.data.height,
       pointerEvents: 'auto',

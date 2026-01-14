@@ -1,6 +1,8 @@
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using SadTabletop.Server.Chat;
+using SadTabletop.Server.Chat.Messages.Server;
 using SadTabletop.Server.Coordination;
 using SadTabletop.Server.Loading;
 using SadTabletop.Server.Main;
@@ -62,7 +64,36 @@ ILoggerFactory loggerFactory = app.Services.GetRequiredService<ILoggerFactory>()
 Connector connector = new(maanger, options, GameCodeLoader.GetClientMessages(gameAssemblies),
     loggerFactory.CreateLogger<Connector>());
 
-GameContainer container = new(game, connector);
+Chatters chatters = new();
+GameContainer container = new(game, connector, chatters);
+
+chatters.MessageAdded += (msg) =>
+{
+    // в локе пж
+    IReadOnlyList<Player> theyWillKnow;
+    if (msg.Targets != null)
+    {
+        theyWillKnow = msg.Targets
+            .Select(targetSeat => container.Players.FirstOrDefault(p => p.Seat?.Id == targetSeat))
+            .Where(p => p != null)
+            .ToArray();
+    }
+    else
+    {
+        theyWillKnow = container.Players.ToArray();
+    }
+
+    if (theyWillKnow.Count == 0)
+        return;
+
+    NewChatMessageMessage appMessage = new(msg.Name, msg.Color, msg.Content);
+
+    foreach (Player player in theyWillKnow)
+    {
+        connector.QueueAppMessage(appMessage, player.Client);
+    }
+};
+
 container.Setup();
 
 maanger.GameContainer = container;

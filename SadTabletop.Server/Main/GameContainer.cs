@@ -1,7 +1,9 @@
+using SadTabletop.Server.Chat;
 using SadTabletop.Server.Coordination;
 using SadTabletop.Server.Coordination.Data;
 using SadTabletop.Server.Coordination.Messages.Server;
 using SadTabletop.Shared;
+using SadTabletop.Shared.EvenMoreSystems.Chat;
 using SadTabletop.Shared.EvenMoreSystems.Drag;
 using SadTabletop.Shared.Systems.Communication;
 using SadTabletop.Shared.Systems.Entities;
@@ -16,16 +18,21 @@ public class GameContainer
     public Game Game { get; }
     public List<Player> Players { get; } = [];
 
+    /// <summary>
+    /// Локер игрового движка. Все действия должны происходит поочерёдно.
+    /// </summary>
     public Lock Locker { get; } = new();
 
-    private readonly Connector _connector;
+    public Connector Connector { get; }
+    public Chatters Chat { get; }
 
     private int _nextPlayerId = 1;
 
-    public GameContainer(Game game, Connector connector)
+    public GameContainer(Game game, Connector connector, Chatters chat)
     {
         Game = game;
-        _connector = connector;
+        Connector = connector;
+        Chat = chat;
     }
 
     public void Setup()
@@ -35,6 +42,9 @@ public class GameContainer
 
         TimesSystem times = Game.GetSystem<TimesSystem>();
         times.DelayRequested += TimesOnDelayRequested;
+
+        ChatSystem chat = Game.GetSystem<ChatSystem>();
+        chat.ChatMessageSendRequested += ChatSendRequested;
 
         // TODO не забудь выключатель как нить
         Task.Run(() => CursorUpdateLoopAsync(default));
@@ -71,17 +81,17 @@ public class GameContainer
             foreach (Player player in Players)
             {
                 CursorsInfoMessage.CursorInfo[] cursors = Players
-                .Where(p => p != player)
-                .Where(p => p.Cursor.Changed)
-                .Select(p => new CursorsInfoMessage.CursorInfo(p.Id, p.Cursor.X, p.Cursor.Y))
-                .ToArray();
+                    .Where(p => p != player)
+                    .Where(p => p.Cursor.Changed)
+                    .Select(p => new CursorsInfoMessage.CursorInfo(p.Id, p.Cursor.X, p.Cursor.Y))
+                    .ToArray();
 
                 if (cursors.Length == 0)
                     continue;
 
                 CursorsInfoMessage message = new(cursors);
 
-                _connector.QueueAppMessage(message, player.Client);
+                Connector.QueueAppMessage(message, player.Client);
             }
 
             foreach (Player player in Players)
@@ -99,7 +109,7 @@ public class GameContainer
 
         // и ща ещё есть таймс. если и тут и там лочить, то будет дедлок от валв
 
-        _connector.QueueGameMessage(gameMessage, receivers);
+        Connector.QueueGameMessage(gameMessage, receivers);
     }
 
     private void TimesOnDelayRequested(Delayed obj)
@@ -119,6 +129,13 @@ public class GameContainer
 
             Game.GetSystem<TimesSystem>().Execute(obj);
         });
+    }
+
+    private void ChatSendRequested(EngineChatMessage msg, IReadOnlyList<Seat>? targets)
+    {
+        ChatMessage chatMessage = new("системик", "gray", msg, targets?.Select(s => s.Id).ToArray());
+
+        Chat.AddMessage(chatMessage);
     }
 
     public int GetNextPlayerId()

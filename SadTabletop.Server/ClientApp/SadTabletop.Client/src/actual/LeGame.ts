@@ -16,6 +16,7 @@ import HintsSystem from "./things/concrete/Hints/HintsSystem";
 import SettingsSystem from "./things/concrete/Settings/SettingsSystem";
 import CardSelectionSystem from "./things/concrete/CardSelection/CardSelectionSystem";
 import type { EntitiesBaseSystem } from "./things/EntitiesSystem";
+import ChatSystem from "./things/concrete/Chat/ChatSystem";
 
 type LeGameEvents = {
   Clearing: () => void;
@@ -48,6 +49,8 @@ export default class LeGame {
 
   public readonly drags: DragSystem = new DragSystem(this);
 
+  public readonly chatts: ChatSystem = new ChatSystem(this);
+
   public readonly sidesData: { num: number; path: string }[] = [];
   public readonly assetsData: { id: number, name: string; url: string }[] = [];
 
@@ -78,6 +81,7 @@ export default class LeGame {
     this.playable.subscribeToConnection(connection);
     this.hints.subscribeToConnection(connection);
     this.drags.subscribeToConnection(connection);
+    this.chatts.subscribeToConnection(connection);
   }
 
   private meJoined(data: JoinedMessage): void {

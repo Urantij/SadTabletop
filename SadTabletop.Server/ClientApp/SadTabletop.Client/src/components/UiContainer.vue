@@ -16,6 +16,7 @@ import type SettingsWiwdowData from './SettingsWindow/SettingsWiwdowData';
 import type BigCardsWiwdowData from './BigCardsWindow/BigCardsWiwdowData';
 import BigCardsWindow from './BigCardsWindow/BigCardsWindow.vue';
 import { findForSure, removeFromCollection } from '@/utilities/MyCollections';
+import ChatWiwdow from './Chat/ChatWiwdow.vue';
 
 const popitStore = usePopitStore();
 
@@ -302,6 +303,18 @@ function unhideButtonClicked() {
     <div style="width: 200px; height: 600px;" v-if="props.draw">
       <PlayerPanel :game="game"></PlayerPanel>
     </div>
+    <ChatWiwdow :data="{
+      id: -1,
+      canClose: false,
+      canHide: false,
+      width: '300px',
+      height: '300px',
+      title: 'chatik',
+      type: 0,
+      hidden: false,
+      x: '800px',
+      y: '300px'
+    }"></ChatWiwdow>
     <template v-for="wiwdow in wiwdows">
       <BigCardsWindow v-if="wiwdow.type === WiwdowType.BigCards" v-show="!wiwdow.hidden"
         :data="wiwdow as BigCardsWiwdowData" @close-me="() => wiwdowWantsToClose(wiwdow)"

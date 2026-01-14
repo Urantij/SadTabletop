@@ -6,6 +6,7 @@ import type ChangeNameMessage from '@/communication/messages/client/ChangeNameMe
 import type MoveCursorMessage from '@/communication/messages/client/MoveCursorMessage';
 import type HintData from '@/components/HintData';
 import UiContainer from '@/components/UiContainer.vue';
+import { useChatStore } from '@/stores/ChatStore';
 import { usePopitStore } from '@/stores/PopitStore';
 import { useRendererStore } from '@/stores/RendererStore';
 import { useUserStore } from '@/stores/UserStore';
@@ -17,6 +18,7 @@ const uicontainer = useTemplateRef("uicontainer");
 const userStore = useUserStore();
 const popitStore = usePopitStore();
 const rendererStore = useRendererStore();
+const chatStore = useChatStore();
 
 const divId = "taskete";
 
@@ -26,6 +28,10 @@ const draw = ref(false);
 
 const leGame = new LeGame();
 leGame.subscribeToConnection(connection);
+
+leGame.chatts.events.on("NewMessageAppeared", (msg) => {
+  chatStore.addMessage(msg);
+});
 
 const gameRenderer = new Renderer(leGame, window.innerWidth, window.innerHeight, divId);
 
@@ -42,6 +48,20 @@ userStore.$onAction(({
     };
 
     connection.sendMessage("ChangeNameMessage", message);
+  });
+});
+
+chatStore.$onAction(({
+  name, args, after
+}) => {
+  if (name !== "sendMessage")
+    return;
+
+  after((result) => {
+
+    const content = args[0];
+
+    leGame.chatts.sendMessage(content);
   });
 });
 

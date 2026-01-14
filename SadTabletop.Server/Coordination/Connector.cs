@@ -2,11 +2,15 @@ using System.Net;
 using System.Net.WebSockets;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using SadTabletop.Server.Chat;
+using SadTabletop.Server.Chat.Messages.Client;
 using SadTabletop.Server.Coordination.Data;
 using SadTabletop.Server.Coordination.Messages;
 using SadTabletop.Server.Coordination.Messages.Client;
 using SadTabletop.Server.Coordination.Messages.Server;
 using SadTabletop.Server.Main;
+using SadTabletop.Server.More;
+using SadTabletop.Shared.EvenMoreSystems.Chat;
 using SadTabletop.Shared.Systems.Communication;
 using SadTabletop.Shared.Systems.Seats;
 using SadTabletop.Shared.Systems.Synchro;
@@ -52,6 +56,11 @@ public class Connector
         Task.Run(() => SendingLoopAsync(client));
     }
 
+    /// <summary>
+    /// В гейм локе юзать
+    /// </summary>
+    /// <param name="appMessage"></param>
+    /// <param name="client"></param>
     public void QueueAppMessage(AppServerMessageBase appMessage, AppClient client)
     {
         JsonNode result = SerializeMessage(appMessage);
@@ -87,6 +96,11 @@ public class Connector
         }
     }
 
+    /// <summary>
+    /// Использовать в локе
+    /// </summary>
+    /// <param name="gameMessage"></param>
+    /// <param name="receivers"></param>
     public void QueueGameMessage(ServerMessageBase gameMessage, IReadOnlyList<Seat?> receivers)
     {
         // сериализация игрового сообщения должна быть в локе тоже
@@ -178,6 +192,13 @@ public class Connector
 
             MoveCursorReceived(appClient, message);
         }
+        else if (container.Name == nameof(SendChatMessageMessage))
+        {
+            SendChatMessageMessage message =
+                JsonSerializer.Deserialize<SendChatMessageMessage>(container.Content, _serializerOptions);
+
+            ChatMessageReceived(appClient, message);
+        }
         else if (_clientMessageTypes.TryGetValue(container.Name, out Type? messageType))
         {
             if (appClient.GameContainer == null)
@@ -245,8 +266,12 @@ public class Connector
 
         ViewedEntity[] content = gameContainer.MakeSynchroContent(seat);
         PlayerInfo[] pInfos = gameContainer.MakePlayerInfo();
+        ChatMessageDto[] messages = gameContainer.Chat.CopyMessages(
+            chatMessage => chatMessage.Targets == null ||
+                           player.Seat != null && chatMessage.Targets.Contains(player.Seat.Id),
+            chatMessage => new ChatMessageDto(chatMessage));
 
-        JoinedMessage response = new(player.Id, content, pInfos);
+        JoinedMessage response = new(player.Id, content, pInfos, messages);
 
         PlayerJoinedMessage playerJoinedMessage = new(player.Id, player.Name, player.Seat?.Id);
         JsonNode joinedSerialized = SerializeMessage(playerJoinedMessage);
@@ -340,6 +365,24 @@ public class Connector
         appClient.Player.Cursor.X = message.X;
         appClient.Player.Cursor.Y = message.Y;
         appClient.Player.Cursor.Changed = true;
+    }
+
+    private void ChatMessageReceived(AppClient appClient, SendChatMessageMessage message)
+    {
+        if (appClient.GameContainer == null || appClient.Player == null)
+        {
+            Terminate(appClient);
+            return;
+        }
+
+        using Lock.Scope scope = appClient.GameContainer.Locker.EnterScope();
+
+        string color = Colors.GetColor(appClient.Player.Seat);
+
+        EngineChatMessage content = EngineChatMessageBuilder.Make().Text(message.Content).Build();
+
+        ChatMessage msg = new(appClient.Player.Name, color, content, null);
+        appClient.GameContainer.Chat.AddMessage(msg);
     }
 
     /// <summary>
