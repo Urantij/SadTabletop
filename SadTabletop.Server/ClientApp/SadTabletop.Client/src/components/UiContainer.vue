@@ -3,8 +3,7 @@ import type LeGame from '@/actual/LeGame';
 import { onMounted, onUnmounted, reactive, ref, watch, type Ref } from 'vue';
 import PlayerPanel from './PlayerPanel.vue';
 import type PopitOption from './PopitOption';
-import Popit from './Popit.vue';
-import type PopitData from './PopitData';
+import Popit from './Popit/Popit.vue';
 import { usePopitStore } from '@/stores/PopitStore';
 import Hint from './Hint.vue';
 import type Deck from '@/actual/things/concrete/Decks/Deck';
@@ -18,6 +17,8 @@ import BigCardsWindow from './BigCardsWindow/BigCardsWindow.vue';
 import { findForSure, removeFromCollection } from '@/utilities/MyCollections';
 import ChatWiwdow from './Chat/ChatWiwdow.vue';
 import type ChatWiwdowData from './Chat/ChatWiwdowData';
+import type { PopitWiwdowData } from './Popit/PopitWiwdowData';
+import type PopitData from './PopitData';
 
 const popitStore = usePopitStore();
 
@@ -32,10 +33,13 @@ defineExpose({
   openCardsSelection
 });
 
+let nextWiwdowId = 1;
+function getNextWiwdowId() { return nextWiwdowId++ };
+
 const wiwdows: WiwdowBaseData[] = reactive([]);
 const wiwdowsButHidden: WiwdowBaseData[] = reactive([]);
 const chatWiwdow: ChatWiwdowData = reactive({
-  id: -1,
+  id: getNextWiwdowId(),
   canClose: false,
   canHide: false,
   width: 300,
@@ -56,13 +60,10 @@ const handlersData: {
   handler: ((selected: DeckCardInfo[]) => void) | null,
 }[] = [];
 
-let nextWiwdowId = 1;
-function getNextWiwdowId() { return nextWiwdowId++ };
-
 const showPopit = ref(true);
 const showPopitButton = ref(false);
 
-const currentPopit: Ref<PopitData | null> = ref(null);
+const currentPopit: Ref<PopitWiwdowData | null> = ref(null);
 
 const style = reactive({
   'width': window.innerWidth + 'px',
@@ -76,9 +77,8 @@ watch(popitStore.arr, () => {
   if (popitStore.arr.length === 0)
     return;
 
-  const a = popitStore.arr[0];
-  a.id = getNextWiwdowId();
-  currentPopit.value = a;
+  const popitData = popitStore.arr[0];
+  createPopitWiwdow(popitData);
 
   popitStore.arr.shift();
 }, {
@@ -91,11 +91,29 @@ function trySetNextPopit() {
     return;
   }
 
-  const a = popitStore.arr[0];
-  a.id = getNextWiwdowId();
-  currentPopit.value = a;
+  const popitData = popitStore.arr[0];
+  createPopitWiwdow(popitData);
 
   popitStore.arr.shift();
+}
+
+function createPopitWiwdow(data: PopitData) {
+  const popitWiwdow: PopitWiwdowData = {
+    id: getNextWiwdowId(),
+    x: 300,
+    y: 500,
+    width: 500,
+    height: 500,
+
+    hidden: false,
+    type: WiwdowType.Popit,
+
+    title: data.title,
+    canClose: data.canClose,
+    canHide: data.canHide,
+    popit: data,
+  };
+  currentPopit.value = popitWiwdow;
 }
 
 onMounted(async () => {
@@ -193,7 +211,7 @@ function onResize(ev: UIEvent) {
 }
 
 function popitWantsClose() {
-  currentPopit.value!.finished = true;
+  currentPopit.value!.popit.finished = true;
   trySetNextPopit();
 }
 function popitWantsHide() {
@@ -201,7 +219,7 @@ function popitWantsHide() {
   showPopit.value = false;
 }
 function popitChoseOption(option: PopitOption) {
-  currentPopit.value!.finished = true;
+  currentPopit.value!.popit.finished = true;
   trySetNextPopit();
 
   option.callback();

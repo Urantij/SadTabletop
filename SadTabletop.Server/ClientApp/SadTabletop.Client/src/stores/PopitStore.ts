@@ -18,20 +18,10 @@ export const usePopitStore = defineStore('popit', () => {
 
     // position: 'absolute', top: '300px', left: '500px', width: '500px', height: '500px'
     const data: PopitData = {
-      id: -1,
       title: title,
       options: options,
       canHide: canHide,
       canClose: canClose,
-
-      x: 300,
-      y: 500,
-      width: 500,
-      height: 500,
-
-      hidden: false,
-      type: WiwdowType.Popit,
-
       finished: false
     };
 

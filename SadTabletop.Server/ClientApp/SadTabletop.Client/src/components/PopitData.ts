@@ -1,8 +1,10 @@
 import type PopitOption from "./PopitOption";
-import type WiwdowBaseData from "./Wiwdow/WiwdowBaseData";
 
-export default interface PopitData extends WiwdowBaseData {
+export default interface PopitData {
+  title: string;
   options: PopitOption[];
-
   finished: boolean;
+
+  canHide: boolean;
+  canClose: boolean;
 }
