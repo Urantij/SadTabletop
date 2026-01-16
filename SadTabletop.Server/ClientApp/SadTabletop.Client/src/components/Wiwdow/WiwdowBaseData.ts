@@ -3,10 +3,22 @@ import type WiwdowType from "./WiwdowType";
 export default interface WiwdowBaseData {
   id: number,
   type: WiwdowType,
-  x: string,
-  y: string,
-  width: string,
-  height: string,
+  /**
+   * px
+   */
+  x: number,
+  /**
+   * px
+   */
+  y: number,
+  /**
+   * px
+   */
+  width: number,
+  /**
+   * px
+   */
+  height: number,
   canClose: boolean,
   canHide: boolean,
   title: string | undefined,

@@ -17,6 +17,7 @@ import type BigCardsWiwdowData from './BigCardsWindow/BigCardsWiwdowData';
 import BigCardsWindow from './BigCardsWindow/BigCardsWindow.vue';
 import { findForSure, removeFromCollection } from '@/utilities/MyCollections';
 import ChatWiwdow from './Chat/ChatWiwdow.vue';
+import type ChatWiwdowData from './Chat/ChatWiwdowData';
 
 const popitStore = usePopitStore();
 
@@ -33,6 +34,20 @@ defineExpose({
 
 const wiwdows: WiwdowBaseData[] = reactive([]);
 const wiwdowsButHidden: WiwdowBaseData[] = reactive([]);
+const chatWiwdow: ChatWiwdowData = reactive({
+  id: -1,
+  canClose: false,
+  canHide: false,
+  width: 300,
+  height: 300,
+  title: 'chatik',
+  type: WiwdowType.Chat,
+  hidden: false,
+  x: 0,
+  y: 0
+});
+chatWiwdow.x = window.innerWidth - chatWiwdow.width;
+chatWiwdow.y = window.innerHeight - chatWiwdow.height;
 
 // я не нашёл инфу че будет если хранить функции в реактируемой объекте
 const handlersData: {
@@ -106,10 +121,10 @@ function showCardsMenu(deck: Deck) {
 
   const data: BigCardsWiwdowData = {
     id: getNextWiwdowId(),
-    x: "100px",
-    y: "100px",
-    width: "800px",
-    height: "600px",
+    x: 100,
+    y: 100,
+    width: 800,
+    height: 600,
     canClose: true,
     canHide: false,
     title: "смари деку",
@@ -133,10 +148,10 @@ function showCardsMenu(deck: Deck) {
 function openCardsSelection(cards: DeckCardInfo[], min: number, max: number, handler: (selected: DeckCardInfo[]) => void) {
   const data: BigCardsWiwdowData = {
     id: getNextWiwdowId(),
-    x: "100px",
-    y: "100px",
-    width: "800px",
-    height: "600px",
+    x: 100,
+    y: 100,
+    width: 800,
+    height: 600,
     canClose: false,
     canHide: true,
     title: "выбери",
@@ -161,8 +176,20 @@ function openCardsSelection(cards: DeckCardInfo[], min: number, max: number, han
 
 function onResize(ev: UIEvent) {
 
+  console.log(window.innerWidth);
+
   style.width = window.innerWidth + 'px';
   style.height = window.innerHeight + 'px';
+
+  chatWiwdow.x = window.innerWidth - chatWiwdow.width;
+  chatWiwdow.y = window.innerHeight - chatWiwdow.height;
+
+  for (const wiwdow of wiwdows) {
+    if (wiwdow.type === WiwdowType.Chat) {
+      // wiwdow.x = window.innerWidth - wiwdow.width;
+      // wiwdow.y = window.innerHeight - wiwdow.height;
+    }
+  }
 }
 
 function popitWantsClose() {
@@ -183,10 +210,10 @@ function popitChoseOption(option: PopitOption) {
 function openSettingsWindow() {
   const data: SettingsWiwdowData = {
     id: getNextWiwdowId(),
-    x: "200px",
-    y: "200px",
-    width: "500px",
-    height: "600px",
+    x: 200,
+    y: 200,
+    width: 500,
+    height: 600,
     canHide: false,
     canClose: true,
     title: "Настроечки",
@@ -257,24 +284,6 @@ function settingsClicked() {
   else {
     openSettingsWindow();
   }
-
-  // const node = h(SettingsPanel, {
-  //   width: window.innerWidth,
-  //   height: window.innerHeight,
-
-  //   onCloseMe: () => {
-  //     if (uicontainer.value === null)
-  //       return;
-
-  //     // я не понимаю как это работает
-  //     render(null, uicontainer.value);
-  //   }
-  // });
-
-  // if (uicontainer.value === null)
-  //   return;
-
-  // render(node, uicontainer.value);
 }
 
 function popitButtonClicked() {
@@ -303,18 +312,7 @@ function unhideButtonClicked() {
     <div style="width: 200px; height: 600px;" v-if="props.draw">
       <PlayerPanel :game="game"></PlayerPanel>
     </div>
-    <ChatWiwdow :data="{
-      id: -1,
-      canClose: false,
-      canHide: false,
-      width: '300px',
-      height: '300px',
-      title: 'chatik',
-      type: 0,
-      hidden: false,
-      x: '800px',
-      y: '300px'
-    }"></ChatWiwdow>
+    <ChatWiwdow :data="chatWiwdow"></ChatWiwdow>
     <template v-for="wiwdow in wiwdows">
       <BigCardsWindow v-if="wiwdow.type === WiwdowType.BigCards" v-show="!wiwdow.hidden"
         :data="wiwdow as BigCardsWiwdowData" @close-me="() => wiwdowWantsToClose(wiwdow)"

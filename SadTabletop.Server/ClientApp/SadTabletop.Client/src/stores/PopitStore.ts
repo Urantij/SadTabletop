@@ -24,10 +24,10 @@ export const usePopitStore = defineStore('popit', () => {
       canHide: canHide,
       canClose: canClose,
 
-      x: "300px",
-      y: "500px",
-      width: "500px",
-      height: "500px",
+      x: 300,
+      y: 500,
+      width: 500,
+      height: 500,
 
       hidden: false,
       type: WiwdowType.Popit,

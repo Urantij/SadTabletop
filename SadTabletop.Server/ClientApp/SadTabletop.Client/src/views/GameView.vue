@@ -32,6 +32,9 @@ leGame.subscribeToConnection(connection);
 leGame.chatts.events.on("NewMessageAppeared", (msg) => {
   chatStore.addMessage(msg);
 });
+leGame.chatts.events.on("Reset", (msg) => {
+  chatStore.reset(msg);
+});
 
 const gameRenderer = new Renderer(leGame, window.innerWidth, window.innerHeight, divId);
 

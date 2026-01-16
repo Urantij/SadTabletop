@@ -6,8 +6,10 @@ import type ChatEmbedCard from "./Embeds/ChatEmbedCard";
 import { CardFaceUncomplicateForSure } from "../Cards/CardCompareHelper";
 import type SendChatMessageMessage from "./messages/client/SendChatMessageMessage";
 import type ChatMessage from "./ChatMessage";
+import type JoinedMessage from "@/communication/messages/server/JoinedMessage";
 
 type ChatEvents = {
+  Reset: (msgs: ChatMessage[]) => void;
   NewMessageAppeared: (msg: ChatMessage) => void;
 }
 
@@ -21,6 +23,7 @@ export default class ChatSystem {
   }
 
   subscribeToConnection(connection: Connection) {
+    connection.registerForMessage<JoinedMessage>("JoinedMessage", msg => this.joined(msg));
     connection.registerForMessage<NewChatMessageMessage>("NewChatMessageMessage", msg => this.newMessage(msg));
   }
 
@@ -33,7 +36,25 @@ export default class ChatSystem {
     this.game.connection?.sendMessage("SendChatMessageMessage", msg);
   }
 
+  private joined(joined: JoinedMessage): void {
+    for (const msg of joined.messages) {
+      this.fixMessage(msg);
+    }
+
+    this.events.emit("Reset", joined.messages);
+  }
+
   private newMessage(msg: NewChatMessageMessage): void {
+    this.fixMessage(msg);
+
+    this.events.emit("NewMessageAppeared", {
+      name: msg.name,
+      color: msg.color,
+      content: msg.content
+    });
+  }
+
+  private fixMessage(msg: ChatMessage) {
     for (const embed of msg.content.embeds) {
       if ("front" in embed) {
         const cardEmbed = embed as ChatEmbedCard;
@@ -42,11 +63,5 @@ export default class ChatSystem {
         cardEmbed.back = CardFaceUncomplicateForSure(cardEmbed.back);
       }
     }
-
-    this.events.emit("NewMessageAppeared", {
-      name: msg.name,
-      color: msg.color,
-      content: msg.content
-    });
   }
 }
