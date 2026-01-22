@@ -8,16 +8,16 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <SpaRoot>ClientApp\SadTabletop.Client\</SpaRoot>
+        <SpaRoot>..\SadTabletop.Client\</SpaRoot>
         <SpaProxyServerUrl>https://localhost:44402</SpaProxyServerUrl>
         <SpaProxyLaunchCommand>npm start</SpaProxyLaunchCommand>
     </PropertyGroup>
 
     <ItemGroup>
         <!-- Don't publish the SPA source files, but do show them in the project files list -->
-        <Content Remove="$(SpaRoot)**"/>
-        <None Remove="$(SpaRoot)**"/>
-        <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**"/>
+        <!--        <Content Remove="$(SpaRoot)**"/>-->
+        <!--        <None Remove="$(SpaRoot)**"/>-->
+        <None LinkBase="./ClientApp" Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**"/>
     </ItemGroup>
 
     <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">

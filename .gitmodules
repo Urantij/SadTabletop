@@ -1,3 +1,6 @@
 [submodule "SadTabletop.Shared"]
 	path = SadTabletop.Shared
 	url = https://github.com/Urantij/SadTabletop.Shared.git
+[submodule "SadTabletop.Client"]
+	path = SadTabletop.Client
+	url = https://github.com/Urantij/SadTabletop.Client.git
