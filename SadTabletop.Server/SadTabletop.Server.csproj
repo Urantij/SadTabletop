@@ -51,6 +51,6 @@
         <ProjectReference Include="..\SadTabletop.Shared\SadTabletop.Shared.csproj"/>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="9.0.7"/>
+        <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="10.0.2" />
     </ItemGroup>
 </Project>
