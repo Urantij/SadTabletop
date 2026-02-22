@@ -1,6 +1,7 @@
 using SadTabletop.Shared;
 using SadTabletop.Shared.Mechanics;
 using SadTabletop.Shared.MoreSystems.Dices;
+using SadTabletop.Shared.MoreSystems.Sounds;
 using SadTabletop.Shared.Systems.Assets;
 using SadTabletop.Shared.Systems.Clicks;
 using SadTabletop.Shared.Systems.Seats;
@@ -13,7 +14,12 @@ public class DiceTestSystem : SystemBase
     private readonly AssetsSystem _assets;
     private readonly SeatsSystem _seats;
 
+    private readonly SoundsSystem _sounds;
+
     private readonly ClicksSystem _clicks;
+
+    private AssetInfo _rant;
+    private SoundRemote? _soundRemote;
 
     public DiceTestSystem(Game game) : base(game)
     {
@@ -23,8 +29,10 @@ public class DiceTestSystem : SystemBase
     {
         base.GameCreated();
 
-        AssetInfo sqr = _assets.AddAsset("squrr", "squrr.png");
-        AssetInfo sqr2 = _assets.AddAsset("squrr2", "squrr2.png");
+        AssetInfo sqr = _assets.AddImageAsset("squrr", "squrr.png");
+        AssetInfo sqr2 = _assets.AddImageAsset("squrr2", "squrr2.png");
+
+        _rant = _assets.AddSoundAsset("rant", "longsound.mp3");
 
         Seat hero = _seats.EnumerateRealSeats().First();
 
@@ -59,6 +67,16 @@ public class DiceTestSystem : SystemBase
     private void SecondClicked(Click obj)
     {
         Dice dice = (Dice)obj.Item;
+
+        if (_soundRemote != null)
+        {
+            _sounds.StopSound(_soundRemote);
+            _soundRemote = null;
+        }
+        else
+        {
+            _soundRemote = _sounds.PlayControllableSound(_rant);
+        }
 
         _dices.Roll(dice);
     }

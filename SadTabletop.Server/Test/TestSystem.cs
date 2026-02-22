@@ -48,10 +48,10 @@ public class TestSystem : SystemBase
         seats.CreateRoundSeats(3, 0, 0, 500);
 
         var assets = this.Game.GetSystem<AssetsSystem>();
-        assets.AddCardAsset(4, "card4.png");
-        assets.AddCardAsset(7, "card7.png");
+        assets.AddCardImageAsset(4, "card4.png");
+        assets.AddCardImageAsset(7, "card7.png");
 
-        var wood = assets.AddAsset("wood", "wood.png");
+        var wood = assets.AddImageAsset("wood", "wood.png");
 
         this.Game.GetSystem<SpritesSystem>().CreateTileSprite(wood, 0, 0, 1000, 1000);
 
