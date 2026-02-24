@@ -20,6 +20,7 @@ public class DiceTestSystem : SystemBase
 
     private AssetInfo _rant;
     private SoundRemote? _soundRemote;
+    private bool _loopMark = false;
 
     public DiceTestSystem(Game game) : base(game)
     {
@@ -75,7 +76,8 @@ public class DiceTestSystem : SystemBase
         }
         else
         {
-            _soundRemote = _sounds.PlayControllableSound(_rant);
+            _soundRemote = _sounds.PlayControllableSound(_rant, loop: _loopMark);
+            _loopMark = !_loopMark;
         }
 
         _dices.Roll(dice);
