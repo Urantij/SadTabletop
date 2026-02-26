@@ -4,7 +4,6 @@ using SadTabletop.Shared.MoreSystems.Cards;
 using SadTabletop.Shared.MoreSystems.Decks;
 using SadTabletop.Shared.MoreSystems.Hands;
 using SadTabletop.Shared.Systems.Clicks;
-using SadTabletop.Shared.Systems.Seats;
 using SadTabletop.Shared.Systems.Times;
 
 namespace SadTabletop.Server.Test;

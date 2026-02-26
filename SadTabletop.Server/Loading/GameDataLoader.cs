@@ -30,6 +30,7 @@ public class GameDataLoader
             .Append(game => new PlayTestSystem(game))
             .Append(game => new DeckTestSystem(game))
             .Append(game => new DiceTestSystem(game))
+            .Append(game => new FFATestSystem(game))
             .ToArray();
 
         return GameCreator.CreateBaseGame(new GameSetup(3, []), systemsFactories);
