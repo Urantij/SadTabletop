@@ -10,6 +10,7 @@ using SadTabletop.Shared.Systems.Entities;
 using SadTabletop.Shared.Systems.Seats;
 using SadTabletop.Shared.Systems.Synchro;
 using SadTabletop.Shared.Systems.Times;
+using SadTabletop.Shared.Systems.Viewer;
 
 namespace SadTabletop.Server.Main;
 
@@ -150,11 +151,11 @@ public class GameContainer
     /// <returns></returns>
     public ViewedEntity[] MakeSynchroContent(Seat? target)
     {
-        SynchroSystem synchro = Game.GetSystem<SynchroSystem>();
+        ViewerSystem viewer = Game.GetSystem<ViewerSystem>();
 
         return Game.Systems.OfType<EntitiesSystem>()
             .Where(es => es.ClientSided)
-            .SelectMany(es => synchro.ViewEntities(es, target))
+            .SelectMany(es => viewer.ViewEntities(es, target))
             .ToArray();
     }
 
