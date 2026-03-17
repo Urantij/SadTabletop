@@ -3,6 +3,7 @@ using SadTabletop.Shared.EvenMoreSystems.Menu;
 using SadTabletop.Shared.EvenMoreSystems.Menu.Actions;
 using SadTabletop.Shared.EvenMoreSystems.Popit;
 using SadTabletop.Shared.Mechanics;
+using SadTabletop.Shared.MoreSystems.Hints;
 using SadTabletop.Shared.MoreSystems.Shapes;
 using SadTabletop.Shared.Systems.Clicks;
 using SadTabletop.Shared.Systems.Seats;
@@ -17,6 +18,7 @@ public class FFATestSystem : SystemBase
     private readonly SeatsSystem _seats;
     private readonly VisabilitySystem _visability;
     private readonly ClicksSystem _clicks;
+    private readonly HintsSystem _hints;
     private readonly TableSystem _table;
     private readonly PopitsSystem _popits;
     private readonly MenuListsSystem _menuLists;
@@ -81,17 +83,21 @@ public class FFATestSystem : SystemBase
         if (_circleShape)
         {
             poor = _shapes.AddCircle((int)(_mainRect.X + obj.X.Value), (int)(_mainRect.Y + obj.Y.Value), 40,
-                _greenColor ? 0x228822 : 0x222288);
+                _greenColor ? 0x228822 : 0x222288, sendRelatedMessage: false);
         }
         else
         {
             poor = _shapes.AddRect((int)(_mainRect.X + obj.X.Value), (int)(_mainRect.Y + obj.Y.Value), 80, 80,
-                _greenColor ? 0x228822 : 0x222288);
+                _greenColor ? 0x228822 : 0x222288, sendRelatedMessage: false);
         }
+
+        _table.ChangeDescription(poor, $"{poor.X:F3}:{poor.Y:F3}", sendRelatedMessage: false);
 
         var seat = (Seat)_seats.EnumerateRawEntities().First();
 
-        _clicks.AddClick(poor, seat, (_) => { _table.RemoveEntity(poor); });
+        _clicks.AddClick(poor, seat, (_) => { _table.RemoveEntity(poor); }, sendRelatedMessage: false);
+
+        _table.AnnounceEntity(poor);
     }
 
     private void ShapeSelected(Popit arg1, int? arg2)
