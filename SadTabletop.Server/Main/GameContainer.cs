@@ -128,7 +128,7 @@ public class GameContainer
 
             using Lock.Scope scope = Locker.EnterScope();
 
-            Game.GetSystem<TimesSystem>().Execute(obj);
+            TimesSystemEngineer.Execute(Game.GetSystem<TimesSystem>(), obj);
         });
     }
 
