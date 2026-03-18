@@ -1,8 +1,8 @@
 using System.Reflection;
+using SadTabletop.Extra.FileDownload;
 using SadTabletop.Server.Test;
 using SadTabletop.Shared;
 using SadTabletop.Shared.Mechanics;
-using SadTabletop.Shared.MoreSystems.Dices;
 
 namespace SadTabletop.Server.Loading;
 
@@ -24,6 +24,7 @@ public class GameDataLoader
             .Where(t => !t.IsAbstract)
             .Where(t => t.IsAssignableTo(typeof(SystemBase)))
             .Select<Type, Func<Game, SystemBase>>(t => (Game game) => (SystemBase)Activator.CreateInstance(t, game))
+            .Append(game => new FileDownloadSystem(game))
             .Append(game => new TestSystem(game))
             .Append(game => new AnotherTestSystem(game))
             .Append(game => new HandTestSystem(game))

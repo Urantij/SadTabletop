@@ -48,9 +48,10 @@
     <!--    </Target>-->
 
     <ItemGroup>
+        <ProjectReference Include="..\SadTabletop.Extra\SadTabletop.Extra.csproj"/>
         <ProjectReference Include="..\SadTabletop.Shared\SadTabletop.Shared.csproj"/>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="10.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="10.0.2"/>
     </ItemGroup>
 </Project>

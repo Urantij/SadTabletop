@@ -1,3 +1,5 @@
+using System.Text.Json;
+using SadTabletop.Extra.FileDownload;
 using SadTabletop.Shared;
 using SadTabletop.Shared.EvenMoreSystems.Menu;
 using SadTabletop.Shared.EvenMoreSystems.Menu.Actions;
@@ -14,6 +16,7 @@ namespace SadTabletop.Server.Test;
 
 public class FFATestSystem : SystemBase
 {
+    private readonly FileDownloadSystem _file;
     private readonly ShapesSystem _shapes;
     private readonly SeatsSystem _seats;
     private readonly VisabilitySystem _visability;
@@ -55,6 +58,10 @@ public class FFATestSystem : SystemBase
         ]);
         mainMenu.Buttons.Add(new MenuButton("форми", new ChangeListMenuAction(_formsLlist.Id)));
         mainMenu.Buttons.Add(new MenuButton("цвети", new ChangeListMenuAction(_coolsLlist.Id)));
+
+        SendServerMenuAction downsend = _menu.RegisterSend(DownClicked);
+        mainMenu.Buttons.Add(new MenuButton("сукачай", downsend));
+
         var menu = _menu.CreateMenu("меню 22", mainMenu);
 
         var seat = (Seat)_seats.EnumerateRawEntities().First();
@@ -64,6 +71,16 @@ public class FFATestSystem : SystemBase
         _clicks.AddClick(_mainRect, seat, MainClicked, singleUse: false, sendClickPosition: true);
 
         _popits.GivePopit("рисуем", ["квадратики", "круглилки"], seat, ShapeSelected);
+    }
+
+    private void DownClicked(Seat seat)
+    {
+        string str = JsonSerializer.Serialize(new
+        {
+            huesos = 5
+        });
+
+        _file.SendData(seat, "tst.json", str);
     }
 
     private void MenuKrugClicked(Seat seat)
